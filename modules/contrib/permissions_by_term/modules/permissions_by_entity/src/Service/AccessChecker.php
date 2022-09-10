@@ -139,6 +139,7 @@ class AccessChecker extends AccessCheck implements AccessCheckerInterface {
 
               $this->eventDispatcher
                 ->dispatch(
+                  PermissionsByEntityEvents::ENTITY_FIELD_VALUE_ACCESS_DENIED_EVENT,
                   $this->event
                 );
               $i = $this->event->getIndex();
@@ -157,6 +158,11 @@ class AccessChecker extends AccessCheck implements AccessCheckerInterface {
   public function isAccessControlled(FieldableEntityInterface $entity, bool $clearCache = TRUE): bool {
     if ($clearCache) {
       $this->checkedEntityCache->clear();
+    }
+
+    if ($entity->getEntityTypeId() == 'node') {
+      // Make sure to leave nodes to the permissions_by_term module.
+      return FALSE;
     }
 
     // Iterate over the fields the entity contains.

@@ -39,11 +39,18 @@ function comments_order_query_comment_filter_alter(AlterableInterface $query) {
     $field = FieldConfig::loadByName($entity->getEntityTypeId(), $entity->bundle(), $query->getMetaData('field_name'));
     // Set reverse order if checked.
     $field_order = $field->getThirdPartySetting('comments_order', 'order', 'ASC');
+    $created_order = $field->getThirdPartySetting('comments_order', 'created_order');
     if (substr($field_order, 0, 4) == 'DESC') {
       // 'c.cid' is for flat comment lists.
       if (isset($order_by['c.cid']) && substr($order_by['c.cid'], 0, 3) == 'ASC') {
         // Reverse order.
-        $order_by['c.cid'] = 'DESC';
+        if ($created_order) {
+          unset($order_by['c.cid']);
+          $order_by['c.created'] = 'DESC';
+        }
+        else {
+          $order_by['c.cid'] = 'DESC';
+        }
       }
       // 'torder' is for threaded comment lists.
       if (isset($order_by['torder']) && substr($order_by['torder'], 0, 3) == 'ASC') {
@@ -81,6 +88,14 @@ function comments_order_query_comment_filter_alter(AlterableInterface $query) {
         }
       }
     }
+    else {
+      // 'c.cid' is for flat comment lists.
+      if (isset($order_by['c.cid']) && substr($order_by['c.cid'], 0, 3) == 'ASC' && $created_order) {
+        // Reverse order.
+        unset($order_by['c.cid']);
+        $order_by['c.created'] = 'ASC';
+      }
+    }
   }
 }
 
@@ -113,6 +128,20 @@ function comments_order_form_alter(&$form, FormStateInterface $form_state, $form
         '#states' => [
           'visible' => [
             'select[name="order"]' => ['value' => 'DESC'],
+            'input[name="settings[default_mode]"]' => ['checked' => TRUE],
+          ],
+        ],
+        '#weight' => 11,
+      ];
+      // Order by "Authored On" field.
+      $form['created_order'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Order by "Authored On" field'),
+        '#description' => t('Comments will be ordered by "created" field not in order they were really created as it is by default'),
+        '#default_value' => $field->getThirdPartySetting('comments_order', 'created_order', 0),
+        '#states' => [
+          'visible' => [
+            'input[name="settings[default_mode]"]' => ['checked' => FALSE],
           ],
         ],
         '#weight' => 11,
@@ -135,6 +164,7 @@ function _comments_order_field_config_edit_form_builder($entity_type, FieldConfi
   // Save settings.
   $field->setThirdPartySetting('comments_order', 'order', $form_state->getValue('order'));
   $field->setThirdPartySetting('comments_order', 'children_natural_order', $form_state->getValue('children_natural_order'));
+  $field->setThirdPartySetting('comments_order', 'created_order', $form_state->getValue('created_order'));
 }
 
 /**

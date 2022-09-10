@@ -36,8 +36,8 @@ class FieldGroupPermissionsService extends FieldPermissionsService {
    */
   public function getAllGroupPermissions() {
     $permissions = [];
-    /** @var \Drupal\field\FieldStorageConfigInterface[] $fields */
-    $fields = $this->entityTypeManager->getStorage('field_storage_config')->loadMultiple();
+    /** @var \Drupal\field\FieldConfigInterface[] $fields */
+    $fields = $this->entityTypeManager->getStorage('field_config')->loadMultiple();
     foreach ($fields as $key => $field) {
       // Check if this plugin defines custom permissions.
       $permission_type = $this->fieldGetPermissionType($field);

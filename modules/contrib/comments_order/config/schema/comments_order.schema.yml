@@ -8,3 +8,6 @@ field.field.*.*.*.third_party.comments_order:
     children_natural_order:
       type: integer
       label: 'Children Natural Order'
+    created_order:
+      type: integer
+      label: 'Created Order'

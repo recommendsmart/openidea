@@ -6,7 +6,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\field\FieldStorageConfigInterface;
+use Drupal\field\FieldConfigInterface;
 use Drupal\field_permissions\FieldPermissionsServiceInterface;
 use Drupal\field_permissions\Plugin\AdminFormSettingsInterface;
 use Drupal\field_permissions\Plugin\CustomPermissionsInterface;
@@ -51,15 +51,15 @@ class CustomGroupAccess extends Base implements CustomPermissionsInterface, Admi
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\field\FieldStorageConfigInterface $field_storage
+   * @param \Drupal\field\FieldConfigInterface $field_config
    *   The field storage.
    * @param \Drupal\field_permissions\FieldPermissionsServiceInterface $permissions_service
    *   The permissions service
    * @param \Drupal\group\Plugin\GroupContentEnablerManagerInterface $group_content_enabler_manager
    *   The group_content enabler manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, FieldStorageConfigInterface $field_storage, FieldPermissionsServiceInterface $permissions_service, GroupContentEnablerManagerInterface $group_content_enabler_manager) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $field_storage);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FieldConfigInterface $field_config, FieldPermissionsServiceInterface $permissions_service, GroupContentEnablerManagerInterface $group_content_enabler_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $field_config);
     $this->permissionsService = $permissions_service;
     $this->groupContentEnablerManager = $group_content_enabler_manager;
   }
@@ -67,12 +67,12 @@ class CustomGroupAccess extends Base implements CustomPermissionsInterface, Admi
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, FieldStorageConfigInterface $field_storage = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, FieldConfigInterface $field_config = NULL) {
     return new static(
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $field_storage,
+      $field_config,
       $container->get('field_permissions.permissions_service'),
       $container->get('plugin.manager.group_content_enabler')
     );
@@ -91,7 +91,7 @@ class CustomGroupAccess extends Base implements CustomPermissionsInterface, Admi
 
     $memberships = [];
 
-    $field_name = $this->fieldStorage->getName();
+    $field_name = $this->fieldConfig->getName();
 
     if ($entity instanceof GroupInterface) {
       if ($entity->isNew()) {
@@ -102,12 +102,16 @@ class CustomGroupAccess extends Base implements CustomPermissionsInterface, Admi
       }
       else {
         // Load group membership for this account, if any.
-        $memberships[] = $entity->getMember($account);
+        if ($membership = $entity->getMember($account)) {
+          $memberships[] = $membership;
+        }
       }
     }
     elseif ($entity instanceof GroupContentInterface) {
       // Load group membership for this account, if any.
-      $memberships[] = $entity->getGroup()->getMember($account);
+      if ($membership = $entity->getGroup()->getMember($account)) {
+        $memberships[] = $membership;
+      }
     }
     elseif ($entity instanceof ContentEntityInterface) {
       // Note that a given content entity may belong to more than one group, so need to check them all.
@@ -172,7 +176,7 @@ class CustomGroupAccess extends Base implements CustomPermissionsInterface, Admi
    * {@inheritdoc}
    */
   public function hasFieldViewAccessForEveryEntity(AccountInterface $account) {
-    $field_name = $this->fieldStorage->getName();
+    $field_name = $this->fieldConfig->getName();
     return $account->hasPermission('view ' . $field_name);
   }
 
@@ -224,7 +228,7 @@ class CustomGroupAccess extends Base implements CustomPermissionsInterface, Admi
    */
   public function getPermissions() {
     $permissions = [];
-    $field_name = $this->fieldStorage->getName();
+    $field_name = $this->fieldConfig->getName();
     $permission_list = $this->permissionsService->getList($field_name);
     $perms_name = array_keys($permission_list);
     foreach ($perms_name as $perm_name) {

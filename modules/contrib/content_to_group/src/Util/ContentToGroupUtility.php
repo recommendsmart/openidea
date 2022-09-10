@@ -44,4 +44,17 @@ class ContentToGroupUtility {
     return $group_field;
   }
 
+  /**
+   * Get the group content.
+   */
+  public function getGroupContent($node) {
+    $group_contents = $this->entityTypeManager->getStorage('group_content')
+      ->loadByEntity($node);
+    if ($group_contents !== NULL) {
+      return $group_contents;
+    }
+
+    return NULL;
+  }
+
 }

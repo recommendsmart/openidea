@@ -10,6 +10,11 @@ services:
       - '@entity_field.manager'
       - '@database'
 
+  permissions_by_entity.access_result_cache:
+    class: Drupal\permissions_by_entity\Cache\AccessResultCache
+    arguments: ['@cache.permissions_by_term']
+
+
   permissions_by_entity.kernel_event_subscriber:
     class: Drupal\permissions_by_entity\EventSubscriber\PermissionsByEntityKernelEventSubscriber
     arguments:

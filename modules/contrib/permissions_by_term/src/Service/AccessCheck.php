@@ -76,6 +76,16 @@ class AccessCheck {
       return TRUE;
     }
 
+    if ($user->id() === '0' && !$user->hasPermission('view any unpublished content') &&
+      !$node->isPublished()
+    ) {
+      return FALSE;
+    }
+
+    if ((int) $user->id() !== (int) $node->getOwnerId() && !$node->isPublished()) {
+      return FALSE;
+    }
+
     $configPermissionMode = \Drupal::config('permissions_by_term.settings')->get('permission_mode');
     $requireAllTermsGranted = \Drupal::config('permissions_by_term.settings')->get('require_all_terms_granted');
 
