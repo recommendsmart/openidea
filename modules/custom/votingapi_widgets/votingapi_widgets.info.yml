@@ -7,7 +7,3 @@ dependencies:
   - votingapi
   - field
 # Information added by Drupal.org packaging script on 2018-10-24
-version: '8.x-1.0-alpha5'
-core: '8.x'
-project: 'votingapi_widgets'
-datestamp: 1540379293
