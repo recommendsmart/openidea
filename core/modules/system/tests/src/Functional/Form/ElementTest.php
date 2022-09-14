@@ -17,7 +17,7 @@ class ElementTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['form_test'];
+  public static $modules = ['form_test'];
 
   /**
    * {@inheritdoc}
@@ -29,10 +29,22 @@ class ElementTest extends BrowserTestBase {
    */
   public function testPlaceHolderText() {
     $this->drupalGet('form-test/placeholder-text');
-    foreach (['textfield', 'tel', 'url', 'password', 'email', 'number', 'textarea'] as $type) {
-      $field = $this->assertSession()->fieldExists("edit-$type");
-      $this->assertSame('placeholder-text', $field->getAttribute('placeholder'));
+    $expected = 'placeholder-text';
+    // Test to make sure non-textarea elements have the proper placeholder text.
+    foreach (['textfield', 'tel', 'url', 'password', 'email', 'number'] as $type) {
+      $element = $this->xpath('//input[@id=:id and @placeholder=:expected]', [
+        ':id' => 'edit-' . $type,
+        ':expected' => $expected,
+      ]);
+      $this->assertTrue(!empty($element), new FormattableMarkup('Placeholder text placed in @type.', ['@type' => $type]));
     }
+
+    // Test to make sure textarea has the proper placeholder text.
+    $element = $this->xpath('//textarea[@id=:id and @placeholder=:expected]', [
+      ':id' => 'edit-textarea',
+      ':expected' => $expected,
+    ]);
+    $this->assertTrue(!empty($element), 'Placeholder text placed in textarea.');
   }
 
   /**
@@ -47,15 +59,15 @@ class ElementTest extends BrowserTestBase {
       $expected_values = ['0', 'foo', '1', 'bar', '>'];
       foreach ($elements as $element) {
         $expected = array_shift($expected_values);
-        $this->assertSame($expected, (string) $element->getAttribute('value'));
+        $this->assertIdentical((string) $element->getAttribute('value'), $expected);
       }
     }
 
     // Verify that the choices are admin filtered as expected.
-    $this->assertSession()->responseContains("<em>Special Char</em>alert('checkboxes');");
-    $this->assertSession()->responseContains("<em>Special Char</em>alert('radios');");
-    $this->assertSession()->responseContains('<em>Bar - checkboxes</em>');
-    $this->assertSession()->responseContains('<em>Bar - radios</em>');
+    $this->assertRaw("<em>Special Char</em>alert('checkboxes');");
+    $this->assertRaw("<em>Special Char</em>alert('radios');");
+    $this->assertRaw('<em>Bar - checkboxes</em>');
+    $this->assertRaw('<em>Bar - radios</em>');
 
     // Enable customized option sub-elements.
     $this->drupalGet('form-test/checkboxes-radios/customize');
@@ -67,12 +79,18 @@ class ElementTest extends BrowserTestBase {
       $expected_values = ['0', 'foo', 'bar', '>', '1'];
       foreach ($elements as $element) {
         $expected = array_shift($expected_values);
-        $this->assertSame($expected, (string) $element->getAttribute('value'));
+        $this->assertIdentical((string) $element->getAttribute('value'), $expected);
       }
     }
     // Verify that custom #description properties are output.
     foreach (['checkboxes', 'radios'] as $type) {
-      $this->assertSession()->elementExists('xpath', "//input[@id='edit-$type-foo']/following-sibling::div[@class='description']");
+      $elements = $this->xpath('//input[@id=:id]/following-sibling::div[@class=:class]', [
+        ':id' => 'edit-' . $type . '-foo',
+        ':class' => 'description',
+      ]);
+      $this->assertGreaterThan(0, count($elements), new FormattableMarkup('Custom %type option description found.', [
+        '%type' => $type,
+      ]));
     }
   }
 
@@ -82,27 +100,38 @@ class ElementTest extends BrowserTestBase {
   public function testRadiosChecked() {
     // Verify that there is only one radio option checked.
     $this->drupalGet('form-test/radios-checked');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios", '0');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-string" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-string", 'bar');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-boolean-true" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-boolean-true", '1');
+    $elements = $this->xpath('//input[@name="radios" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('0', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-string" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('bar', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-boolean-true" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('1', $elements[0]->getValue());
     // A default value of FALSE indicates that nothing is set.
-    $this->assertSession()->elementNotExists('xpath', '//input[@name="radios-boolean-false" and @checked]');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-boolean-any" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-boolean-any", 'All');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-string-zero" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-string-zero", '0');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-int-non-zero" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-int-non-zero", '10');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-int-non-zero-as-string" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-int-non-zero-as-string", '100');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-empty-string" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-empty-string", '0');
-    $this->assertSession()->elementNotExists('xpath', '//input[@name="radios-empty-array" and @checked]');
-    $this->assertSession()->elementsCount('xpath', '//input[@name="radios-key-FALSE" and @checked]', 1);
-    $this->assertSession()->fieldValueEquals("radios-key-FALSE", '0');
+    $elements = $this->xpath('//input[@name="radios-boolean-false" and @checked]');
+    $this->assertCount(0, $elements);
+    $elements = $this->xpath('//input[@name="radios-boolean-any" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('All', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-string-zero" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('0', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-int-non-zero" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('10', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-int-non-zero-as-string" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('100', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-empty-string" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('0', $elements[0]->getValue());
+    $elements = $this->xpath('//input[@name="radios-empty-array" and @checked]');
+    $this->assertCount(0, $elements);
+    $elements = $this->xpath('//input[@name="radios-key-FALSE" and @checked]');
+    $this->assertCount(1, $elements);
+    $this->assertSame('0', $elements[0]->getValue());
   }
 
   /**
@@ -113,10 +142,10 @@ class ElementTest extends BrowserTestBase {
 
     // Verify that wrapper id is different from element id.
     foreach (['checkboxes', 'radios'] as $type) {
-      // A single element id is found.
-      $this->assertSession()->elementsCount('xpath', "//div[@id='edit-$type']", 1);
+      $element_ids = $this->xpath('//div[@id=:id]', [':id' => 'edit-' . $type]);
       $wrapper_ids = $this->xpath('//fieldset[@id=:id]', [':id' => 'edit-' . $type . '--wrapper']);
-      $this->assertCount(1, $wrapper_ids, new FormattableMarkup('A single wrapper id found for type %type', ['%type' => $type]));
+      $this->assertTrue(count($element_ids) == 1, new FormattableMarkup('A single element id found for type %type', ['%type' => $type]));
+      $this->assertTrue(count($wrapper_ids) == 1, new FormattableMarkup('A single wrapper id found for type %type', ['%type' => $type]));
     }
   }
 
@@ -129,9 +158,9 @@ class ElementTest extends BrowserTestBase {
     // "button--foo" would contain "button". Instead, check
     // " button ". Make sure it matches in the beginning and the end too
     // by adding a space before and after.
-    $this->assertCount(2, $this->xpath('//*[contains(concat(" ", @class, " "), " button ")]'));
-    $this->assertCount(1, $this->xpath('//*[contains(concat(" ", @class, " "), " button--foo ")]'));
-    $this->assertCount(1, $this->xpath('//*[contains(concat(" ", @class, " "), " button--danger ")]'));
+    $this->assertEqual(2, count($this->xpath('//*[contains(concat(" ", @class, " "), " button ")]')));
+    $this->assertEqual(1, count($this->xpath('//*[contains(concat(" ", @class, " "), " button--foo ")]')));
+    $this->assertEqual(1, count($this->xpath('//*[contains(concat(" ", @class, " "), " button--danger ")]')));
   }
 
   /**
@@ -139,14 +168,19 @@ class ElementTest extends BrowserTestBase {
    */
   public function testGroupElements() {
     $this->drupalGet('form-test/group-details');
-    $this->assertSession()->elementsCount('xpath', '//div[@class="details-wrapper"]//div[@class="details-wrapper"]//label', 1);
+    $elements = $this->xpath('//div[@class="details-wrapper"]//div[@class="details-wrapper"]//label');
+    $this->assertTrue(count($elements) == 1);
     $this->drupalGet('form-test/group-container');
-    $this->assertSession()->elementsCount('xpath', '//div[@id="edit-container"]//div[@class="details-wrapper"]//label', 1);
+    $elements = $this->xpath('//div[@id="edit-container"]//div[@class="details-wrapper"]//label');
+    $this->assertTrue(count($elements) == 1);
     $this->drupalGet('form-test/group-fieldset');
-    $this->assertSession()->elementsCount('xpath', '//fieldset[@id="edit-fieldset"]//div[@id="edit-meta"]//label', 1);
+    $elements = $this->xpath('//fieldset[@id="edit-fieldset"]//div[@id="edit-meta"]//label');
+    $this->assertTrue(count($elements) == 1);
     $this->drupalGet('form-test/group-vertical-tabs');
-    $this->assertSession()->elementsCount('xpath', '//div[@data-vertical-tabs-panes]//details[@id="edit-meta"]//label', 1);
-    $this->assertSession()->elementsCount('xpath', '//div[@data-vertical-tabs-panes]//details[@id="edit-meta-2"]//label', 1);
+    $elements = $this->xpath('//div[@data-vertical-tabs-panes]//details[@id="edit-meta"]//label');
+    $this->assertTrue(count($elements) == 1);
+    $elements = $this->xpath('//div[@data-vertical-tabs-panes]//details[@id="edit-meta-2"]//label');
+    $this->assertTrue(count($elements) == 1);
   }
 
   /**
@@ -164,34 +198,35 @@ class ElementTest extends BrowserTestBase {
   }
 
   /**
-   * Tests a form with an autocomplete setting..
+   * Tests a form with a autocomplete setting..
    */
   public function testFormAutocomplete() {
     $this->drupalGet('form-test/autocomplete');
 
-    // Ensure that the user does not have access to the autocompletion.
-    $this->assertSession()->elementNotExists('xpath', '//input[@id="edit-autocomplete-1" and contains(@data-autocomplete-path, "form-test/autocomplete-1")]');
-    $this->assertSession()->elementNotExists('xpath', '//input[@id="edit-autocomplete-2" and contains(@data-autocomplete-path, "form-test/autocomplete-2/value")]');
+    $result = $this->xpath('//input[@id="edit-autocomplete-1" and contains(@data-autocomplete-path, "form-test/autocomplete-1")]');
+    $this->assertEqual(count($result), 0, 'Ensure that the user does not have access to the autocompletion');
+    $result = $this->xpath('//input[@id="edit-autocomplete-2" and contains(@data-autocomplete-path, "form-test/autocomplete-2/value")]');
+    $this->assertEqual(count($result), 0, 'Ensure that the user does not have access to the autocompletion');
 
     $user = $this->drupalCreateUser(['access autocomplete test']);
     $this->drupalLogin($user);
     $this->drupalGet('form-test/autocomplete');
 
     // Make sure that the autocomplete library is added.
-    $this->assertSession()->responseContains('core/misc/autocomplete.js');
+    $this->assertRaw('core/misc/autocomplete.js');
 
-    // Ensure that the user does have access to the autocompletion.
-    $this->assertSession()->elementExists('xpath', '//input[@id="edit-autocomplete-1" and contains(@data-autocomplete-path, "form-test/autocomplete-1")]');
-    $this->assertSession()->elementExists('xpath', '//input[@id="edit-autocomplete-2" and contains(@data-autocomplete-path, "form-test/autocomplete-2/value")]');
+    $result = $this->xpath('//input[@id="edit-autocomplete-1" and contains(@data-autocomplete-path, "form-test/autocomplete-1")]');
+    $this->assertEqual(count($result), 1, 'Ensure that the user does have access to the autocompletion');
+    $result = $this->xpath('//input[@id="edit-autocomplete-2" and contains(@data-autocomplete-path, "form-test/autocomplete-2/value")]');
+    $this->assertEqual(count($result), 1, 'Ensure that the user does have access to the autocompletion');
   }
 
   /**
    * Tests form element error messages.
    */
   public function testFormElementErrors() {
-    $this->drupalGet('form_test/details-form');
-    $this->submitForm([], 'Submit');
-    $this->assertSession()->pageTextContains('I am an error on the details element.');
+    $this->drupalPostForm('form_test/details-form', [], 'Submit');
+    $this->assertText('I am an error on the details element.');
   }
 
   /**

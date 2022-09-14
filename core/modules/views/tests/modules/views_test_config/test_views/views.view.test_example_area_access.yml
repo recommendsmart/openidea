@@ -23,6 +23,6 @@ display:
           custom_access: false
           string: 'a custom string'
     display_plugin: default
-    display_title: Default
+    display_title: Master
     id: default
     position: 0

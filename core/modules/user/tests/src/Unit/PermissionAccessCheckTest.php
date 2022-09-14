@@ -33,7 +33,7 @@ class PermissionAccessCheckTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->container = new ContainerBuilder();
@@ -76,11 +76,12 @@ class PermissionAccessCheckTest extends UnitTestCase {
     $user = $this->createMock('Drupal\Core\Session\AccountInterface');
     $user->expects($this->any())
       ->method('hasPermission')
-      ->willReturnMap([
-        ['allowed', TRUE],
-        ['denied', FALSE],
-        ['other', FALSE],
-      ]);
+      ->will($this->returnValueMap([
+          ['allowed', TRUE],
+          ['denied', FALSE],
+          ['other', FALSE],
+        ]
+      ));
     $route = new Route('', [], $requirements);
 
     $this->assertEquals($access_result, $this->accessCheck->access($route, $user));

@@ -7,8 +7,6 @@ use Drupal\migrate\Plugin\MigrateIdMapInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Tests\BrowserTestBase;
 
-// cspell:ignore destid
-
 /**
  * Tests the 'download' process plugin.
  *
@@ -19,7 +17,7 @@ class DownloadFunctionalTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate', 'file'];
+  public static $modules = ['migrate', 'file'];
 
   /**
    * {@inheritdoc}
@@ -61,7 +59,7 @@ class DownloadFunctionalTest extends BrowserTestBase {
     $result = $executable->import();
 
     // Check that the migration has completed.
-    $this->assertEquals(MigrationInterface::RESULT_COMPLETED, $result);
+    $this->assertEquals($result, MigrationInterface::RESULT_COMPLETED);
 
     /** @var \Drupal\migrate\Plugin\MigrateIdMapInterface $id_map_plugin */
     $id_map_plugin = $migration->getIdMap();
@@ -75,9 +73,7 @@ class DownloadFunctionalTest extends BrowserTestBase {
     $messages = $id_map_plugin->getMessages(['url' => $invalid_url])->fetchAll();
     $this->assertCount(1, $messages);
     $message = reset($messages);
-
-    $id = $migration->getPluginId();
-    $this->assertEquals("$id:uri: Client error: `GET $invalid_url` resulted in a `404 Not Found` response ($invalid_url)", $message->message);
+    $this->assertEquals("Cannot read from non-readable stream ($invalid_url)", $message->message);
     $this->assertEquals(MigrationInterface::MESSAGE_ERROR, $message->level);
 
     // Check that the second row was migrated successfully.

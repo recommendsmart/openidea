@@ -18,11 +18,8 @@ class SerializationTestNormalizer implements NormalizerInterface {
    *
    * @param object $object
    *   Object to normalize.
-   * @param string|null $format
-   *   (optional) Format the normalization result will be encoded as. Defaults
-   *   to NULL
-   * @param array $context
-   *   (optional) The context data. Defaults to an empty array.
+   * @param string $format
+   *   Format the normalization result will be encoded as.
    *
    * @return array
    *   An array containing a normalized representation of $object, appropriate

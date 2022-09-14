@@ -36,15 +36,11 @@ use Drupal\Core\StringTranslation\TranslationInterface;
  *
  * # An array of callables used to generate dynamic permissions.
  * permission_callbacks:
- *   # The callable should return an associative array with one or more
- *   # permissions. Each permission array can use the same keys as the example
- *   # permission defined above. Additionally, a dependencies key is supported.
- *   # For more information about permission dependencies see
- *   # PermissionHandlerInterface::getPermissions().
+ *   # Each item in the array should return an associative array with one or
+ *   # more permissions following the same keys as the permission defined above.
  *   - Drupal\filter\FilterPermissions::permissions
  * @endcode
  *
- * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
  * @see filter.permissions.yml
  * @see \Drupal\filter\FilterPermissions
  * @see user_api
@@ -134,10 +130,10 @@ class PermissionHandler implements PermissionHandlerInterface {
    * Builds all permissions provided by .permissions.yml files.
    *
    * @return array[]
-   *   An array with the same structure as
-   *   PermissionHandlerInterface::getPermissions().
-   *
-   * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
+   *   Each return permission is an array with the following keys:
+   *   - title: The title of the permission.
+   *   - description: The description of the permission, defaults to NULL.
+   *   - provider: The provider of the permission.
    */
   protected function buildPermissionsYaml() {
     $all_permissions = [];
@@ -197,10 +193,10 @@ class PermissionHandler implements PermissionHandlerInterface {
    *   The permissions to be sorted.
    *
    * @return array[]
-   *   An array with the same structure as
-   *   PermissionHandlerInterface::getPermissions().
-   *
-   * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
+   *   Each return permission is an array with the following keys:
+   *   - title: The title of the permission.
+   *   - description: The description of the permission, defaults to NULL.
+   *   - provider: The provider of the permission.
    */
   protected function sortPermissions(array $all_permissions = []) {
     // Get a list of all the modules providing permissions and sort by
@@ -209,10 +205,10 @@ class PermissionHandler implements PermissionHandlerInterface {
 
     uasort($all_permissions, function (array $permission_a, array $permission_b) use ($modules) {
       if ($modules[$permission_a['provider']] == $modules[$permission_b['provider']]) {
-        return $permission_a['title'] <=> $permission_b['title'];
+        return $permission_a['title'] > $permission_b['title'];
       }
       else {
-        return $modules[$permission_a['provider']] <=> $modules[$permission_b['provider']];
+        return $modules[$permission_a['provider']] > $modules[$permission_b['provider']];
       }
     });
     return $all_permissions;

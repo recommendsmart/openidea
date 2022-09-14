@@ -73,7 +73,9 @@
    */
   const handleFragmentLinkClickOrHashChange = (e, $target) => {
     $target.parents('.js-vertical-tabs-pane').each((index, pane) => {
-      $(pane).data('verticalTab').focus();
+      $(pane)
+        .data('verticalTab')
+        .focus();
     });
   };
 
@@ -96,14 +98,18 @@
       /**
        * Binds a listener to handle fragment link clicks and URL hash changes.
        */
-      $(once('vertical-tabs-fragments', 'body')).on(
-        'formFragmentLinkClickOrHashChange.verticalTabs',
-        handleFragmentLinkClickOrHashChange,
-      );
+      $('body')
+        .once('vertical-tabs-fragments')
+        .on(
+          'formFragmentLinkClickOrHashChange.verticalTabs',
+          handleFragmentLinkClickOrHashChange,
+        );
 
-      once('vertical-tabs', '[data-vertical-tabs-panes]', context).forEach(
-        (panes) => {
-          const $this = $(panes).addClass('vertical-tabs__items--processed');
+      $(context)
+        .find('[data-vertical-tabs-panes]')
+        .once('vertical-tabs')
+        .each(function initializeVerticalTabs() {
+          const $this = $(this).addClass('vertical-tabs__items--processed');
           const focusID = $this.find(':hidden.vertical-tabs__active-tab').val();
           let tabFocus;
 
@@ -160,8 +166,7 @@
           if (tabFocus.length) {
             tabFocus.data('verticalTab').focus(false);
           }
-        },
-      );
+        });
     },
   };
 
@@ -189,12 +194,16 @@
 
     this.link.attr('href', `#${settings.details.attr('id')}`);
 
-    this.link.on('click', (event) => {
+    this.detailsSummaryDescription = $(
+      Drupal.theme.verticalTabDetailsDescription(),
+    ).appendTo(this.details.find('> summary'));
+
+    this.link.on('click', event => {
       event.preventDefault();
       self.focus();
     });
 
-    this.details.on('toggle', (event) => {
+    this.details.on('toggle', event => {
       // We will control this by summary clicks.
       event.preventDefault();
     });
@@ -202,7 +211,7 @@
     // Open the tab for every browser, with or without details support.
     this.details
       .find('> summary')
-      .on('click', (event) => {
+      .on('click', event => {
         event.preventDefault();
         self.details.attr('open', true);
         if (self.details.hasClass('collapse-processed')) {
@@ -213,25 +222,31 @@
           self.focus();
         }
       })
-      .on('keydown', (event) => {
+      .on('keydown', event => {
         if (event.keyCode === 13) {
           // Set focus on the first input field of the current visible details/tab
           // pane.
           setTimeout(() => {
-            self.details.find(':input:visible:enabled').eq(0).trigger('focus');
+            self.details
+              .find(':input:visible:enabled')
+              .eq(0)
+              .trigger('focus');
           }, 10);
         }
       });
 
     // Keyboard events added:
     // Pressing the Enter key will open the tab pane.
-    this.link.on('keydown', (event) => {
+    this.link.on('keydown', event => {
       if (event.keyCode === 13) {
         event.preventDefault();
         self.focus();
         // Set focus on the first input field of the current visible details/tab
         // pane.
-        self.details.find(':input:visible:enabled').eq(0).trigger('focus');
+        self.details
+          .find(':input:visible:enabled')
+          .eq(0)
+          .trigger('focus');
       }
     });
 
@@ -255,10 +270,13 @@
         .each(function closeOtherTabs() {
           const tab = $(this).data('verticalTab');
           if (tab.details.attr('open')) {
-            tab.details.removeAttr('open').find('> summary').attr({
-              'aria-expanded': 'false',
-              'aria-pressed': 'false',
-            });
+            tab.details
+              .removeAttr('open')
+              .find('> summary')
+              .attr({
+                'aria-expanded': 'false',
+                'aria-pressed': 'false',
+              });
             tab.item.removeClass('is-selected');
           }
         })
@@ -297,6 +315,7 @@
      */
     updateSummary() {
       const summary = this.details.drupalGetSummary();
+      this.detailsSummaryDescription.html(summary);
       this.summary.html(summary);
     },
 
@@ -391,7 +410,7 @@
    *       (jQuery version)
    *   - summary: The jQuery element that contains the tab summary
    */
-  Drupal.theme.verticalTab = (settings) => {
+  Drupal.theme.verticalTab = settings => {
     const tab = {};
     tab.item = $(
       '<li class="vertical-tabs__menu-item" tabindex="-1"></li>',
@@ -430,6 +449,15 @@
    */
   Drupal.theme.verticalTabListWrapper = () =>
     '<ul class="vertical-tabs__menu"></ul>';
+
+  /**
+   * The wrapper of the details summary message added to the summary element.
+   *
+   * @return {string}
+   *   A string representing the DOM fragment.
+   */
+  Drupal.theme.verticalTabDetailsDescription = () =>
+    '<span class="vertical-tabs__details-summary-summary"></span>';
 
   /**
    * Themes the active vertical tab menu item message.

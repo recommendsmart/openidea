@@ -6,7 +6,6 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerResolverInterface;
-use Drupal\Core\Routing\PreloadableRouteProviderInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Template\Attribute;
 
@@ -96,7 +95,7 @@ class MenuLinkTree implements MenuLinkTreeInterface {
   public function load($menu_name, MenuTreeParameters $parameters) {
     $data = $this->treeStorage->loadTreeData($menu_name, $parameters);
     // Pre-load all the route objects in the tree for access checks.
-    if ($data['route_names'] && $this->routeProvider instanceof PreloadableRouteProviderInterface) {
+    if ($data['route_names']) {
       $this->routeProvider->getRoutesByNames($data['route_names']);
     }
     return $this->createInstances($data['tree']);
@@ -171,8 +170,7 @@ class MenuLinkTree implements MenuLinkTreeInterface {
     $tree_cacheability->applyTo($build);
 
     if ($items) {
-      // Make sure Drupal\Core\Render\Element::children() does not re-order the
-      // links.
+      // Make sure drupal_render() does not re-order the links.
       $build['#sorted'] = TRUE;
       // Get the menu name from the last link.
       $item = end($items);

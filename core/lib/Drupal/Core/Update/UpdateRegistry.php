@@ -123,15 +123,6 @@ class UpdateRegistry {
             if (array_search($function_name, $removed) !== FALSE) {
               throw new RemovedPostUpdateNameException(sprintf('The following update is specified as removed in hook_removed_post_updates() but still exists in the code base: %s', $function_name));
             }
-            // Locate the matched function and grab its location details,
-            // this should be coming from a modules .post_update.php file.
-            $func = new \ReflectionFunction($function_name);
-            $function_location = $func->getFileName();
-            $function_file_name = basename($function_location);
-            $filename = $matches['module'] . ".{$this->updateType}.php";
-            if ($function_file_name !== $filename) {
-              continue;
-            }
           }
           $updates[] = $function_name;
         }
@@ -214,7 +205,7 @@ class UpdateRegistry {
 
     $ret = [];
     foreach ($functions as $function) {
-      [$module, $update] = explode("_{$this->updateType}_", $function);
+      list($module, $update) = explode("_{$this->updateType}_", $function);
       // The description for an update comes from its Doxygen.
       $func = new \ReflectionFunction($function);
       $description = trim(str_replace(["\n", '*', '/'], '', $func->getDocComment()), ' ');
@@ -256,7 +247,7 @@ class UpdateRegistry {
     $all_functions = $this->getAvailableUpdateFunctions();
 
     return array_filter($all_functions, function ($function_name) use ($module_name) {
-      [$function_module_name] = explode("_{$this->updateType}_", $function_name);
+      list($function_module_name,) = explode("_{$this->updateType}_", $function_name);
       return $function_module_name === $module_name;
     });
   }

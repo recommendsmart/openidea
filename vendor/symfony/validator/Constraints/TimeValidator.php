@@ -14,21 +14,26 @@ namespace Symfony\Component\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
-use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 /**
  * @author Bernhard Schussek <bschussek@gmail.com>
  */
 class TimeValidator extends ConstraintValidator
 {
-    public const PATTERN = '/^(\d{2}):(\d{2}):(\d{2})$/';
+    const PATTERN = '/^(\d{2}):(\d{2}):(\d{2})$/';
 
     /**
      * Checks whether a time is valid.
      *
+     * @param int $hour   The hour
+     * @param int $minute The minute
+     * @param int $second The second
+     *
+     * @return bool Whether the time is valid
+     *
      * @internal
      */
-    public static function checkTime(int $hour, int $minute, float $second): bool
+    public static function checkTime($hour, $minute, $second)
     {
         return $hour >= 0 && $hour < 24 && $minute >= 0 && $minute < 60 && $second >= 0 && $second < 60;
     }
@@ -39,21 +44,15 @@ class TimeValidator extends ConstraintValidator
     public function validate($value, Constraint $constraint)
     {
         if (!$constraint instanceof Time) {
-            throw new UnexpectedTypeException($constraint, Time::class);
+            throw new UnexpectedTypeException($constraint, __NAMESPACE__.'\Time');
         }
 
-        if (null === $value || '' === $value) {
-            return;
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            @trigger_error(sprintf('Validating a \\DateTimeInterface with "%s" is deprecated since version 4.2. Use "%s" instead or remove the constraint if the underlying model is already type hinted to \\DateTimeInterface.', Time::class, Type::class), \E_USER_DEPRECATED);
-
+        if (null === $value || '' === $value || $value instanceof \DateTimeInterface) {
             return;
         }
 
         if (!is_scalar($value) && !(\is_object($value) && method_exists($value, '__toString'))) {
-            throw new UnexpectedValueException($value, 'string');
+            throw new UnexpectedTypeException($value, 'string');
         }
 
         $value = (string) $value;

@@ -18,7 +18,7 @@ class NodePreviewAnonymousTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class NodePreviewAnonymousTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // Create Basic page node type.
     $this->drupalCreateContentType([
@@ -56,11 +56,10 @@ class NodePreviewAnonymousTest extends BrowserTestBase {
       $title_key => $this->randomMachineName(),
       $body_key => $this->randomMachineName(),
     ];
-    $this->drupalGet('node/add/page');
-    $this->submitForm($edit, 'Preview');
+    $this->drupalPostForm('node/add/page', $edit, t('Preview'));
 
     // Check that the preview is displaying the title, body and term.
-    $this->assertSession()->linkExists('Back to content editing');
+    $this->assertSession()->linkExists(t('Back to content editing'));
     $this->assertSession()->responseContains($edit[$body_key]);
     $this->assertSession()->titleEquals($edit[$title_key] . ' | Drupal');
   }

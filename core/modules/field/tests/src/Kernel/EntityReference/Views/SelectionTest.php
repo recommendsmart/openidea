@@ -51,7 +51,7 @@ class SelectionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installConfig(['entity_reference_test', 'filter']);
@@ -142,7 +142,7 @@ class SelectionTest extends KernelTestBase {
       3 => '<span class="views-field views-field-title"><span class="field-content">' . Html::escape($this->nodes[3]->label()) . '</span></span>',
     ];
 
-    $this->assertEquals($expected, $filtered_rendered_results_formatted, 'Anchor tag stripping has failed.');
+    $this->assertEqual($filtered_rendered_results_formatted, $expected, 'Anchor tag stripping has failed.');
   }
 
   /**
@@ -150,10 +150,8 @@ class SelectionTest extends KernelTestBase {
    *
    * @param array $result
    *   Query results keyed by node type and nid.
-   *
-   * @internal
    */
-  protected function assertResults(array $result): void {
+  protected function assertResults(array $result) {
     foreach ($result as $node_type => $values) {
       foreach ($values as $nid => $label) {
         $this->assertSame($node_type, $this->nodes[$nid]->bundle());

@@ -15,12 +15,12 @@ class MigrateUserPictureEntityDisplayTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['file', 'image'];
+  public static $modules = ['file', 'image'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('file');
     $this->executeMigrations([
@@ -35,9 +35,9 @@ class MigrateUserPictureEntityDisplayTest extends MigrateDrupal7TestBase {
    */
   public function testUserPictureEntityDisplay() {
     $component = EntityViewDisplay::load('user.user.default')->getComponent('user_picture');
-    $this->assertSame('image', $component['type']);
-    $this->assertSame('', $component['settings']['image_style']);
-    $this->assertSame('content', $component['settings']['image_link']);
+    $this->assertIdentical('image', $component['type']);
+    $this->assertIdentical('', $component['settings']['image_style']);
+    $this->assertIdentical('content', $component['settings']['image_link']);
   }
 
 }

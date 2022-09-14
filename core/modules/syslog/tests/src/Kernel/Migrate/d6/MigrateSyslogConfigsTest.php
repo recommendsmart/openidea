@@ -17,12 +17,12 @@ class MigrateSyslogConfigsTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['syslog'];
+  public static $modules = ['syslog'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('d6_syslog_settings');
   }
@@ -32,8 +32,8 @@ class MigrateSyslogConfigsTest extends MigrateDrupal6TestBase {
    */
   public function testSyslogSettings() {
     $config = $this->config('syslog.settings');
-    $this->assertSame('drupal', $config->get('identity'));
-    $this->assertSame(128, $config->get('facility'));
+    $this->assertIdentical('drupal', $config->get('identity'));
+    $this->assertIdentical(128, $config->get('facility'));
     $this->assertConfigSchema(\Drupal::service('config.typed'), 'syslog.settings', $config->get());
   }
 

@@ -116,16 +116,18 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *   The messenger service.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
-   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository
-   *   The installed entity definition repository service.
    */
-  public function __construct(EntityTypeInterface $entity_type, LanguageManagerInterface $language_manager, ContentTranslationManagerInterface $manager, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user, MessengerInterface $messenger, DateFormatterInterface $date_formatter, EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository) {
+  public function __construct(EntityTypeInterface $entity_type, LanguageManagerInterface $language_manager, ContentTranslationManagerInterface $manager, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user, MessengerInterface $messenger, DateFormatterInterface $date_formatter, EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository = NULL) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
     $this->languageManager = $language_manager;
     $this->manager = $manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
+    if (!$entity_last_installed_schema_repository) {
+      @trigger_error('Calling ContentTranslationHandler::__construct() with the $entity_last_installed_schema_repository argument is supported in drupal:8.7.0 and will be required before drupal:9.0.0. See https://www.drupal.org/node/2549139.', E_USER_DEPRECATED);
+      $entity_last_installed_schema_repository = \Drupal::service('entity.last_installed_schema.repository');
+    }
     $this->fieldStorageDefinitions = $entity_last_installed_schema_repository->getLastInstalledFieldStorageDefinitions($this->entityTypeId);
     $this->messenger = $messenger;
     $this->dateFormatter = $date_formatter;
@@ -176,7 +178,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
         ->setSetting('target_type', 'user')
         ->setSetting('handler', 'default')
         ->setRevisionable(TRUE)
-        ->setDefaultValueCallback(static::class . '::getDefaultOwnerId')
+        ->setDefaultValueCallback(get_class($this) . '::getDefaultOwnerId')
         ->setTranslatable(TRUE);
     }
 
@@ -293,11 +295,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
     if (!$this->currentUser->hasPermission('translate any entity') && $permission_granularity = $entity_type->getPermissionGranularity()) {
       $translate_permission = $this->currentUser->hasPermission($permission_granularity == 'bundle' ? "translate {$entity->bundle()} {$entity->getEntityTypeId()}" : "translate {$entity->getEntityTypeId()}");
     }
-    $access = AccessResult::allowedIf(($translate_permission && $this->currentUser->hasPermission("$op content translations")))->cachePerPermissions();
-    if (!$access->isAllowed()) {
-      return AccessResult::allowedIfHasPermission($this->currentUser, 'translate editable entities')->andIf($entity->access('update', $this->currentUser, TRUE));
-    }
-    return $access;
+    return AccessResult::allowedIf($translate_permission && $this->currentUser->hasPermission("$op content translations"))->cachePerPermissions();
   }
 
   /**
@@ -669,10 +667,6 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *   The type of the entity.
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity whose form is being built.
-   * @param array $form
-   *   A nested array form elements comprising the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
    *
    * @see \Drupal\content_translation\ContentTranslationHandler::entityFormAlter()
    */
@@ -764,7 +758,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
     $form_object = $form_state->getFormObject();
     $entity = $form_object->getEntity();
     if (count($entity->getTranslationLanguages()) > 1) {
-      $this->messenger->addWarning(t('This will delete all the translations of %label.', ['%label' => $entity->label() ?? $entity->id()]));
+      $this->messenger->addWarning(t('This will delete all the translations of %label.', ['%label' => $entity->label()]));
     }
   }
 

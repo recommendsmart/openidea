@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\media\FunctionalJavascript;
 
-use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -27,7 +26,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['media_test_oembed'];
+  public static $modules = ['media_test_oembed'];
 
   /**
    * {@inheritdoc}
@@ -37,7 +36,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->lockHttpClientToFixtures();
     $this->hijackProviderEndpoints();
@@ -50,13 +49,6 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
    * increases the performance of this test.
    */
   public function testMediaSources() {
-    // This test currently frequently causes the SQLite database to lock, so
-    // skip the test on SQLite until the issue can be resolved.
-    // @todo https://www.drupal.org/project/drupal/issues/3273626
-    if (Database::getConnection()->driver() === 'sqlite') {
-      $this->markTestSkipped('Test frequently causes a locked database on SQLite');
-    }
-
     $storage = FieldStorageConfig::create([
       'entity_type' => 'node',
       'field_name' => 'field_related_media',
@@ -101,7 +93,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
   }
 
   /**
-   * Tests the standard profile configuration for media type 'audio'.
+   * Test the standard profile configuration for media type 'audio'.
    */
   protected function audioTest() {
     $assert_session = $this->assertSession();
@@ -132,7 +124,6 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
       ->get('entity_type.manager')
       ->getStorage('media')
       ->getQuery()
-      ->accessCheck(FALSE)
       ->sort('mid', 'DESC')
       ->execute();
     $audio_media_id = reset($audio_media_id);
@@ -161,9 +152,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
     // Assert the audio file is present inside the media element and that its
     // src attribute matches the audio file.
     $audio_element = $assert_session->elementExists('css', 'article.media--type-audio .field--name-field-media-audio-file audio > source');
-    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
-    $file_url_generator = \Drupal::service('file_url_generator');
-    $expected_audio_src = $file_url_generator->generateString(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename));
+    $expected_audio_src = file_url_transform_relative(file_create_url(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename)));
     $this->assertSame($expected_audio_src, $audio_element->getAttribute('src'));
 
     // Assert the media name is updated through the field mapping when changing
@@ -190,12 +179,12 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
     // Assert the audio file is present inside the media element and that its
     // src attribute matches the updated audio file.
     $audio_element = $assert_session->elementExists('css', 'article.media--type-audio .field--name-field-media-audio-file audio > source');
-    $expected_audio_src = $file_url_generator->generateString(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename_updated));
+    $expected_audio_src = file_url_transform_relative(file_create_url(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename_updated)));
     $this->assertSame($expected_audio_src, $audio_element->getAttribute('src'));
   }
 
   /**
-   * Tests the standard profile configuration for media type 'image'.
+   * Test the standard profile configuration for media type 'image'.
    */
   protected function imageTest() {
     $assert_session = $this->assertSession();
@@ -220,7 +209,6 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
       ->get('entity_type.manager')
       ->getStorage('media')
       ->getQuery()
-      ->accessCheck(FALSE)
       ->sort('mid', 'DESC')
       ->execute();
     $image_media_id = reset($image_media_id);
@@ -250,11 +238,8 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
     // src attribute uses the large image style, the label is visually hidden,
     // and there is no link to the image file.
     $image_element = $assert_session->elementExists('css', 'article.media--type-image img');
-    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
-    $file_url_generator = \Drupal::service('file_url_generator');
-    $expected_image_src = $file_url_generator->generateString(\Drupal::token()->replace('public://styles/large/public/[date:custom:Y]-[date:custom:m]/' . $image_media_name));
-
-    $this->assertStringContainsString($expected_image_src, $image_element->getAttribute('src'));
+    $expected_image_src = file_url_transform_relative(file_create_url(\Drupal::token()->replace('public://styles/large/public/[date:custom:Y]-[date:custom:m]/' . $image_media_name)));
+    $this->assertContains($expected_image_src, $image_element->getAttribute('src'));
     $assert_session->elementExists('css', '.field--name-field-media-image .field__label.visually-hidden');
     $assert_session->elementNotExists('css', '.field--name-field-media-image a');
 
@@ -285,14 +270,14 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
     // src attribute uses the large image style, the label is visually hidden,
     // and there is no link to the image file.
     $image_element = $assert_session->elementExists('css', 'article.media--type-image img');
-    $expected_image_src = $file_url_generator->generateString(\Drupal::token()->replace('public://styles/large/public/[date:custom:Y]-[date:custom:m]/' . $image_media_name_updated));
-    $this->assertStringContainsString($expected_image_src, $image_element->getAttribute('src'));
+    $expected_image_src = file_url_transform_relative(file_create_url(\Drupal::token()->replace('public://styles/large/public/[date:custom:Y]-[date:custom:m]/' . $image_media_name_updated)));
+    $this->assertContains($expected_image_src, $image_element->getAttribute('src'));
     $assert_session->elementExists('css', '.field--name-field-media-image .field__label.visually-hidden');
     $assert_session->elementNotExists('css', '.field--name-field-media-image a');
   }
 
   /**
-   * Tests the standard profile configuration for media type 'document'.
+   * Test the standard profile configuration for media type 'document'.
    */
   protected function documentTest() {
     $assert_session = $this->assertSession();
@@ -323,7 +308,6 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
       ->get('entity_type.manager')
       ->getStorage('media')
       ->getQuery()
-      ->accessCheck(FALSE)
       ->sort('mid', 'DESC')
       ->execute();
     $file_media_id = reset($file_media_id);
@@ -382,7 +366,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
   }
 
   /**
-   * Tests the standard profile configuration for media type 'remote_video'.
+   * Test the standard profile configuration for media type 'remote_video'.
    */
   protected function remoteVideoTest() {
     $assert_session = $this->assertSession();
@@ -411,7 +395,6 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
       ->get('entity_type.manager')
       ->getStorage('media')
       ->getQuery()
-      ->accessCheck(FALSE)
       ->sort('mid', 'DESC')
       ->execute();
     $remote_video_media_id = reset($remote_video_media_id);
@@ -477,7 +460,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
   }
 
   /**
-   * Tests the standard profile configuration for media type 'video'.
+   * Test the standard profile configuration for media type 'video'.
    */
   protected function videoTest() {
     $assert_session = $this->assertSession();
@@ -508,7 +491,6 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
       ->get('entity_type.manager')
       ->getStorage('media')
       ->getQuery()
-      ->accessCheck(FALSE)
       ->sort('mid', 'DESC')
       ->execute();
     $video_media_id = reset($video_media_id);
@@ -537,9 +519,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
     // Assert the video element is present inside the media element and that its
     // src attribute matches the video file.
     $video_element = $assert_session->elementExists('css', 'article.media--type-video .field--name-field-media-video-file video > source');
-    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
-    $file_url_generator = \Drupal::service('file_url_generator');
-    $expected_video_src = $file_url_generator->generateString(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename));
+    $expected_video_src = file_url_transform_relative(file_create_url(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename)));
     $this->assertSame($expected_video_src, $video_element->getAttribute('src'));
 
     // Assert the media name is updated through the field mapping when changing
@@ -566,7 +546,7 @@ class MediaStandardProfileTest extends MediaJavascriptTestBase {
     // Assert the video element is present inside the media element and that its
     // src attribute matches the updated video file.
     $video_element = $assert_session->elementExists('css', 'article.media--type-video .field--name-field-media-video-file video > source');
-    $expected_video_src = $file_url_generator->generateString(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename_updated));
+    $expected_video_src = file_url_transform_relative(file_create_url(\Drupal::token()->replace('public://[date:custom:Y]-[date:custom:m]/' . $test_filename_updated)));
     $this->assertSame($expected_video_src, $video_element->getAttribute('src'));
   }
 

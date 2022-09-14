@@ -5,9 +5,9 @@ namespace Drupal\user\Controller;
 use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Flood\FloodInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\user\UserAuthInterface;
-use Drupal\user\UserFloodControlInterface;
 use Drupal\user\UserInterface;
 use Drupal\user\UserStorageInterface;
 use Psr\Log\LoggerInterface;
@@ -39,11 +39,11 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
   const LOGGED_OUT = 0;
 
   /**
-   * The user flood control service.
+   * The flood controller.
    *
-   * @var \Drupal\user\UserFloodControl
+   * @var \Drupal\Core\Flood\FloodInterface
    */
-  protected $userFloodControl;
+  protected $flood;
 
   /**
    * The user storage.
@@ -97,8 +97,8 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
   /**
    * Constructs a new UserAuthenticationController object.
    *
-   * @param \Drupal\user\UserFloodControlInterface $user_flood_control
-   *   The user flood control service.
+   * @param \Drupal\Core\Flood\FloodInterface $flood
+   *   The flood controller.
    * @param \Drupal\user\UserStorageInterface $user_storage
    *   The user storage.
    * @param \Drupal\Core\Access\CsrfTokenGenerator $csrf_token
@@ -114,12 +114,8 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct($user_flood_control, UserStorageInterface $user_storage, CsrfTokenGenerator $csrf_token, UserAuthInterface $user_auth, RouteProviderInterface $route_provider, Serializer $serializer, array $serializer_formats, LoggerInterface $logger) {
-    if (!$user_flood_control instanceof UserFloodControlInterface) {
-      @trigger_error('Passing the flood service to ' . __METHOD__ . ' is deprecated in drupal:9.1.0 and is replaced by user.flood_control in drupal:10.0.0. See https://www.drupal.org/node/3067148', E_USER_DEPRECATED);
-      $user_flood_control = \Drupal::service('user.flood_control');
-    }
-    $this->userFloodControl = $user_flood_control;
+  public function __construct(FloodInterface $flood, UserStorageInterface $user_storage, CsrfTokenGenerator $csrf_token, UserAuthInterface $user_auth, RouteProviderInterface $route_provider, Serializer $serializer, array $serializer_formats, LoggerInterface $logger) {
+    $this->flood = $flood;
     $this->userStorage = $user_storage;
     $this->csrfToken = $csrf_token;
     $this->userAuth = $user_auth;
@@ -144,7 +140,7 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
     }
 
     return new static(
-      $container->get('user.flood_control'),
+      $container->get('flood'),
       $container->get('entity_type.manager')->getStorage('user'),
       $container->get('csrf_token'),
       $container->get('user.auth'),
@@ -187,7 +183,7 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
     }
 
     if ($uid = $this->userAuth->authenticate($credentials['name'], $credentials['pass'])) {
-      $this->userFloodControl->clear('user.http_login', $this->getLoginFloodIdentifier($request, $credentials['name']));
+      $this->flood->clear('user.http_login', $this->getLoginFloodIdentifier($request, $credentials['name']));
       /** @var \Drupal\user\UserInterface $user */
       $user = $this->userStorage->load($uid);
       $this->userLoginFinalize($user);
@@ -216,10 +212,10 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
 
     $flood_config = $this->config('user.flood');
     if ($identifier = $this->getLoginFloodIdentifier($request, $credentials['name'])) {
-      $this->userFloodControl->register('user.http_login', $flood_config->get('user_window'), $identifier);
+      $this->flood->register('user.http_login', $flood_config->get('user_window'), $identifier);
     }
     // Always register an IP-based failed login event.
-    $this->userFloodControl->register('user.failed_login_ip', $flood_config->get('ip_window'));
+    $this->flood->register('user.failed_login_ip', $flood_config->get('ip_window'));
     throw new BadRequestHttpException('Sorry, unrecognized username or password.');
   }
 
@@ -259,7 +255,7 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
       }
 
       // Send the password reset email.
-      $mail = _user_mail_notify('password_reset', $account);
+      $mail = _user_mail_notify('password_reset', $account, $account->getPreferredLangcode());
       if (empty($mail)) {
         throw new BadRequestHttpException('Unable to send email. Contact the site administrator if the problem persists.');
       }
@@ -358,14 +354,14 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
    */
   protected function floodControl(Request $request, $username) {
     $flood_config = $this->config('user.flood');
-    if (!$this->userFloodControl->isAllowed('user.failed_login_ip', $flood_config->get('ip_limit'), $flood_config->get('ip_window'))) {
+    if (!$this->flood->isAllowed('user.failed_login_ip', $flood_config->get('ip_limit'), $flood_config->get('ip_window'))) {
       throw new AccessDeniedHttpException('Access is blocked because of IP based flood prevention.', NULL, Response::HTTP_TOO_MANY_REQUESTS);
     }
 
     if ($identifier = $this->getLoginFloodIdentifier($request, $username)) {
       // Don't allow login if the limit for this user has been reached.
       // Default is to allow 5 failed attempts every 6 hours.
-      if (!$this->userFloodControl->isAllowed('user.http_login', $flood_config->get('user_limit'), $flood_config->get('user_window'), $identifier)) {
+      if (!$this->flood->isAllowed('user.http_login', $flood_config->get('user_limit'), $flood_config->get('user_window'), $identifier)) {
         if ($flood_config->get('uid_only')) {
           $error_message = sprintf('There have been more than %s failed login attempts for this account. It is temporarily blocked. Try again later or request a new password.', $flood_config->get('user_limit'));
         }

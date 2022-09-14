@@ -2,7 +2,6 @@
 
 namespace Drupal\rest;
 
-use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
@@ -58,15 +57,7 @@ class RestPermissions implements ContainerInjectionInterface {
     $resource_configs = $this->resourceConfigStorage->loadMultiple();
     foreach ($resource_configs as $resource_config) {
       $plugin = $resource_config->getResourcePlugin();
-
-      // Add the rest resource configuration entity as a dependency to the
-      // permissions.
-      $permissions += array_map(function (array $permission_info) use ($resource_config) {
-        $merge_info['dependencies'][$resource_config->getConfigDependencyKey()] = [
-          $resource_config->getConfigDependencyName(),
-        ];
-        return NestedArray::mergeDeep($permission_info, $merge_info);
-      }, $plugin->permissions());
+      $permissions = array_merge($permissions, $plugin->permissions());
     }
     return $permissions;
   }

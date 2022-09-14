@@ -18,7 +18,7 @@ class WorkflowUiTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['workflows', 'workflow_type_test', 'block'];
+  public static $modules = ['workflows', 'workflow_type_test', 'block'];
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class WorkflowUiTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // We're testing local actions.
     $this->drupalPlaceBlock('local_actions_block');
@@ -39,7 +39,7 @@ class WorkflowUiTest extends BrowserTestBase {
    */
   public function testAccess() {
     // Create a minimal workflow for testing.
-    $workflow = Workflow::create(['id' => 'test', 'type' => 'workflow_type_test', 'label' => 'Test']);
+    $workflow = Workflow::create(['id' => 'test', 'type' => 'workflow_type_test']);
     $workflow
       ->getTypePlugin()
       ->addState('draft', 'Draft')
@@ -86,7 +86,7 @@ class WorkflowUiTest extends BrowserTestBase {
   }
 
   /**
-   * Tests the machine name validation of the state add form.
+   * Test the machine name validation of the state add form.
    */
   public function testStateMachineNameValidation() {
     Workflow::create([
@@ -96,16 +96,14 @@ class WorkflowUiTest extends BrowserTestBase {
 
     $this->drupalLogin($this->createUser(['administer workflows']));
 
-    $this->drupalGet('admin/config/workflow/workflows/manage/test_workflow/add_state');
-    $this->submitForm([
+    $this->drupalPostForm('admin/config/workflow/workflows/manage/test_workflow/add_state', [
       'label' => 'Test State',
       'id' => 'Invalid ID',
     ], 'Save');
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('The machine-readable name must contain only lowercase letters, numbers, and underscores.');
 
-    $this->drupalGet('admin/config/workflow/workflows/manage/test_workflow/add_transition');
-    $this->submitForm([
+    $this->drupalPostForm('admin/config/workflow/workflows/manage/test_workflow/add_transition', [
       'label' => 'Test Transition',
       'id' => 'Invalid ID',
     ], 'Save');
@@ -285,7 +283,7 @@ class WorkflowUiTest extends BrowserTestBase {
   }
 
   /**
-   * Tests the workflow configuration form.
+   * Test the workflow configuration form.
    */
   public function testWorkflowConfigurationForm() {
     $workflow = Workflow::create(['id' => 'test', 'type' => 'workflow_type_complex_test', 'label' => 'Test']);
@@ -308,7 +306,7 @@ class WorkflowUiTest extends BrowserTestBase {
   }
 
   /**
-   * Tests a workflow, state, and transition can have a numeric ID and label.
+   * Test a workflow, state, and transition can have a numeric ID and label.
    */
   public function testNumericIds() {
     $this->drupalLogin($this->createUser(['administer workflows']));
@@ -337,7 +335,7 @@ class WorkflowUiTest extends BrowserTestBase {
   }
 
   /**
-   * Tests the sorting of states and transitions by weight and label.
+   * Test the sorting of states and transitions by weight and label.
    */
   public function testSorting() {
     $workflow = Workflow::create(['id' => 'test', 'type' => 'workflow_type_complex_test', 'label' => 'Test']);
@@ -345,16 +343,16 @@ class WorkflowUiTest extends BrowserTestBase {
       ->getTypePlugin()
       ->setConfiguration([
         'states' => [
-          'two_a' => [
-            'label' => 'two a',
+          'twoa' => [
+            'label' => 'twoa',
             'weight' => 2,
           ],
           'three' => [
             'label' => 'three',
             'weight' => 3,
           ],
-          'two_b' => [
-            'label' => 'two b',
+          'twob' => [
+            'label' => 'twob',
             'weight' => 2,
           ],
           'one' => [
@@ -369,10 +367,10 @@ class WorkflowUiTest extends BrowserTestBase {
             'to' => 'three',
             'weight' => 3,
           ],
-          'two_a' => [
-            'label' => 'two a',
-            'from' => ['two_a'],
-            'to' => 'two_a',
+          'twoa' => [
+            'label' => 'twoa',
+            'from' => ['twoa'],
+            'to' => 'twoa',
             'weight' => 2,
           ],
           'one' => [
@@ -381,10 +379,10 @@ class WorkflowUiTest extends BrowserTestBase {
             'to' => 'one',
             'weight' => 1,
           ],
-          'two_b' => [
-            'label' => 'two b',
-            'from' => ['two_b'],
-            'to' => 'two_b',
+          'twob' => [
+            'label' => 'twob',
+            'from' => ['twob'],
+            'to' => 'twob',
             'weight' => 2,
           ],
         ],
@@ -393,12 +391,12 @@ class WorkflowUiTest extends BrowserTestBase {
 
     $this->drupalLogin($this->createUser(['administer workflows']));
     $this->drupalGet('admin/config/workflow/workflows/manage/test');
-    $expected_states = ['one', 'two a', 'two b', 'three'];
+    $expected_states = ['one', 'twoa', 'twob', 'three'];
     $elements = $this->xpath('//details[@id="edit-states-container"]//table/tbody/tr');
     foreach ($elements as $key => $element) {
       $this->assertEquals($expected_states[$key], $element->find('xpath', 'td')->getText());
     }
-    $expected_transitions = ['one', 'two a', 'two b', 'three'];
+    $expected_transitions = ['one', 'twoa', 'twob', 'three'];
     $elements = $this->xpath('//details[@id="edit-transitions-container"]//table/tbody/tr');
     foreach ($elements as $key => $element) {
       $this->assertEquals($expected_transitions[$key], $element->find('xpath', 'td')->getText());

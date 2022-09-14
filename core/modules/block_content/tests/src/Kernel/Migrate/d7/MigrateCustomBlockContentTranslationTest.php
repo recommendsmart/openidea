@@ -15,18 +15,20 @@ class MigrateCustomBlockContentTranslationTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'block_content',
     'content_translation',
     'filter',
     'language',
     'text',
+    // Required for translation migrations.
+    'migrate_drupal_multilingual',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('block_content');
     $this->installConfig(['block_content']);

@@ -5,7 +5,7 @@ namespace Drupal\Tests\Core\Path;
 use Drupal\Core\ParamConverter\ParamNotConvertedException;
 use Drupal\Core\Path\PathValidator;
 use Drupal\Tests\UnitTestCase;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -54,7 +54,7 @@ class PathValidatorTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->accessAwareRouter = $this->createMock('Drupal\Core\Routing\AccessAwareRouterInterface');
@@ -297,7 +297,7 @@ class PathValidatorTest extends UnitTestCase {
   }
 
   /**
-   * Tests the isValid() method with a non-existent path.
+   * Tests the isValid() method with a not existing path.
    *
    * @covers ::isValid
    */

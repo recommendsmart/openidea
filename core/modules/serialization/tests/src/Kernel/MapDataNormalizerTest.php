@@ -14,7 +14,7 @@ class MapDataNormalizerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'serialization'];
+  public static $modules = ['system', 'serialization'];
 
   /**
    * The serializer service.
@@ -33,7 +33,7 @@ class MapDataNormalizerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->serializer = \Drupal::service('serializer');
     $this->typedDataManager = \Drupal::typedDataManager();
@@ -59,7 +59,7 @@ class MapDataNormalizerTest extends KernelTestBase {
   }
 
   /**
-   * Tests whether map data with properties can be normalized.
+   * Test whether map data with properties can be normalized.
    */
   public function testMapWithPropertiesNormalize() {
     $typed_data = $this->buildExampleTypedDataWithProperties();

@@ -4,11 +4,10 @@ tour:
     js/tour.js: {}
   dependencies:
     - core/jquery
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/drupal
     - core/backbone
-    - core/shepherd
+    - core/jquery.joyride
     - tour/tour-styling
 
 tour-styling:

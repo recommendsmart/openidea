@@ -2,7 +2,7 @@
 
 namespace Drupal\Core\ParamConverter;
 
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\Routing\RouteCollection;
 
 /**
@@ -74,7 +74,7 @@ class ParamConverterManager implements ParamConverterManagerInterface {
    * {@inheritdoc}
    */
   public function convert(array $defaults) {
-    /** @var \Symfony\Component\Routing\Route $route */
+    /** @var $route \Symfony\Component\Routing\Route */
     $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
 
     // Skip this enhancer if there are no parameter definitions.

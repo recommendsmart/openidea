@@ -1,11 +1,6 @@
-langcode: en
-status: true
-dependencies:
-  config:
-    - filter.format.private_images
-  module:
-    - ckeditor
 format: private_images
+status: true
+langcode: en
 editor: ckeditor
 settings:
   toolbar:
@@ -32,3 +27,8 @@ image_upload:
   max_dimensions:
     width: null
     height: null
+dependencies:
+  config:
+    - filter.format.private_images
+  module:
+    - ckeditor

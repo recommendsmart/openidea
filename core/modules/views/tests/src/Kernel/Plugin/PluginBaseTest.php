@@ -24,13 +24,13 @@ class PluginBaseTest extends KernelTestBase {
    */
   protected $testPluginBase;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->testPluginBase = new TestPluginBase();
   }
 
   /**
-   * Tests that the token replacement in views works correctly.
+   * Test that the token replacement in views works correctly.
    */
   public function testViewsTokenReplace() {
     $text = '{{ langcode__value }} means {{ langcode }}';
@@ -40,11 +40,11 @@ class PluginBaseTest extends KernelTestBase {
       return $this->testPluginBase->viewsTokenReplace($text, $tokens);
     });
 
-    $this->assertSame('en means English', $result);
+    $this->assertIdentical($result, 'en means English');
   }
 
   /**
-   * Tests that the token replacement in views works correctly with dots.
+   * Test that the token replacement in views works correctly with dots.
    */
   public function testViewsTokenReplaceWithDots() {
     $text = '{{ argument.first }} comes before {{ argument.second }}';
@@ -54,7 +54,7 @@ class PluginBaseTest extends KernelTestBase {
       return $this->testPluginBase->viewsTokenReplace($text, $tokens);
     });
 
-    $this->assertSame('first comes before second', $result);
+    $this->assertIdentical($result, 'first comes before second');
 
     // Test tokens with numeric indexes.
     $text = '{{ argument.0.first }} comes before {{ argument.1.second }}';
@@ -64,7 +64,7 @@ class PluginBaseTest extends KernelTestBase {
       return $this->testPluginBase->viewsTokenReplace($text, $tokens);
     });
 
-    $this->assertSame('first comes before second', $result);
+    $this->assertIdentical($result, 'first comes before second');
   }
 
   /**
@@ -74,7 +74,7 @@ class PluginBaseTest extends KernelTestBase {
     $text = 'Just some text';
     $tokens = [];
     $result = $this->testPluginBase->viewsTokenReplace($text, $tokens);
-    $this->assertSame('Just some text', $result);
+    $this->assertIdentical($result, 'Just some text');
   }
 
 }

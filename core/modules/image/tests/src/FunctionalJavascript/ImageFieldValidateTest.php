@@ -18,7 +18,7 @@ class ImageFieldValidateTest extends ImageFieldTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * Tests the validation message is displayed only once for ajax uploads.
+   * Test the validation message is displayed only once for ajax uploads.
    */
   public function testAJAXValidationMessage() {
     $field_name = strtolower($this->randomMachineName());
@@ -33,8 +33,10 @@ class ImageFieldValidateTest extends ImageFieldTestBase {
     $field->attachFile($this->container->get('file_system')->realpath($text_file->uri));
     $this->assertSession()->waitForElement('css', '.messages--error');
 
-    // Verify that Ajax validation messages are displayed only once.
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "messages--error")]', 1);
+    $elements = $this->xpath('//div[contains(@class, :class)]', [
+      ':class' => 'messages--error',
+    ]);
+    $this->assertEqual(count($elements), 1, 'Ajax validation messages are displayed once.');
   }
 
   /**
@@ -56,7 +58,7 @@ class ImageFieldValidateTest extends ImageFieldTestBase {
       'entity_type' => 'node',
       'bundle' => 'article',
       'field_name' => 'field_dummy_select',
-      'label' => 'Dummy select',
+      'label' => t('Dummy select'),
     ])->save();
 
     \Drupal::entityTypeManager()

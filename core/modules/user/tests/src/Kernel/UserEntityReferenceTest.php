@@ -33,7 +33,7 @@ class UserEntityReferenceTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->role1 = Role::create([
@@ -65,7 +65,6 @@ class UserEntityReferenceTest extends EntityKernelTestBase {
     $field_definition->setSetting('handler_settings', $handler_settings);
     $field_definition->save();
 
-    // cspell:ignore aabb aabbb aabbbb aabbbb
     $user1 = $this->createUser(['name' => 'aabb']);
     $user1->addRole($this->role1->id());
     $user1->save();
@@ -78,21 +77,21 @@ class UserEntityReferenceTest extends EntityKernelTestBase {
     $user3->addRole($this->role2->id());
     $user3->save();
 
-    /** @var \Drupal\Core\Entity\EntityAutocompleteMatcherInterface $autocomplete */
+    /** @var \Drupal\Core\Entity\EntityAutocompleteMatcher $autocomplete */
     $autocomplete = \Drupal::service('entity.autocomplete_matcher');
 
     $matches = $autocomplete->getMatches('user', 'default', $field_definition->getSetting('handler_settings'), 'aabb');
-    $this->assertCount(2, $matches);
+    $this->assertEqual(count($matches), 2);
     $users = [];
     foreach ($matches as $match) {
       $users[] = $match['label'];
     }
-    $this->assertContains($user1->label(), $users);
-    $this->assertContains($user2->label(), $users);
-    $this->assertNotContains($user3->label(), $users);
+    $this->assertTrue(in_array($user1->label(), $users));
+    $this->assertTrue(in_array($user2->label(), $users));
+    $this->assertFalse(in_array($user3->label(), $users));
 
     $matches = $autocomplete->getMatches('user', 'default', $field_definition->getSetting('handler_settings'), 'aabbbb');
-    $this->assertCount(0, $matches);
+    $this->assertEqual(count($matches), 0, '');
   }
 
 }

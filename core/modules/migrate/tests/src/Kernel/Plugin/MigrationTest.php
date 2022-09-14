@@ -17,7 +17,7 @@ class MigrationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate'];
+  public static $modules = ['migrate'];
 
   /**
    * Tests Migration::getProcessPlugins()
@@ -42,62 +42,21 @@ class MigrationTest extends KernelTestBase {
   }
 
   /**
-   * Tests Migration::getProcessPlugins()
+   * Tests Migration::getDestinationPlugin()
    *
-   * @param array $process
-   *   The migration process pipeline.
-   *
-   * @covers ::getProcessPlugins
-   *
-   * @dataProvider getProcessPluginsExceptionMessageProvider
+   * @covers ::getDestinationPlugin
    */
-  public function testGetProcessPluginsExceptionMessage(array $process) {
+  public function testGetProcessPluginsExceptionMessage() {
     // Test with an invalid process pipeline.
     $plugin_definition = [
-      'id' => 'foo',
-      'process' => $process,
+      'process' => [
+        'dest1' => 123,
+      ],
     ];
-
-    reset($process);
-    $destination = key(($process));
-
-    $migration = \Drupal::service('plugin.manager.migration')
-      ->createStubMigration($plugin_definition);
+    $migration = \Drupal::service('plugin.manager.migration')->createStubMigration($plugin_definition);
     $this->expectException(MigrateException::class);
-    $this->expectExceptionMessage("Invalid process for destination '$destination' in migration 'foo'");
+    $this->expectExceptionMessage("Process configuration for 'dest1' must be an array");
     $migration->getProcessPlugins();
-  }
-
-  /**
-   * Provides data for testing invalid process pipeline.
-   */
-  public function getProcessPluginsExceptionMessageProvider() {
-    return [
-      [
-        'Null' =>
-          [
-            'dest' => NULL,
-          ],
-      ],
-      [
-        'boolean' =>
-          [
-            'dest' => TRUE,
-          ],
-      ],
-      [
-        'integer' =>
-          [
-            'dest' => 2370,
-          ],
-      ],
-      [
-        'float' =>
-          [
-            'dest' => 1.61,
-          ],
-      ],
-    ];
   }
 
   /**
@@ -108,8 +67,6 @@ class MigrationTest extends KernelTestBase {
   public function testGetMigrationDependencies() {
     $plugin_manager = \Drupal::service('plugin.manager.migration');
     $plugin_definition = [
-      'id' => 'foo',
-      'deriver' => 'fooDeriver',
       'process' => [
         'f1' => 'bar',
         'f2' => [
@@ -146,10 +103,6 @@ class MigrationTest extends KernelTestBase {
               'migration' => 'm5',
             ],
           ],
-        ],
-        'f7' => [
-          'plugin' => 'migration_lookup',
-          'migration' => 'foo',
         ],
       ],
     ];

@@ -33,7 +33,7 @@ class RendererRecursionTest extends RendererTestBase {
    * @covers ::doRender
    */
   public function testRenderRecursionWithNestedRenderRoot() {
-    [$complex_child_markup, $parent_markup, $complex_child_template] = $this->setUpRenderRecursionComplexElements();
+    list($complex_child_markup, $parent_markup, $complex_child_template) = $this->setUpRenderRecursionComplexElements();
     $renderer = $this->renderer;
     $this->setUpRequest();
 
@@ -65,12 +65,12 @@ class RendererRecursionTest extends RendererTestBase {
    * @covers ::doRender
    */
   public function testRenderRecursionWithNestedRender() {
-    [$complex_child_markup, $parent_markup, $complex_child_template] = $this->setUpRenderRecursionComplexElements();
+    list($complex_child_markup, $parent_markup, $complex_child_template) = $this->setUpRenderRecursionComplexElements();
     $renderer = $this->renderer;
     $this->setUpRequest();
 
     $callable = function ($markup) use ($renderer, $complex_child_template) {
-      $this->assertStringStartsWith('<drupal-render-placeholder', $markup, 'Rendered complex child output as expected, without the placeholder replaced, i.e. with just the placeholder.');
+      $this->assertTrue(strpos($markup, '<drupal-render-placeholder') === 0, 'Rendered complex child output as expected, without the placeholder replaced, i.e. with just the placeholder.');
       return $markup;
     };
 
@@ -86,8 +86,8 @@ class RendererRecursionTest extends RendererTestBase {
     $output = $renderer->renderRoot($page);
 
     $this->assertEquals('<p>This is a rendered placeholder!</p><p>Rendered!</p>', $output, 'Rendered output as expected, with the placeholder replaced.');
-    $this->assertContains('test:complex_child', $page['#cache']['tags'], 'Cache tag bubbling performed.');
-    $this->assertContains('dynamic_animal', array_keys($page['#attached']['drupalSettings']), 'Asset bubbling performed.');
+    $this->assertTrue(in_array('test:complex_child', $page['#cache']['tags']), 'Cache tag bubbling performed.');
+    $this->assertTrue(in_array('dynamic_animal', array_keys($page['#attached']['drupalSettings'])), 'Asset bubbling performed.');
   }
 
   /**
@@ -99,7 +99,7 @@ class RendererRecursionTest extends RendererTestBase {
    * @covers ::renderPlain
    */
   public function testRenderRecursionWithNestedRenderPlain() {
-    [$complex_child_markup, $parent_markup, $complex_child_template] = $this->setUpRenderRecursionComplexElements();
+    list($complex_child_markup, $parent_markup, $complex_child_template) = $this->setUpRenderRecursionComplexElements();
     $renderer = $this->renderer;
     $this->setUpRequest();
 
@@ -121,8 +121,8 @@ class RendererRecursionTest extends RendererTestBase {
     ];
     $output = $renderer->renderRoot($page);
     $this->assertEquals('<p>This is a rendered placeholder!</p>' . $parent_markup, $output, 'Rendered output as expected, with the placeholder replaced.');
-    $this->assertNotContains('test:complex_child', $page['#cache']['tags'], 'Cache tag bubbling not performed.');
-    $this->assertEmpty($page['#attached'], 'Asset bubbling not performed.');
+    $this->assertFalse(in_array('test:complex_child', $page['#cache']['tags']), 'Cache tag bubbling not performed.');
+    $this->assertTrue(empty($page['#attached']), 'Asset bubbling not performed.');
   }
 
 }

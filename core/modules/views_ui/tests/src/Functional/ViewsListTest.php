@@ -17,7 +17,7 @@ class ViewsListTest extends UITestBase {
    *
    * @var array
    */
-  protected static $modules = ['block', 'views_ui'];
+  public static $modules = ['block', 'views_ui'];
 
   /**
    * {@inheritdoc}
@@ -34,7 +34,7 @@ class ViewsListTest extends UITestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     $this->drupalPlaceBlock('local_tasks_block');
@@ -49,15 +49,8 @@ class ViewsListTest extends UITestBase {
   public function testViewsListLimit() {
     // Check if we can access the main views admin page.
     $this->drupalGet('admin/structure/views');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkExists('Add view');
-
-    // Check that there is a link to the content view without a destination
-    // parameter.
-    $this->drupalGet('admin/structure/views');
-    $links = $this->getSession()->getPage()->findAll('xpath', "//a[contains(@href, 'admin/structure/views/view/content')]");
-    $this->assertStringEndsWith('admin/structure/views/view/content', $links[0]->getAttribute('href'));
-    $this->assertSession()->linkByHrefExists('admin/structure/views/view/content/delete?destination');
+    $this->assertResponse(200);
+    $this->assertLink(t('Add view'));
 
     // Count default views to be subtracted from the limit.
     $views = count(Views::getEnabledViews());
@@ -74,7 +67,7 @@ class ViewsListTest extends UITestBase {
     $this->drupalGet('admin/structure/views');
 
     // Check that all the rows are listed.
-    $this->assertCount($limit, $this->xpath('//tbody/tr[contains(@class,"views-ui-list-enabled")]'));
+    $this->assertEqual(count($this->xpath('//tbody/tr[contains(@class,"views-ui-list-enabled")]')), $limit);
   }
 
 }

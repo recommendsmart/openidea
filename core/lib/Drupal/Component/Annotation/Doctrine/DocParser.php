@@ -1,5 +1,5 @@
 <?php
-// phpcs:ignoreFile
+// @codingStandardsIgnoreFile
 
 /**
  * @file
@@ -897,7 +897,7 @@ final class DocParser
         $identifier = $this->Identifier();
 
         if ( ! defined($identifier) && false !== strpos($identifier, '::') && '\\' !== $identifier[0]) {
-            [$className, $const] = explode('::', $identifier);
+            list($className, $const) = explode('::', $identifier);
 
             $alias = (false === $pos = strpos($className, '\\')) ? $className : substr($className, 0, $pos);
             $found = false;
@@ -1099,7 +1099,7 @@ final class DocParser
         $this->match(DocLexer::T_CLOSE_CURLY_BRACES);
 
         foreach ($values as $value) {
-             [$key, $val] = $value;
+            list ($key, $val) = $value;
 
             if ($key !== null) {
                 $array[$key] = $val;

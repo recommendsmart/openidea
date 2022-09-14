@@ -5,12 +5,7 @@ namespace Drupal\block_content\Plugin\migrate\source\d6;
 use Drupal\block_content\Plugin\migrate\source\d7\BlockCustomTranslation as D7BlockCustomTranslation;
 
 /**
- * Drupal 6 i18n custom block translations source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Gets Drupal 6 i18n custom block translations from database.
  *
  * @MigrateSource(
  *   id = "d6_box_translation",

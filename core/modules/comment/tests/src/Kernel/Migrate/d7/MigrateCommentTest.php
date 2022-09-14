@@ -17,16 +17,17 @@ class MigrateCommentTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'comment',
     'content_translation',
     'datetime',
-    'datetime_range',
     'filter',
     'image',
     'language',
     'link',
     'menu_ui',
+    // Required for translation migrations.
+    'migrate_drupal_multilingual',
     'node',
     'taxonomy',
     'telephone',
@@ -36,7 +37,7 @@ class MigrateCommentTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('comment');
     $this->installEntitySchema('taxonomy_term');
@@ -124,8 +125,12 @@ class MigrateCommentTest extends MigrateDrupal7TestBase {
     $node = $comment->getCommentedEntity();
     $this->assertInstanceOf(NodeInterface::class, $node);
     $this->assertSame('1', $node->id());
+  }
 
-    // Tests the migration of comment entity translations.
+  /**
+   * Tests the migration of comment entity translations.
+   */
+  public function testCommentEntityTranslations() {
     $manager = $this->container->get('content_translation.manager');
 
     // Get the comment and its translations.

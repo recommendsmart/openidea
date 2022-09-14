@@ -35,7 +35,7 @@ class EditorMediaDialogTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installSchema('file', ['file_usage']);
@@ -54,7 +54,6 @@ class EditorMediaDialogTest extends KernelTestBase {
       'filters' => [
         'media_embed' => ['status' => TRUE],
       ],
-      'name' => 'Media embed on',
     ]);
 
     $editor = $this->prophesize(EditorInterface::class);
@@ -85,9 +84,9 @@ class EditorMediaDialogTest extends KernelTestBase {
     ]);
     $form_state->setRequestMethod('POST');
 
-    $form = EditorMediaDialog::create($this->container)
+    EditorMediaDialog::create($this->container)
       ->buildForm([], $form_state, $editor->reveal());
-    $this->assertNotNull($form, 'Form should have been built without errors.');
+    $this->pass('Form was built without errors.');
   }
 
 }

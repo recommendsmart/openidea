@@ -21,7 +21,7 @@ class ThemeEngineExtensionList extends ExtensionList {
     'description' => '',
     'package' => 'Other',
     'version' => NULL,
-    'php' => \Drupal::MINIMUM_PHP,
+    'php' => DRUPAL_MINIMUM_PHP,
   ];
 
   /**

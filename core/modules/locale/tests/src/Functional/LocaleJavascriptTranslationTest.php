@@ -19,7 +19,7 @@ class LocaleJavascriptTranslationTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['locale', 'locale_test'];
+  public static $modules = ['locale', 'locale_test'];
 
   /**
    * {@inheritdoc}
@@ -103,11 +103,11 @@ class LocaleJavascriptTranslationTest extends BrowserTestBase {
         $this->assertTrue(isset($source_strings[$str]), new FormattableMarkup('Found source string: %source', $args));
 
         // Make sure that the proper context was matched.
-        $this->assertArrayHasKey($str, $source_strings);
-        $this->assertSame($context, $source_strings[$str]);
+        $message = $context ? new FormattableMarkup('Context for %source is %context', $args) : new FormattableMarkup('Context for %source is blank', $args);
+        $this->assertTrue(isset($source_strings[$str]) && $source_strings[$str] === $context, $message);
       }
 
-      $this->assertSameSize($test_strings, $source_strings, 'Found correct number of source strings.');
+      $this->assertEqual(count($source_strings), count($test_strings), 'Found correct number of source strings.');
     }
   }
 
@@ -116,11 +116,7 @@ class LocaleJavascriptTranslationTest extends BrowserTestBase {
    */
   public function testLocaleTranslationJsDependencies() {
     // User to add and remove language.
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-      'access administration pages',
-      'translate interface',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer languages', 'access administration pages', 'translate interface']);
 
     // Add custom language.
     $this->drupalLogin($admin_user);
@@ -136,13 +132,11 @@ class LocaleJavascriptTranslationTest extends BrowserTestBase {
       'label' => $name,
       'direction' => LanguageInterface::DIRECTION_LTR,
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add custom language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add custom language'));
 
     // Set path prefix.
     $edit = ["prefix[$langcode]" => $prefix];
-    $this->drupalGet('admin/config/regional/language/detection/url');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/regional/language/detection/url', $edit, t('Save configuration'));
 
     // This forces locale.admin.js string sources to be imported, which contains
     // the next translation.
@@ -157,19 +151,19 @@ class LocaleJavascriptTranslationTest extends BrowserTestBase {
       ]);
     $string = $strings[0];
 
-    $this->submitForm(['string' => 'Show description'], 'Filter');
+    $this->drupalPostForm(NULL, ['string' => 'Show description'], t('Filter'));
     $edit = ['strings[' . $string->lid . '][translations][0]' => 'Mostrar descripcion'];
-    $this->submitForm($edit, 'Save translations');
+    $this->drupalPostForm(NULL, $edit, t('Save translations'));
 
     // Calculate the filename of the JS including the translations.
     $js_translation_files = \Drupal::state()->get('locale.translation.javascript');
     $js_filename = $prefix . '_' . $js_translation_files[$prefix] . '.js';
 
     $content = $this->getSession()->getPage()->getContent();
-    $this->assertSession()->responseContains('core/misc/drupal.js');
-    $this->assertSession()->responseContains($js_filename);
+    $this->assertRaw('core/misc/drupal.js');
+    $this->assertRaw($js_filename);
     // Assert translations JS is included before drupal.js.
-    $this->assertLessThan(strpos($content, 'core/misc/drupal.js'), strpos($content, $js_filename));
+    $this->assertTrue(strpos($content, $js_filename) < strpos($content, 'core/misc/drupal.js'), 'Translations are included before Drupal.t.');
   }
 
 }

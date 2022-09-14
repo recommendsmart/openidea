@@ -16,14 +16,14 @@ class BlockHookOperationTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['block', 'entity_test'];
+  public static $modules = ['block', 'entity_test'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $permissions = [
@@ -49,7 +49,7 @@ class BlockHookOperationTest extends BrowserTestBase {
 
     $test_operation_link = 'admin/structure/block/manage/' . $block_id . '/test_operation';
     // Test if the test_operation link is on the page.
-    $this->assertSession()->linkByHrefExists($test_operation_link);
+    $this->assertLinkByHref($test_operation_link);
   }
 
 }

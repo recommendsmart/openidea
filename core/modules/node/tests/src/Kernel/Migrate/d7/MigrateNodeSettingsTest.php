@@ -19,12 +19,12 @@ class MigrateNodeSettingsTest extends MigrateDrupal7TestBase {
    *
    * @var array
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('d7_node_settings');
   }
@@ -34,7 +34,7 @@ class MigrateNodeSettingsTest extends MigrateDrupal7TestBase {
    */
   public function testAggregatorSettings() {
     $config = $this->config('node.settings');
-    $this->assertEquals(1, $config->get('use_admin_theme'));
+    $this->assertEqual(1, $config->get('use_admin_theme'));
   }
 
 }

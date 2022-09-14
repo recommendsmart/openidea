@@ -18,7 +18,7 @@ class ExtensionSerializationTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     vfsStream::setup('dummy_app_root');
     vfsStream::create([
@@ -44,24 +44,16 @@ class ExtensionSerializationTest extends UnitTestCase {
    * @covers ::__wakeup
    */
   public function testServiceAppRouteUsage() {
+    // The assumption of our test is that DRUPAL_ROOT is not defined.
+    $this->assertFalse(defined('DRUPAL_ROOT'), 'Constant DRUPAL_ROOT is defined.');
     $container = new ContainerBuilder();
     // Set a dummy container app.root to test against.
-    $container->setParameter('app.root', 'vfs://dummy_app_root');
+    $container->set('app.root', 'vfs://dummy_app_root');
     \Drupal::setContainer($container);
     // Instantiate an Extension object for testing unserialization.
-    $extension = new Extension($container->getParameter('app.root'), 'module', 'core/modules/system/system.info.yml', 'system.module');
+    $extension = new Extension($container->get('app.root'), 'module', 'core/modules/system/system.info.yml', 'system.module');
     $extension = unserialize(serialize($extension));
-    $reflected_root = new \ReflectionProperty($extension, 'root');
-    $reflected_root->setAccessible(TRUE);
-    $this->assertEquals('vfs://dummy_app_root', $reflected_root->getValue($extension));
-
-    // Change the app root and test serializing and unserializing again.
-    $container->setParameter('app.root', 'vfs://dummy_app_root2');
-    \Drupal::setContainer($container);
-    $extension = unserialize(serialize($extension));
-    $reflected_root = new \ReflectionProperty($extension, 'root');
-    $reflected_root->setAccessible(TRUE);
-    $this->assertEquals('vfs://dummy_app_root2', $reflected_root->getValue($extension));
+    $this->assertEquals('vfs://dummy_app_root', $this->readAttribute($extension, 'root'));
   }
 
   /**
@@ -73,9 +65,9 @@ class ExtensionSerializationTest extends UnitTestCase {
   public function testPublicProperties() {
     $container = new ContainerBuilder();
     // Set a dummy container app.root to test against.
-    $container->setParameter('app.root', 'vfs://dummy_app_root');
+    $container->set('app.root', 'vfs://dummy_app_root');
     \Drupal::setContainer($container);
-    $extension = new Extension($container->getParameter('app.root'), 'module', 'core/modules/system/system.info.yml', 'system.module');
+    $extension = new Extension($container->get('app.root'), 'module', 'core/modules/system/system.info.yml', 'system.module');
     // Assign a public property dynamically.
     $extension->test = 'foo';
     $extension = unserialize(serialize($extension));

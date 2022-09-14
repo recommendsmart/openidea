@@ -18,12 +18,12 @@ class TermKernelTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['filter', 'taxonomy', 'text', 'user'];
+  public static $modules = ['filter', 'taxonomy', 'text', 'user'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['filter']);
     $this->installEntitySchema('taxonomy_term');
@@ -38,7 +38,7 @@ class TermKernelTest extends KernelTestBase {
     // Delete a valid term.
     $valid_term->delete();
     $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['vid' => $vocabulary->id()]);
-    $this->assertEmpty($terms, 'Vocabulary is empty after deletion');
+    $this->assertTrue(empty($terms), 'Vocabulary is empty after deletion');
   }
 
   /**
@@ -57,16 +57,16 @@ class TermKernelTest extends KernelTestBase {
     $term_storage = $this->container->get('entity_type.manager')->getStorage('taxonomy_term');
     $term_storage->resetCache([$child_term_id]);
     $child_term = Term::load($child_term_id);
-    $this->assertNotEmpty($child_term, 'Child term is not deleted if only one of its parents is removed.');
+    $this->assertTrue(!empty($child_term), 'Child term is not deleted if only one of its parents is removed.');
 
     $parent_term2->delete();
     $term_storage->resetCache([$child_term_id]);
     $child_term = Term::load($child_term_id);
-    $this->assertEmpty($child_term, 'Child term is deleted if all of its parents are removed.');
+    $this->assertTrue(empty($child_term), 'Child term is deleted if all of its parents are removed.');
   }
 
   /**
-   * Tests a taxonomy with terms that have multiple parents of different depths.
+   * Test a taxonomy with terms that have multiple parents of different depths.
    */
   public function testTaxonomyVocabularyTree() {
     // Create a new vocabulary with 6 terms.
@@ -108,11 +108,11 @@ class TermKernelTest extends KernelTestBase {
      */
     // Count $term[1] parents with $max_depth = 1.
     $tree = $taxonomy_storage->loadTree($vocabulary->id(), $term[1]->id(), 1);
-    $this->assertCount(1, $tree, 'We have one parent with depth 1.');
+    $this->assertEqual(1, count($tree), 'We have one parent with depth 1.');
 
     // Count all vocabulary tree elements.
     $tree = $taxonomy_storage->loadTree($vocabulary->id());
-    $this->assertCount(8, $tree, 'We have all vocabulary tree elements.');
+    $this->assertEqual(8, count($tree), 'We have all vocabulary tree elements.');
 
     // Count elements in every tree depth.
     foreach ($tree as $element) {
@@ -121,28 +121,28 @@ class TermKernelTest extends KernelTestBase {
       }
       $depth_count[$element->depth]++;
     }
-    $this->assertEquals(3, $depth_count[0], 'Three elements in taxonomy tree depth 0.');
-    $this->assertEquals(2, $depth_count[1], 'Two elements in taxonomy tree depth 1.');
-    $this->assertEquals(2, $depth_count[2], 'Two elements in taxonomy tree depth 2.');
-    $this->assertEquals(1, $depth_count[3], 'One element in taxonomy tree depth 3.');
+    $this->assertEqual(3, $depth_count[0], 'Three elements in taxonomy tree depth 0.');
+    $this->assertEqual(2, $depth_count[1], 'Two elements in taxonomy tree depth 1.');
+    $this->assertEqual(2, $depth_count[2], 'Two elements in taxonomy tree depth 2.');
+    $this->assertEqual(1, $depth_count[3], 'One element in taxonomy tree depth 3.');
 
     /** @var \Drupal\taxonomy\TermStorageInterface $storage */
     $storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
     // Count parents of $term[2].
     $parents = $storage->loadParents($term[2]->id());
-    $this->assertCount(2, $parents, 'The term has two parents.');
+    $this->assertEqual(2, count($parents), 'The term has two parents.');
 
     // Count parents of $term[3].
     $parents = $storage->loadParents($term[3]->id());
-    $this->assertCount(1, $parents, 'The term has one parent.');
+    $this->assertEqual(1, count($parents), 'The term has one parent.');
 
     // Identify all ancestors of $term[2].
     $ancestors = $storage->loadAllParents($term[2]->id());
-    $this->assertCount(4, $ancestors, 'The term has four ancestors including the term itself.');
+    $this->assertEqual(4, count($ancestors), 'The term has four ancestors including the term itself.');
 
     // Identify all ancestors of $term[3].
     $ancestors = $storage->loadAllParents($term[3]->id());
-    $this->assertCount(5, $ancestors, 'The term has five ancestors including the term itself.');
+    $this->assertEqual(5, count($ancestors), 'The term has five ancestors including the term itself.');
   }
 
   /**
@@ -161,11 +161,11 @@ class TermKernelTest extends KernelTestBase {
     // Confirm we can get the view of unsaved term.
     $render_array = $entity_manager->getViewBuilder('taxonomy_term')
       ->view($term);
-    $this->assertNotEmpty($render_array, 'Term view builder is built.');
+    $this->assertTrue(!empty($render_array), 'Term view builder is built.');
 
     // Confirm we can render said view.
     $rendered = \Drupal::service('renderer')->renderPlain($render_array);
-    $this->assertNotEmpty(trim($rendered), 'Term is able to be rendered.');
+    $this->assertTrue(!empty(trim($rendered)), 'Term is able to be rendered.');
   }
 
 }

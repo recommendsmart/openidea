@@ -21,9 +21,6 @@ class PrimitiveDataNormalizer extends NormalizerBase {
    * {@inheritdoc}
    */
   public function normalize($object, $format = NULL, array $context = []) {
-    // Add cacheability if applicable.
-    $this->addCacheableDependency($context, $object);
-
     $parent = $object->getParent();
     if ($parent instanceof FieldItemInterface && $object->getValue()) {
       $serialized_property_names = $this->getCustomSerializedPropertyNames($parent);

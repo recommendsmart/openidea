@@ -20,15 +20,15 @@ class YamlTest extends TestCase {
    */
   protected $mockParser;
 
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
     $this->mockParser = $this->getMockBuilder('\stdClass')
-      ->addMethods(['encode', 'decode', 'getFileExtension'])
+      ->setMethods(['encode', 'decode', 'getFileExtension'])
       ->getMock();
     YamlParserProxy::setMock($this->mockParser);
   }
 
-  public function tearDown(): void {
+  public function tearDown() {
     YamlParserProxy::setMock(NULL);
     parent::tearDown();
   }
@@ -103,7 +103,7 @@ class YamlTest extends TestCase {
    */
   public function testObjectSupportDisabledSymfony() {
     $this->expectException(InvalidDataTypeException::class);
-    $this->expectExceptionMessageMatches('/^Object support when parsing a YAML file has been disabled/');
+    $this->expectExceptionMessageRegExp('/^Object support when parsing a YAML file has been disabled/');
     $object = new \stdClass();
     $object->foo = 'bar';
     // In core all Yaml encoding is done via Symfony and it does not support
@@ -126,7 +126,7 @@ class YamlTest extends TestCase {
       if ($dir->getExtension() == 'yml' && strpos($pathname, '/../../../../../node_modules') === FALSE) {
         if (strpos($dir->getRealPath(), 'invalid_file') !== FALSE) {
           // There are some intentionally invalid files provided for testing
-          // library API behaviors, ignore them.
+          // library API behaviours, ignore them.
           continue;
         }
         $files[] = [$dir->getRealPath()];

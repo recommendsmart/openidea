@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Customizes the container for running updates.
+ * Customises the container for running updates.
  */
 class UpdateServiceProvider implements ServiceProviderInterface, ServiceModifierInterface {
 
@@ -19,15 +19,7 @@ class UpdateServiceProvider implements ServiceProviderInterface, ServiceModifier
    */
   public function register(ContainerBuilder $container) {
     $definition = new Definition('Drupal\Core\Cache\NullBackend', ['null']);
-    if (method_exists($definition, 'getDeprecation')) {
-      $definition->setDeprecated('drupal/core', '8.8.0', 'The "%service_id%\" service is deprecated. While updating Drupal all caches use \Drupal\Core\Update\UpdateBackend. See https://www.drupal.org/node/3066407');
-    }
-    else {
-      // @todo Remove when we no longer support Symfony 4 in
-      // https://www.drupal.org/project/drupal/issues/3197729
-      $definition->setDeprecated(TRUE, 'The "%service_id%\" service is deprecated. While updating Drupal all caches use \Drupal\Core\Update\UpdateBackend. See https://www.drupal.org/node/3066407');
-    }
-    $definition->setPublic(TRUE);
+    $definition->setDeprecated(TRUE, 'The "%service_id%\" service is deprecated. While updating Drupal all caches use \Drupal\Core\Update\UpdateBackend. See https://www.drupal.org/node/3066407');
     $container->setDefinition('cache.null', $definition);
 
     // Decorate the cache factory in order to use

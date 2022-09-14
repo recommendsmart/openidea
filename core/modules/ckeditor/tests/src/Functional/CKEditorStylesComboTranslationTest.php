@@ -15,9 +15,9 @@ use Drupal\Tests\BrowserTestBase;
 class CKEditorStylesComboTranslationTest extends BrowserTestBase {
 
   /**
-   * {@inheritdoc}
+   * {inheritdoc}
    */
-  protected static $modules = ['ckeditor', 'config_translation'];
+  public static $modules = ['ckeditor', 'config_translation'];
 
   /**
    * {@inheritdoc}
@@ -41,7 +41,7 @@ class CKEditorStylesComboTranslationTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->format = strtolower($this->randomMachineName());
@@ -57,10 +57,7 @@ class CKEditorStylesComboTranslationTest extends BrowserTestBase {
     ]);
     $editor->save();
 
-    $this->adminUser = $this->drupalCreateUser([
-      'administer filters',
-      'translate configuration',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['administer filters', 'translate configuration']);
 
     ConfigurableLanguage::createFromLangcode('de')->save();
   }
@@ -73,8 +70,7 @@ class CKEditorStylesComboTranslationTest extends BrowserTestBase {
     $edit = [
       'editor[settings][plugins][stylescombo][styles]' => 'h1.title|Title',
     ];
-    $this->drupalGet('admin/config/content/formats/manage/' . $this->format);
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/content/formats/manage/' . $this->format, $edit, 'Save configuration');
 
     $this->drupalGet('admin/config/content/formats/manage/' . $this->format . '/translate/de/add');
     $this->assertEquals('textarea', $this->assertSession()->fieldExists('List of styles')->getTagName());

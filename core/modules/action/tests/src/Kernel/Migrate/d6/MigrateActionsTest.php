@@ -12,18 +12,18 @@ use Drupal\Tests\migrate_drupal\Kernel\d6\MigrateDrupal6TestBase;
  */
 class MigrateActionsTest extends MigrateDrupal6TestBase {
 
-  protected static $modules = ['action', 'comment', 'node'];
+  public static $modules = ['action', 'comment', 'node'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('d6_action');
   }
 
   /**
-   * Tests Drupal 6 action migration to Drupal 8.
+   * Test Drupal 6 action migration to Drupal 8.
    */
   public function testActions() {
     // Test default actions.
@@ -57,18 +57,16 @@ class MigrateActionsTest extends MigrateDrupal6TestBase {
    *   The expected Action type.
    * @param array $configuration
    *   The expected Action configuration.
-   *
-   * @internal
    */
-  protected function assertEntity(string $id, string $label, string $type, array $configuration): void {
+  protected function assertEntity($id, $label, $type, $configuration) {
     $action = Action::load($id);
 
-    $this->assertInstanceOf(Action::class, $action);
+    $this->assertTrue($action instanceof Action);
     /** @var \Drupal\system\Entity\Action $action */
-    $this->assertSame($id, $action->id());
-    $this->assertSame($label, $action->label());
-    $this->assertSame($type, $action->getType());
-    $this->assertSame($configuration, $action->get('configuration'));
+    $this->assertIdentical($id, $action->id());
+    $this->assertIdentical($label, $action->label());
+    $this->assertIdentical($type, $action->getType());
+    $this->assertIdentical($configuration, $action->get('configuration'));
   }
 
 }

@@ -15,7 +15,7 @@ class ImageImportTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'image', 'image_module_test'];
+  public static $modules = ['system', 'image', 'image_module_test'];
 
   /**
    * Tests importing image styles.
@@ -29,7 +29,7 @@ class ImageImportTest extends KernelTestBase {
     $style->addImageEffect(['id' => 'image_module_test_null']);
     $style->save();
 
-    $this->assertCount(2, $style->getEffects());
+    $this->assertEqual(count($style->getEffects()), 2);
 
     $uuid = \Drupal::service('uuid')->generate();
     $style->set('effects', [
@@ -40,7 +40,7 @@ class ImageImportTest extends KernelTestBase {
     $style->save();
 
     $style = ImageStyle::load('test');
-    $this->assertCount(1, $style->getEffects());
+    $this->assertEqual(count($style->getEffects()), 1);
   }
 
 }

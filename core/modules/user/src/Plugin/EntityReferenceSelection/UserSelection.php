@@ -3,6 +3,7 @@
 namespace Drupal\user\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -234,17 +235,17 @@ class UserSelection extends DefaultSelection {
           // Re-add the condition and a condition on uid = 0 so that we end up
           // with a query in the form:
           // WHERE (name LIKE :name) OR (:anonymous_name LIKE :name AND uid = 0)
-          $or = $this->connection->condition('OR');
+          $or = new Condition('OR');
           $or->condition($condition['field'], $condition['value'], $condition['operator']);
           // Sadly, the Database layer doesn't allow us to build a condition
           // in the form ':placeholder = :placeholder2', because the 'field'
           // part of a condition is always escaped.
           // As a (cheap) workaround, we separately build a condition with no
           // field, and concatenate the field and the condition separately.
-          $value_part = $this->connection->condition('AND');
+          $value_part = new Condition('AND');
           $value_part->condition('anonymous_name', $condition['value'], $condition['operator']);
           $value_part->compile($this->connection, $query);
-          $or->condition(($this->connection->condition('AND'))
+          $or->condition((new Condition('AND'))
             ->where(str_replace($query->escapeField('anonymous_name'), ':anonymous_name', (string) $value_part), $value_part->arguments() + [':anonymous_name' => \Drupal::config('user.settings')->get('anonymous')])
             ->condition('base_table.uid', 0)
           );

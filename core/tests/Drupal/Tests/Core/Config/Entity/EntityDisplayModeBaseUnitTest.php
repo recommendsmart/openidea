@@ -50,7 +50,7 @@ class EntityDisplayModeBaseUnitTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityType = $this->randomMachineName();
 
     $this->entityInfo = $this->createMock('\Drupal\Core\Entity\EntityTypeInterface');
@@ -81,16 +81,18 @@ class EntityDisplayModeBaseUnitTest extends UnitTestCase {
       ->will($this->returnValue('test_module'));
     $values = ['targetEntityType' => $target_entity_type_id];
 
-    $this->entityTypeManager->expects($this->exactly(2))
+    $this->entityTypeManager->expects($this->at(0))
       ->method('getDefinition')
-      ->willReturnMap([
-        [$target_entity_type_id, TRUE, $target_entity_type],
-        [$this->entityType, TRUE, $this->entityInfo],
-      ]);
+      ->with($target_entity_type_id)
+      ->will($this->returnValue($target_entity_type));
+    $this->entityTypeManager->expects($this->at(1))
+      ->method('getDefinition')
+      ->with($this->entityType)
+      ->will($this->returnValue($this->entityInfo));
 
     $this->entity = $this->getMockBuilder('\Drupal\Core\Entity\EntityDisplayModeBase')
       ->setConstructorArgs([$values, $this->entityType])
-      ->addMethods(['getFilterFormat'])
+      ->setMethods(['getFilterFormat'])
       ->getMock();
 
     $dependencies = $this->entity->calculateDependencies()->getDependencies();
@@ -103,7 +105,7 @@ class EntityDisplayModeBaseUnitTest extends UnitTestCase {
   public function testSetTargetType() {
     // Generate mock.
     $mock = $this->getMockBuilder('Drupal\Core\Entity\EntityDisplayModeBase')
-      ->onlyMethods([])
+      ->setMethods(NULL)
       ->setConstructorArgs([['something' => 'nothing'], 'test_type'])
       ->getMock();
 
@@ -131,7 +133,7 @@ class EntityDisplayModeBaseUnitTest extends UnitTestCase {
   public function testGetTargetType() {
     // Generate mock.
     $mock = $this->getMockBuilder('Drupal\Core\Entity\EntityDisplayModeBase')
-      ->onlyMethods([])
+      ->setMethods(NULL)
       ->setConstructorArgs([['something' => 'nothing'], 'test_type'])
       ->getMock();
 

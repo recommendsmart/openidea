@@ -28,8 +28,7 @@ quickedit:
       css/quickedit.icons.theme.css: {}
   dependencies:
     - core/jquery
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/underscore
     - core/backbone
     - core/jquery.form

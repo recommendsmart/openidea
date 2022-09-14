@@ -40,7 +40,7 @@ abstract class AbstractComparisonValidator extends ConstraintValidator
     public function validate($value, Constraint $constraint)
     {
         if (!$constraint instanceof AbstractComparison) {
-            throw new UnexpectedTypeException($constraint, AbstractComparison::class);
+            throw new UnexpectedTypeException($constraint, __NAMESPACE__.'\AbstractComparison');
         }
 
         if (null === $value) {
@@ -55,7 +55,7 @@ abstract class AbstractComparisonValidator extends ConstraintValidator
             try {
                 $comparedValue = $this->getPropertyAccessor()->getValue($object, $path);
             } catch (NoSuchPropertyException $e) {
-                throw new ConstraintDefinitionException(sprintf('Invalid property path "%s" provided to "%s" constraint: ', $path, \get_class($constraint)).$e->getMessage(), 0, $e);
+                throw new ConstraintDefinitionException(sprintf('Invalid property path "%s" provided to "%s" constraint: %s', $path, \get_class($constraint), $e->getMessage()), 0, $e);
             }
         } else {
             $comparedValue = $constraint->value;
@@ -77,21 +77,16 @@ abstract class AbstractComparisonValidator extends ConstraintValidator
         }
 
         if (!$this->compareValues($value, $comparedValue)) {
-            $violationBuilder = $this->context->buildViolation($constraint->message)
+            $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', $this->formatValue($value, self::OBJECT_TO_STRING | self::PRETTY_DATE))
                 ->setParameter('{{ compared_value }}', $this->formatValue($comparedValue, self::OBJECT_TO_STRING | self::PRETTY_DATE))
                 ->setParameter('{{ compared_value_type }}', $this->formatTypeOf($comparedValue))
-                ->setCode($this->getErrorCode());
-
-            if (null !== $path) {
-                $violationBuilder->setParameter('{{ compared_value_path }}', $path);
-            }
-
-            $violationBuilder->addViolation();
+                ->setCode($this->getErrorCode())
+                ->addViolation();
         }
     }
 
-    private function getPropertyAccessor(): PropertyAccessorInterface
+    private function getPropertyAccessor()
     {
         if (null === $this->propertyAccessor) {
             $this->propertyAccessor = PropertyAccess::createPropertyAccessor();

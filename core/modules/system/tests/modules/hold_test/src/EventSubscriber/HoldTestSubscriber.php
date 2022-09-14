@@ -14,30 +14,6 @@ class HoldTestSubscriber implements EventSubscriberInterface {
   const HOLD_RESPONSE = 'response';
 
   /**
-   * Time in microseconds to wait for before checking if the file is updated.
-   *
-   * @var int
-   */
-  const WAIT = 100000;
-
-  /**
-   * The site path.
-   *
-   * @var string
-   */
-  protected $sitePath;
-
-  /**
-   * HoldTestSubscriber constructor.
-   *
-   * @param string $site_path
-   *   The site path.
-   */
-  public function __construct(string $site_path) {
-    $this->sitePath = $site_path;
-  }
-
-  /**
    * Request hold.
    */
   public function onRequest() {
@@ -58,10 +34,10 @@ class HoldTestSubscriber implements EventSubscriberInterface {
    *   Type of hold.
    */
   protected function hold($type) {
-    $path = "{$this->sitePath}/hold_test_$type.txt";
+    $path = \Drupal::root() . "/sites/default/files/simpletest/hold_test_$type.txt";
     do {
       $status = (bool) file_get_contents($path);
-    } while ($status && (NULL === usleep(static::WAIT)));
+    } while ($status && (NULL === usleep(100000)));
   }
 
   /**

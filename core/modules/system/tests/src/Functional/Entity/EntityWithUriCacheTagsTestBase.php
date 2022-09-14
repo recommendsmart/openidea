@@ -124,7 +124,7 @@ abstract class EntityWithUriCacheTagsTestBase extends EntityCacheTagsTestBase {
     // Verify that after deleting the entity, there is a cache miss.
     $this->entity->delete();
     $this->verifyPageCache($entity_url, 'MISS');
-    $this->assertSession()->statusCodeEquals(404);
+    $this->assertResponse(404);
   }
 
   /**
@@ -134,9 +134,7 @@ abstract class EntityWithUriCacheTagsTestBase extends EntityCacheTagsTestBase {
    *   The default cache contexts for rendered entities.
    */
   protected function getDefaultCacheContexts() {
-    // For url.site, see
-    // \Drupal\Core\Entity\Controller\EntityViewController::view().
-    return ['languages:' . LanguageInterface::TYPE_INTERFACE, 'theme', 'user.permissions', 'url.site'];
+    return ['languages:' . LanguageInterface::TYPE_INTERFACE, 'theme', 'user.permissions'];
   }
 
 }

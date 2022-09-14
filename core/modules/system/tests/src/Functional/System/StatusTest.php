@@ -4,6 +4,7 @@ namespace Drupal\Tests\system\Functional\System;
 
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
+use Symfony\Component\CssSelector\CssSelectorConverter;
 
 /**
  * Tests output on the status overview page.
@@ -15,7 +16,7 @@ class StatusTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['update_test_postupdate'];
+  public static $modules = ['update_test_postupdate'];
 
   /**
    * {@inheritdoc}
@@ -25,7 +26,7 @@ class StatusTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Unset the sync directory in settings.php to trigger the error.
@@ -47,49 +48,48 @@ class StatusTest extends BrowserTestBase {
   public function testStatusPage() {
     // Go to Administration.
     $this->drupalGet('admin/reports/status');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200, 'The status page is reachable.');
 
-    // Verify that the PHP version is shown on the page.
-    $this->assertSession()->pageTextContains(phpversion());
+    $phpversion = phpversion();
+    $this->assertText($phpversion, 'Php version is shown on the page.');
 
     if (function_exists('phpinfo')) {
-      $this->assertSession()->linkByHrefExists(Url::fromRoute('system.php')->toString());
+      $this->assertLinkByHref(Url::fromRoute('system.php')->toString());
     }
     else {
-      $this->assertSession()->linkByHrefNotExists(Url::fromRoute('system.php')->toString());
+      $this->assertNoLinkByHref(Url::fromRoute('system.php')->toString());
     }
 
     // If a module is fully installed no pending updates exists.
-    $this->assertSession()->pageTextNotContains('Out of date');
+    $this->assertNoText(t('Out of date'));
 
-    // The setting config_sync_directory is not properly formed.
-    $this->assertSession()->pageTextContains("Your {$this->siteDirectory}/settings.php file must define the \$settings['config_sync_directory'] setting");
-
-    /** @var \Drupal\Core\Update\UpdateHookRegistry $update_registry */
-    $update_registry = \Drupal::service('update.update_hook_registry');
+    // The global $config_directories is not properly formed.
+    $this->assertRaw(t("Your %file file must define the %setting setting", ['%file' => $this->siteDirectory . '/settings.php', '%setting' => "\$settings['config_sync_directory']"]));
 
     // Set the schema version of update_test_postupdate to a lower version, so
     // update_test_postupdate_update_8001() needs to be executed.
-    $update_registry->setInstalledVersion('update_test_postupdate', 8000);
+    drupal_set_installed_schema_version('update_test_postupdate', 8000);
     $this->drupalGet('admin/reports/status');
-    $this->assertSession()->pageTextContains('Out of date');
+    $this->assertText(t('Out of date'));
 
     // Now cleanup the executed post update functions.
-    $update_registry->setInstalledVersion('update_test_postupdate', 8001);
+    drupal_set_installed_schema_version('update_test_postupdate', 8001);
     /** @var \Drupal\Core\Update\UpdateRegistry $post_update_registry */
     $post_update_registry = \Drupal::service('update.post_update_registry');
     $post_update_registry->filterOutInvokedUpdatesByModule('update_test_postupdate');
     $this->drupalGet('admin/reports/status');
-    $this->assertSession()->pageTextContains('Out of date');
+    $this->assertText(t('Out of date'));
 
     $this->drupalGet('admin/reports/status/php');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200, 'The phpinfo page is reachable.');
 
     // Check if cron error is displayed in errors section
     $cron_last_run = \Drupal::state()->get('system.cron_last');
     \Drupal::state()->set('system.cron_last', 0);
     $this->drupalGet('admin/reports/status');
-    $this->assertSession()->elementExists('xpath', '//details[contains(@class, "system-status-report__entry")]//div[contains(text(), "Cron has not run recently")]');
+    $css_selector_converter = new CssSelectorConverter();
+    $xpath = $css_selector_converter->toXPath('details.system-status-report__entry') . '//div[contains(text(), "Cron has not run recently")]';
+    $this->assertNotEmpty($this->xpath($xpath), 'Cron has not run recently error is being displayed.');
     \Drupal::state()->set('system.cron_last', $cron_last_run);
   }
 

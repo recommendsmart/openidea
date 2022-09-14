@@ -23,7 +23,7 @@ class ShortcutTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'shortcut'];
+  public static $modules = ['comment', 'shortcut'];
 
   /**
    * {@inheritdoc}
@@ -65,7 +65,7 @@ class ShortcutTest extends ResourceTestBase {
   protected function createEntity() {
     $shortcut = Shortcut::create([
       'shortcut_set' => 'default',
-      'title' => 'Comments',
+      'title' => t('Comments'),
       'weight' => -20,
       'link' => [
         'uri' => 'internal:/user/logout',
@@ -115,9 +115,6 @@ class ShortcutTest extends ResourceTestBase {
           'shortcut_set' => [
             'data' => [
               'type' => 'shortcut_set--shortcut_set',
-              'meta' => [
-                'drupal_internal__target_id' => 'default',
-              ],
               'id' => ShortcutSet::load('default')->uuid(),
             ],
             'links' => [

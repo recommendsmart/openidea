@@ -4,7 +4,6 @@ namespace Drupal\config\Form;
 
 use Drupal\Component\Serialization\Exception\InvalidDataTypeException;
 use Drupal\config\StorageReplaceDataWrapper;
-use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Config\ConfigImporter;
 use Drupal\Core\Config\ConfigImporterException;
 use Drupal\Core\Config\ConfigManagerInterface;
@@ -13,6 +12,7 @@ use Drupal\Core\Config\Importer\ConfigImporterBatch;
 use Drupal\Core\Config\StorageComparer;
 use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -25,7 +25,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides a form for importing a single configuration file.
@@ -33,6 +33,15 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  * @internal
  */
 class ConfigSingleImportForm extends ConfirmFormBase {
+
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = [
+    'entityManager' => 'entity.manager',
+  ];
 
   /**
    * The entity type manager.
@@ -58,7 +67,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
   /**
    * The event dispatcher.
    *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected $eventDispatcher;
 
@@ -134,7 +143,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
    *   The config storage.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher used to notify subscribers of config import events.
    * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
    *   The configuration manager.
@@ -308,7 +317,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
     }
 
     // Validate for config entities.
-    if ($form_state->getValue('config_type') && $form_state->getValue('config_type') !== 'system.simple') {
+    if ($form_state->getValue('config_type') !== 'system.simple') {
       $definition = $this->entityTypeManager->getDefinition($form_state->getValue('config_type'));
       $id_key = $definition->getKey('id');
 
@@ -355,8 +364,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
       $source_storage->replaceData($config_name, $data);
       $storage_comparer = new StorageComparer($source_storage, $this->configStorage);
 
-      $storage_comparer->createChangelist();
-      if (!$storage_comparer->hasChanges()) {
+      if (!$storage_comparer->createChangelist()->hasChanges()) {
         $form_state->setErrorByName('import', $this->t('There are no changes to import.'));
       }
       else {
@@ -412,16 +420,19 @@ class ConfigSingleImportForm extends ConfirmFormBase {
     else {
       try {
         $sync_steps = $config_importer->initialize();
-        $batch_builder = (new BatchBuilder())
-          ->setTitle($this->t('Importing configuration'))
-          ->setFinishCallback([ConfigImporterBatch::class, 'finish'])
-          ->setInitMessage($this->t('Starting configuration import.'))
-          ->setProgressMessage($this->t('Completed @current step of @total.'))
-          ->setErrorMessage($this->t('Configuration import has encountered an error.'));
+        $batch = [
+          'operations' => [],
+          'finished' => [ConfigImporterBatch::class, 'finish'],
+          'title' => $this->t('Importing configuration'),
+          'init_message' => $this->t('Starting configuration import.'),
+          'progress_message' => $this->t('Completed @current step of @total.'),
+          'error_message' => $this->t('Configuration import has encountered an error.'),
+        ];
         foreach ($sync_steps as $sync_step) {
-          $batch_builder->addOperation([ConfigImporterBatch::class, 'process'], [$config_importer, $sync_step]);
+          $batch['operations'][] = [[ConfigImporterBatch::class, 'process'], [$config_importer, $sync_step]];
         }
-        batch_set($batch_builder->toArray());
+
+        batch_set($batch);
       }
       catch (ConfigImporterException $e) {
         // There are validation errors.

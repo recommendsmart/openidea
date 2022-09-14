@@ -18,7 +18,7 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'user',
     'system',
@@ -45,7 +45,7 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Enable an additional language.
@@ -90,7 +90,10 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'Changed and created time of original language can be assumed to be identical.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $entity->getChangedTime(), 'Changed time of original language is the same as changed time across all translations.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of original language is the same as changed time across all translations.'
+    );
 
     $changed_en = $entity->getChangedTime();
 
@@ -99,22 +102,34 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
 
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
     $this->assertTrue(
       $german->getChangedTime() > $entity->getChangedTime(),
       'Changed time of the German translation is newer then the original language.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $german->getChangedTime(), 'Changed time of the German translation is the newest time across all translations.');
+    $this->assertEqual(
+      $german->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of the German translation is the newest time across all translations.'
+    );
 
     $changed_de = $german->getChangedTime();
 
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
-    $this->assertEquals($changed_de, $german->getChangedTime(), 'Changed time of the German translation did not change.');
+    $this->assertEqual(
+      $german->getChangedTime(), $changed_de,
+      'Changed time of the German translation did not change.'
+    );
 
     // Update a non-translatable field to make sure that the changed timestamp
     // is updated for all translations.
@@ -144,38 +159,56 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'Changed time of original language did change.'
     );
 
-    $this->assertEquals($changed_de, $german->getChangedTime(), 'Changed time of the German translation did not change.');
+    $this->assertEqual(
+      $german->getChangedTime(), $changed_de,
+      'Changed time of the German translation did not change.'
+    );
 
     $this->assertTrue(
       $entity->getChangedTime() > $german->getChangedTime(),
       'Changed time of original language is newer then the German translation.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $entity->getChangedTime(), 'Changed time of the original language is the newest time across all translations.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of the original language is the newest time across all translations.'
+    );
 
     $changed_en = $entity->getChangedTime();
 
     // Save entity without any changes.
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
-    $this->assertEquals($changed_de, $german->getChangedTime(), 'Changed time of the German translation did not change.');
+    $this->assertEqual(
+      $german->getChangedTime(), $changed_de,
+      'Changed time of the German translation did not change.'
+    );
 
     // At this point the changed time of the original language (en) is newer
     // than the changed time of the German translation. Now test that entity
     // queries work as expected.
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_en)->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time of original language.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time of original language.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_en, '=', 'en')->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time of original language by setting the original language as condition.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time of original language by setting the original language as condition.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_de, '=', 'en')->execute();
 
     $this->assertEmpty(
@@ -183,12 +216,15 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'There\'s no original entity stored having the changed time of the German translation.'
     );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_en)->condition('default_langcode', '1')->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time of default language.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time of default language.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_de)->condition('default_langcode', '1')->execute();
 
     $this->assertEmpty(
@@ -196,17 +232,23 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'There\'s no entity stored using the default language having the changed time of the German translation.'
     );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_de)->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time of the German translation.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time of the German translation.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_de, '=', 'de')->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time of the German translation.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time of the German translation.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_en, '=', 'de')->execute();
 
     $this->assertEmpty(
@@ -214,22 +256,31 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'There\'s no German translation stored having the changed time of the original language.'
     );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_de, '>')->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time regardless of translation.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time regardless of translation.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_en, '<')->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time regardless of translation.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time regardless of translation.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', 0, '>')->execute();
 
-    $this->assertEquals($entity->id(), reset($ids), 'Entity query can access changed time regardless of translation.');
+    $this->assertEqual(
+      reset($ids), $entity->id(),
+      'Entity query can access changed time regardless of translation.'
+    );
 
-    $query = $this->mulChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulChangedStorage->getQuery();
     $ids = $query->condition('changed', $changed_en, '>')->execute();
 
     $this->assertEmpty(
@@ -267,7 +318,10 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'Changed and created time of original language can be assumed to be identical.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $entity->getChangedTime(), 'Changed time of original language is the same as changed time across all translations.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of original language is the same as changed time across all translations.'
+    );
 
     $this->assertTrue(
       $this->getRevisionTranslationAffectedFlag($entity),
@@ -280,7 +334,10 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
     // Save entity without any changes but create new revision.
     $entity->save();
     // A new revision without any changes should not set a new changed time.
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
     $this->assertFalse(
       $this->getRevisionTranslationAffectedFlag($entity),
@@ -308,14 +365,20 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
 
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
     $this->assertTrue(
       $german->getChangedTime() > $entity->getChangedTime(),
       'Changed time of the German translation is newer then the original language.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $german->getChangedTime(), 'Changed time of the German translation is the newest time across all translations.');
+    $this->assertEqual(
+      $german->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of the German translation is the newest time across all translations.'
+    );
 
     $this->assertTrue(
       $this->getRevisionTranslationAffectedFlag($entity),
@@ -333,9 +396,15 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
     // Save entity without any changes but create new revision.
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
-    $this->assertEquals($changed_de, $german->getChangedTime(), 'Changed time of the German translation did not change.');
+    $this->assertEqual(
+      $german->getChangedTime(), $changed_de,
+      'Changed time of the German translation did not change.'
+    );
 
     $this->assertFalse(
       $this->getRevisionTranslationAffectedFlag($entity),
@@ -351,14 +420,20 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
     $german->setOwner($user2);
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
     $this->assertTrue(
       $german->getChangedTime() > $changed_de,
       'Changed time of the German translation did change.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $german->getChangedTime(), 'Changed time of the German translation is the newest time across all translations.');
+    $this->assertEqual(
+      $german->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of the German translation is the newest time across all translations.'
+    );
 
     $this->assertFalse(
       $this->getRevisionTranslationAffectedFlag($entity),
@@ -375,7 +450,10 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
     $entity->setNewRevision();
     $entity->save();
 
-    $this->assertEquals($changed_en, $entity->getChangedTime(), 'Changed time of original language did not change.');
+    $this->assertEqual(
+      $entity->getChangedTime(), $changed_en,
+      'Changed time of original language did not change.'
+    );
 
     $this->assertTrue(
       $french->getChangedTime() > $entity->getChangedTime(),
@@ -387,7 +465,10 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
       'Changed time of the French translation is newer then the German translation.'
     );
 
-    $this->assertEquals($entity->getChangedTimeAcrossTranslations(), $french->getChangedTime(), 'Changed time of the French translation is the newest time across all translations.');
+    $this->assertEqual(
+      $french->getChangedTime(), $entity->getChangedTimeAcrossTranslations(),
+      'Changed time of the French translation is the newest time across all translations.'
+    );
 
     $this->assertFalse(
       $this->getRevisionTranslationAffectedFlag($entity),
@@ -482,7 +563,7 @@ class ContentEntityChangedTest extends EntityKernelTestBase {
    *   The flag value.
    */
   protected function getRevisionTranslationAffectedFlag(EntityTestMulRevChanged $entity) {
-    $query = $this->mulRevChangedStorage->getQuery()->accessCheck(FALSE);
+    $query = $this->mulRevChangedStorage->getQuery();
     $ids = $query->condition('revision_translation_affected', 1, '=', $entity->language()->getId())->execute();
     $id = reset($ids);
     return (bool) ($id == $entity->id());

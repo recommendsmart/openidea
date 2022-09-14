@@ -21,15 +21,15 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 abstract class ConstraintValidator implements ConstraintValidatorInterface
 {
     /**
-     * Whether to format {@link \DateTime} objects, either with the {@link \IntlDateFormatter}
-     * (if it is available) or as RFC-3339 dates ("Y-m-d H:i:s").
+     * Whether to format {@link \DateTime} objects as RFC-3339 dates
+     * ("Y-m-d H:i:s").
      */
-    public const PRETTY_DATE = 1;
+    const PRETTY_DATE = 1;
 
     /**
      * Whether to cast objects with a "__toString()" method to strings.
      */
-    public const OBJECT_TO_STRING = 2;
+    const OBJECT_TO_STRING = 2;
 
     /**
      * @var ExecutionContextInterface
@@ -69,8 +69,7 @@ abstract class ConstraintValidator implements ConstraintValidatorInterface
      * in double quotes ("). Objects, arrays and resources are formatted as
      * "object", "array" and "resource". If the $format bitmask contains
      * the PRETTY_DATE bit, then {@link \DateTime} objects will be formatted
-     * with the {@link \IntlDateFormatter}. If it is not available, they will be
-     * formatted as RFC-3339 dates ("Y-m-d H:i:s").
+     * as RFC-3339 dates ("Y-m-d H:i:s").
      *
      * Be careful when passing message parameters to a constraint violation
      * that (may) contain objects, arrays or resources. These parameters
@@ -87,13 +86,20 @@ abstract class ConstraintValidator implements ConstraintValidatorInterface
     protected function formatValue($value, $format = 0)
     {
         if (($format & self::PRETTY_DATE) && $value instanceof \DateTimeInterface) {
-            if (class_exists(\IntlDateFormatter::class)) {
-                $formatter = new \IntlDateFormatter(\Locale::getDefault(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, 'UTC');
+            if (class_exists('IntlDateFormatter')) {
+                $locale = \Locale::getDefault();
+                $formatter = new \IntlDateFormatter($locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, $value->getTimezone());
 
-                return $formatter->format(new \DateTime(
-                    $value->format('Y-m-d H:i:s.u'),
-                    new \DateTimeZone('UTC')
-                ));
+                // neither the native nor the stub IntlDateFormatter support
+                // DateTimeImmutable as of yet
+                if (!$value instanceof \DateTime) {
+                    $value = new \DateTime(
+                        $value->format('Y-m-d H:i:s.u e'),
+                        $value->getTimezone()
+                    );
+                }
+
+                return $formatter->format($value);
             }
 
             return $value->format('Y-m-d H:i:s');

@@ -14,7 +14,7 @@ class ElementValidationTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['ajax_test', 'ajax_forms_test'];
+  public static $modules = ['ajax_test', 'ajax_forms_test'];
 
   /**
    * {@inheritdoc}
@@ -44,13 +44,13 @@ class ElementValidationTest extends WebDriverTestBase {
     $this->assertNotNull($placeholder_text, 'A callback successfully echoed back a string.');
 
     $this->drupalGet('ajax_validation_test');
-    // Partially complete the form with a number.
+    // Partialy complete the form with a number.
     $page->fillField('drivernumber', '12345');
     $page->findField('spare_required_field')->focus();
 
-    // The AJAX request/response will complete successfully when an
-    // InsertCommand injects a message with a placeholder element into the DOM
-    // with the submitted number.
+    // The AJAX request/resonse will complete successfully when a InsertCommand
+    // injects a message with a placeholder element into the DOM with the
+    // submitted number.
     $placeholder_number = $assert->waitForElement('css', "ul.messages__list li.messages__item em:contains('12345')");
     $this->assertNotNull($placeholder_number, 'A callback successfully echoed back a number.');
   }

@@ -77,7 +77,6 @@ class PoItem {
    * Set the language code of the current language.
    *
    * @param string $langcode
-   *   The language code of the current language.
    */
   public function setLangcode($langcode) {
     $this->langcode = $langcode;
@@ -96,7 +95,6 @@ class PoItem {
    * Set the context this translation belongs to.
    *
    * @param string $context
-   *   The context this translation belongs to.
    */
   public function setContext($context) {
     $this->context = $context;
@@ -117,7 +115,6 @@ class PoItem {
    * plurals.
    *
    * @param string|array $source
-   *   The source string or the array of strings if the translation has plurals.
    */
   public function setSource($source) {
     $this->source = $source;
@@ -138,8 +135,6 @@ class PoItem {
    * plurals.
    *
    * @param string|array $translation
-   *   The translation string or the array of strings if the translation has
-   *   plurals.
    */
   public function setTranslation($translation) {
     $this->translation = $translation;
@@ -149,7 +144,6 @@ class PoItem {
    * Set if the translation has plural values.
    *
    * @param bool $plural
-   *   TRUE, if the translation has plural values. FALSE otherwise.
    */
   public function setPlural($plural) {
     $this->plural = $plural;
@@ -177,7 +171,6 @@ class PoItem {
    * Set the comment of this translation.
    *
    * @param string $comment
-   *   The comment of this translation.
    */
   public function setComment($comment) {
     $this->comment = $comment;
@@ -187,7 +180,6 @@ class PoItem {
    * Create the PoItem from a structured array.
    *
    * @param array $values
-   *   A structured array to create the PoItem from.
    */
   public function setFromArray(array $values = []) {
     if (isset($values['context'])) {
@@ -205,7 +197,7 @@ class PoItem {
     if (isset($this->source) &&
         strpos($this->source, self::DELIMITER) !== FALSE) {
       $this->setSource(explode(self::DELIMITER, $this->source));
-      $this->setTranslation(explode(self::DELIMITER, $this->translation ?? ''));
+      $this->setTranslation(explode(self::DELIMITER, $this->translation));
       $this->setPlural(count($this->source) > 1);
     }
   }

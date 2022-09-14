@@ -23,7 +23,7 @@ class QuickEditAutocompleteTermTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'taxonomy',
     'quickedit',
@@ -72,7 +72,7 @@ class QuickEditAutocompleteTermTest extends WebDriverTestBase {
   protected $fieldName;
 
   /**
-   * A user with permissions to access in-place editor.
+   * An user with permissions to access in-place editor.
    *
    * @var \Drupal\user\UserInterface
    */
@@ -81,7 +81,7 @@ class QuickEditAutocompleteTermTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalCreateContentType([
@@ -165,8 +165,8 @@ class QuickEditAutocompleteTermTest extends WebDriverTestBase {
     $tags = $tag_field->getValue();
 
     // Check existing terms.
-    $this->assertStringContainsString($this->term1->label(), $tags);
-    $this->assertStringContainsString($this->term2->label(), $tags);
+    $this->assertTrue(strpos($tags, $this->term1->label()) !== FALSE);
+    $this->assertTrue(strpos($tags, $this->term2->label()) !== FALSE);
 
     // Add new term.
     $new_tag = $this->randomMachineName();

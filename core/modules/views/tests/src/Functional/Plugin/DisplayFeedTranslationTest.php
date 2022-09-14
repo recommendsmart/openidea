@@ -29,7 +29,7 @@ class DisplayFeedTranslationTest extends ViewTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'views',
     'language',
@@ -48,7 +48,7 @@ class DisplayFeedTranslationTest extends ViewTestBase {
    */
   protected $langcodes;
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     $this->enableViewsTestModule();
@@ -76,8 +76,7 @@ class DisplayFeedTranslationTest extends ViewTestBase {
       'settings[node][page][translatable]' => TRUE,
       'settings[node][page][settings][language][language_alterable]' => TRUE,
     ];
-    $this->drupalGet('admin/config/regional/content-language');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/regional/content-language', $edit, t('Save configuration'));
 
     // Rebuild the container so that the new languages are picked up by services
     // that hold a list of languages.
@@ -162,7 +161,7 @@ class DisplayFeedTranslationTest extends ViewTestBase {
     }
 
     $this->drupalGet('test-feed-display-fields.xml');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     $items = $this->getSession()->getDriver()->find('//channel/item');
     // There should only be 3 items in the feed.

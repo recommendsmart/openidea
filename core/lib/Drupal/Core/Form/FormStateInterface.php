@@ -121,13 +121,12 @@ interface FormStateInterface {
    * @param array $route_parameters
    *   (optional) An associative array of parameter names and values.
    * @param array $options
-   *   (optional) An associative array of additional options containing the
-   *   same values accepted from \Drupal\Core\Url::fromUri() for $options.
+   *   (optional) An associative array of additional options. See
+   *   \Drupal\Core\Url for the available keys.
    *
    * @return $this
    *
    * @see \Drupal\Core\Form\FormSubmitterInterface::redirectForm()
-   * @see \Drupal\Core\Url::fromUri()
    */
   public function setRedirect($route_name, array $route_parameters = [], array $options = []);
 
@@ -210,7 +209,7 @@ interface FormStateInterface {
   /**
    * Determines if an arbitrary property is present.
    *
-   * @param string|array $property
+   * @param string $property
    *   Properties are often stored as multi-dimensional associative arrays. If
    *   $property is a string, it will return isset($storage[$property]). If
    *   $property is an array, each element of the array will be used as a nested

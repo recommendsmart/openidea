@@ -4,7 +4,6 @@ namespace Drupal\FunctionalTests\Installer;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Archiver\ArchiveTar;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Installer\Form\SelectProfileForm;
 
 /**
@@ -70,18 +69,6 @@ abstract class InstallerExistingConfigTestBase extends InstallerTestBase {
       }
       $archiver->extractList($files, $config_sync_directory);
     }
-
-    // Add the module that is providing the database driver to the list of
-    // modules that can not be uninstalled in the core.extension configuration.
-    if (file_exists($config_sync_directory . '/core.extension.yml')) {
-      $core_extension = Yaml::decode(file_get_contents($config_sync_directory . '/core.extension.yml'));
-      $module = Database::getConnection()->getProvider();
-      if ($module !== 'core') {
-        $core_extension['module'][$module] = 0;
-        $core_extension['module'] = module_config_sort($core_extension['module']);
-        file_put_contents($config_sync_directory . '/core.extension.yml', Yaml::encode($core_extension));
-      }
-    }
   }
 
   /**
@@ -124,7 +111,7 @@ abstract class InstallerExistingConfigTestBase extends InstallerTestBase {
       'delete' => [],
       'rename' => [],
     ];
-    $this->assertEquals($expected, $change_list);
+    $this->assertEqual($expected, $change_list);
   }
 
   /**
@@ -135,7 +122,7 @@ abstract class InstallerExistingConfigTestBase extends InstallerTestBase {
       $edit = [
         'profile' => SelectProfileForm::CONFIG_INSTALL_PROFILE_KEY,
       ];
-      $this->submitForm($edit, $this->translations['Save and continue']);
+      $this->drupalPostForm(NULL, $edit, $this->translations['Save and continue']);
     }
     else {
       parent::setUpProfile();

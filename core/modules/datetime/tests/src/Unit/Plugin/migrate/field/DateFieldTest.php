@@ -6,8 +6,6 @@ use Drupal\datetime\Plugin\migrate\field\DateField;
 use Drupal\migrate\MigrateException;
 use Drupal\Tests\UnitTestCase;
 
-// cspell:ignore todate
-
 /**
  * Provides unit tests for the DateField Plugin.
  *
@@ -26,35 +24,20 @@ class DateFieldTest extends UnitTestCase {
    */
   public function testDefineValueProcessPipeline($data, $from_format, $to_format) {
     $migration = $this->createMock('Drupal\migrate\Plugin\MigrationInterface');
-    $pipeline = [
-      'plugin' => 'sub_process',
-      'source' => 'field_date',
-      'process' => [
-        'value' => [
-          'plugin' => 'format_date',
-          'from_format' => $from_format,
-          'to_format' => $to_format,
-          'source' => 'value',
-        ],
-      ],
-    ];
-
-    // If there is a todate then add a process for the end value.
-    if (isset($data['field_definition']['data'])) {
-      $tmp = is_string($data['field_definition']['data']) ? unserialize($data['field_definition']['data']) : '';
-      $todate = $tmp['settings']['todate'] ?? NULL;
-      if (!empty($todate)) {
-        $pipeline['process']['end_value'] = [
-          'plugin' => 'format_date',
-          'from_format' => $from_format,
-          'to_format' => $to_format,
-          'source' => 'value2',
-        ];
-      }
-    }
     $migration->expects($this->once())
       ->method('mergeProcessOfProperty')
-      ->with('field_date', $pipeline)
+      ->with('field_date', [
+        'plugin' => 'sub_process',
+        'source' => 'field_date',
+        'process' => [
+          'value' => [
+            'plugin' => 'format_date',
+            'from_format' => $from_format,
+            'to_format' => $to_format,
+            'source' => 'value',
+          ],
+        ],
+      ])
       ->will($this->returnValue($migration));
 
     $plugin = new DateField([], '', []);
@@ -97,31 +80,11 @@ class DateFieldTest extends UnitTestCase {
                   0 => 'year',
                   1 => 'month',
                 ],
-                'todate' => '',
               ],
             ]),
           ],
         ],
         'Y-m-d\TH:i:s',
-        'Y-m-d',
-      ],
-      'datetime with a todate' => [
-        [
-          'type' => 'datetime',
-          'field_definition' => [
-            'data' => serialize([
-              'settings' => [
-                'granularity' => [
-                  'hour' => 0,
-                  'minute' => 0,
-                  'second' => 0,
-                ],
-                'todate' => 'optional',
-              ],
-            ]),
-          ],
-        ],
-        'Y-m-d H:i:s',
         'Y-m-d',
       ],
     ];
@@ -139,7 +102,7 @@ class DateFieldTest extends UnitTestCase {
 
     $this->expectException(MigrateException::class);
 
-    $plugin->defineValueProcessPipeline($migration, 'field_date', ['type' => 'test']);
+    $plugin->defineValueProcessPipeline($migration, 'field_date', ['type' => 'totoro']);
   }
 
 }

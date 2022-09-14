@@ -3,6 +3,7 @@
 namespace Drupal\Tests\views\Kernel;
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\views\Tests\ViewResultAssertionTrait;
 use Drupal\views\Tests\ViewTestData;
@@ -27,7 +28,7 @@ abstract class ViewsKernelTestBase extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'path_alias',
     'system',
     'views',
@@ -47,11 +48,11 @@ abstract class ViewsKernelTestBase extends KernelTestBase {
   protected function setUp($import_test_views = TRUE) {
     parent::setUp();
 
-    $this->installSchema('system', ['sequences']);
+    $this->installSchema('system', ['sequences', 'key_value_expire']);
     $this->setUpFixtures();
 
     if ($import_test_views) {
-      ViewTestData::createTestViews(static::class, ['views_test_config']);
+      ViewTestData::createTestViews(get_class($this), ['views_test_config']);
     }
   }
 
@@ -108,13 +109,16 @@ abstract class ViewsKernelTestBase extends KernelTestBase {
   protected function orderResultSet($result_set, $column, $reverse = FALSE) {
     $order = $reverse ? -1 : 1;
     usort($result_set, function ($a, $b) use ($column, $order) {
-      return $order * ($a[$column] <=> $b[$column]);
+      if ($a[$column] == $b[$column]) {
+        return 0;
+      }
+      return $order * (($a[$column] < $b[$column]) ? -1 : 1);
     });
     return $result_set;
   }
 
   /**
-   * Executes a view.
+   * Executes a view with debugging.
    *
    * @param \Drupal\views\ViewExecutable $view
    *   The view object.
@@ -125,6 +129,11 @@ abstract class ViewsKernelTestBase extends KernelTestBase {
     $view->setDisplay();
     $view->preExecute($args);
     $view->execute();
+    $verbose_message = '<pre>Executed view: ' . ((string) $view->build_info['query']) . '</pre>';
+    if ($view->build_info['query'] instanceof SelectInterface) {
+      $verbose_message .= '<pre>Arguments: ' . print_r($view->build_info['query']->getArguments(), TRUE) . '</pre>';
+    }
+    $this->verbose($verbose_message);
   }
 
   /**

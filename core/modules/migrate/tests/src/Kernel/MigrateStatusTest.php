@@ -30,7 +30,7 @@ class MigrateStatusTest extends MigrateTestBase {
 
     // Default status is idle.
     $status = $migration->getStatus();
-    $this->assertSame(MigrationInterface::STATUS_IDLE, $status);
+    $this->assertIdentical($status, MigrationInterface::STATUS_IDLE);
 
     // Test setting and retrieving all known status values.
     $status_list = [
@@ -42,7 +42,7 @@ class MigrateStatusTest extends MigrateTestBase {
     ];
     foreach ($status_list as $status) {
       $migration->setStatus($status);
-      $this->assertSame($status, $migration->getStatus());
+      $this->assertIdentical($migration->getStatus(), $status);
     }
   }
 

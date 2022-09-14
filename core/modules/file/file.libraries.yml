@@ -4,7 +4,6 @@ drupal.file:
     file.js: {}
   dependencies:
     - core/jquery
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/drupal
     - core/drupalSettings

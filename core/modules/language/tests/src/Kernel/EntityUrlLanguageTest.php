@@ -7,7 +7,7 @@ use Drupal\entity_test\Entity\EntityTest;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationContentEntity;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
@@ -22,7 +22,7 @@ class EntityUrlLanguageTest extends LanguageTestBase {
    *
    * @var array
    */
-  protected static $modules = ['entity_test', 'user'];
+  public static $modules = ['entity_test', 'user'];
 
   /**
    * The entity being used for testing.
@@ -31,11 +31,12 @@ class EntityUrlLanguageTest extends LanguageTestBase {
    */
   protected $entity;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('entity_test');
     $this->installEntitySchema('configurable_language');
+    \Drupal::service('router.builder')->rebuild();
 
     // In order to reflect the changes for a multilingual site in the container
     // we have to rebuild it.
@@ -55,9 +56,9 @@ class EntityUrlLanguageTest extends LanguageTestBase {
    * Ensures that entity URLs in a language have the right language prefix.
    */
   public function testEntityUrlLanguage() {
-    $this->assertStringContainsString('/en/entity_test/' . $this->entity->id(), $this->entity->toUrl()->toString());
-    $this->assertStringContainsString('/es/entity_test/' . $this->entity->id(), $this->entity->getTranslation('es')->toUrl()->toString());
-    $this->assertStringContainsString('/fr/entity_test/' . $this->entity->id(), $this->entity->getTranslation('fr')->toUrl()->toString());
+    $this->assertTrue(strpos($this->entity->toUrl()->toString(), '/en/entity_test/' . $this->entity->id()) !== FALSE);
+    $this->assertTrue(strpos($this->entity->getTranslation('es')->toUrl()->toString(), '/es/entity_test/' . $this->entity->id()) !== FALSE);
+    $this->assertTrue(strpos($this->entity->getTranslation('fr')->toUrl()->toString(), '/fr/entity_test/' . $this->entity->id()) !== FALSE);
   }
 
   /**
@@ -77,7 +78,7 @@ class EntityUrlLanguageTest extends LanguageTestBase {
     ]);
     $config->save();
 
-    // Without being on a content entity route the default entity URL tests
+    // Without being on an content entity route the default entity URL tests
     // should still pass.
     $this->testEntityUrlLanguage();
 
@@ -88,9 +89,9 @@ class EntityUrlLanguageTest extends LanguageTestBase {
     // The method language-content-entity should run before language-url and
     // append query parameter for the content language and prevent language-url
     // from overwriting the url.
-    $this->assertStringContainsString('/en/entity_test/' . $this->entity->id() . '?' . LanguageNegotiationContentEntity::QUERY_PARAMETER . '=en', $this->entity->toUrl('canonical')->toString());
-    $this->assertStringContainsString('/en/entity_test/' . $this->entity->id() . '?' . LanguageNegotiationContentEntity::QUERY_PARAMETER . '=es', $this->entity->getTranslation('es')->toUrl('canonical')->toString());
-    $this->assertStringContainsString('/en/entity_test/' . $this->entity->id() . '?' . LanguageNegotiationContentEntity::QUERY_PARAMETER . '=fr', $this->entity->getTranslation('fr')->toUrl('canonical')->toString());
+    $this->assertTrue(strpos($this->entity->toUrl('canonical')->toString(), '/en/entity_test/' . $this->entity->id() . '?' . LanguageNegotiationContentEntity::QUERY_PARAMETER . '=en') !== FALSE);
+    $this->assertTrue(strpos($this->entity->getTranslation('es')->toUrl('canonical')->toString(), '/en/entity_test/' . $this->entity->id() . '?' . LanguageNegotiationContentEntity::QUERY_PARAMETER . '=es') !== FALSE);
+    $this->assertTrue(strpos($this->entity->getTranslation('fr')->toUrl('canonical')->toString(), '/en/entity_test/' . $this->entity->id() . '?' . LanguageNegotiationContentEntity::QUERY_PARAMETER . '=fr') !== FALSE);
 
     // Define the method language-url with a higher priority than
     // language-content-entity. This configuration should match the default one,

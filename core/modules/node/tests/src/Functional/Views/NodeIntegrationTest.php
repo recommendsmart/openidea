@@ -41,15 +41,15 @@ class NodeIntegrationTest extends NodeTestBase {
     }
 
     $this->drupalGet('test-node-view');
-    $this->assertSession()->statusCodeEquals(404);
+    $this->assertResponse(404);
 
     $this->drupalGet('test-node-view/all');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $this->assertNids($all_nids);
 
     foreach ($types as $type) {
       $this->drupalGet("test-node-view/{$type->id()}");
-      $this->assertSession()->assertEscaped($type->label());
+      $this->assertEscaped($type->label());
       $this->assertNids(array_keys($nodes[$type->id()]));
     }
   }
@@ -59,16 +59,14 @@ class NodeIntegrationTest extends NodeTestBase {
    *
    * @param array $expected_nids
    *   An array of node IDs.
-   *
-   * @internal
    */
-  protected function assertNids(array $expected_nids = []): void {
+  protected function assertNids(array $expected_nids = []) {
     $result = $this->xpath('//span[@class="field-content"]');
     $nids = [];
     foreach ($result as $element) {
       $nids[] = (int) $element->getText();
     }
-    $this->assertEquals($expected_nids, $nids);
+    $this->assertEqual($nids, $expected_nids);
   }
 
 }

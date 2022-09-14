@@ -25,7 +25,7 @@ display:
       style:
         type: html_list
     display_plugin: default
-    display_title: Default
+    display_title: Master
     id: default
     position: 0
   entity_reference_1:

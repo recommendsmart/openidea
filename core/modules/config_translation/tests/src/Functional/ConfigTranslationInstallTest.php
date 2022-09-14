@@ -39,7 +39,6 @@ class ConfigTranslationInstallTest extends InstallerTestBase {
    *
    * @param string $langcode
    *   The language code.
-   *
    * @return string
    *   Contents for the test .po file.
    */
@@ -60,19 +59,16 @@ ENDPO;
   }
 
   public function testConfigTranslation() {
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'en'], 'Add custom language');
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'fr'], 'Add custom language');
+    $this->drupalPostForm('admin/config/regional/language/add', ['predefined_langcode' => 'en'], t('Add custom language'));
+    $this->drupalPostForm('admin/config/regional/language/add', ['predefined_langcode' => 'fr'], t('Add custom language'));
 
     $edit = [
       'modules[config_translation][enable]' => TRUE,
     ];
-    $this->drupalGet('admin/modules');
-    $this->submitForm($edit, 'Install');
+    $this->drupalPostForm('admin/modules', $edit, t('Install'));
 
     $this->drupalGet('/admin/structure/types/manage/article/fields');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
   }
 
 }

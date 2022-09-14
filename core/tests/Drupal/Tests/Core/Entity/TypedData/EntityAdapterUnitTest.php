@@ -120,7 +120,7 @@ class EntityAdapterUnitTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->id = 1;
     $values = [
       'id' => $this->id,
@@ -220,7 +220,7 @@ class EntityAdapterUnitTest extends UnitTestCase {
    * @covers ::getConstraints
    */
   public function testGetConstraints() {
-    $this->assertIsArray($this->entityAdapter->getConstraints());
+    $this->assertInternalType('array', $this->entityAdapter->getConstraints());
   }
 
   /**
@@ -333,8 +333,8 @@ class EntityAdapterUnitTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::getProperties
-   */
+ * @covers ::getProperties
+ */
   public function testGetProperties() {
     $fields = $this->entityAdapter->getProperties();
     $this->assertInstanceOf('Drupal\Core\Field\FieldItemListInterface', $fields['id']);
@@ -349,7 +349,7 @@ class EntityAdapterUnitTest extends UnitTestCase {
     // Mock field objects return NULL values, so test keys only.
     $this->assertArrayHasKey('id', $array);
     $this->assertArrayHasKey('revision_id', $array);
-    $this->assertCount(2, $array);
+    $this->assertEquals(count($array), 2);
   }
 
   /**
@@ -426,7 +426,7 @@ class EntityAdapterUnitTest extends UnitTestCase {
     $fields = iterator_to_array($iterator);
     $this->assertArrayHasKey('id', $fields);
     $this->assertArrayHasKey('revision_id', $fields);
-    $this->assertCount(2, $fields);
+    $this->assertEquals(count($fields), 2);
 
     $this->entityAdapter->setValue(NULL);
     $this->assertEquals(new \ArrayIterator([]), $this->entityAdapter->getIterator());

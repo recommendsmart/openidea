@@ -15,7 +15,7 @@ class ViewTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['views', 'views_ui'];
+  public static $modules = ['views'];
 
   /**
    * {@inheritdoc}
@@ -90,7 +90,7 @@ class ViewTest extends ResourceTestBase {
             'default' => [
               'display_plugin' => 'default',
               'id' => 'default',
-              'display_title' => 'Default',
+              'display_title' => 'Master',
               'position' => 0,
               'display_options' => [
                 'display_extenders' => [],

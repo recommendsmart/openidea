@@ -13,17 +13,18 @@
 
   Drupal.AjaxCommands.prototype.viewsSetForm = function (ajax, response, status) {
     var $form = $('.js-views-ui-dialog form');
-    var $submitButtons = $(once('views-ajax-submit', $form.find('input[type=submit].js-form-submit, button.js-form-submit')));
+
+    var $submitButtons = $form.find('input[type=submit].js-form-submit, button.js-form-submit').once('views-ajax-submit');
     $submitButtons.on('click mousedown', function () {
       this.form.clk = this;
     });
-    once('views-ajax-submit', $form).forEach(function (form) {
-      var $form = $(form);
+    $form.once('views-ajax-submit').each(function () {
+      var $form = $(this);
       var elementSettings = {
         url: response.url,
         event: 'submit',
         base: $form.attr('id'),
-        element: form
+        element: this
       };
       var ajaxForm = Drupal.ajax(elementSettings);
       ajaxForm.$form = $form;
@@ -32,7 +33,6 @@
 
   Drupal.AjaxCommands.prototype.viewsShowButtons = function (ajax, response, status) {
     $('div.views-edit-view div.form-actions').removeClass('js-hide');
-
     if (response.changed) {
       $('div.views-edit-view div.view-changed.messages').removeClass('js-hide');
     }
@@ -46,10 +46,13 @@
 
   Drupal.AjaxCommands.prototype.viewsReplaceTitle = function (ajax, response, status) {
     var doc = document;
+
     var oldTitle = doc.title;
+
     var escapedSiteName = response.siteName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    var re = new RegExp(".+ (.) ".concat(escapedSiteName));
-    doc.title = oldTitle.replace(re, "".concat(response.title, " $1 ").concat(response.siteName));
+    var re = new RegExp('.+ (.) ' + escapedSiteName);
+    doc.title = oldTitle.replace(re, response.title + ' $1 ' + response.siteName);
+
     $('h1.page-title').text(response.title);
   };
 
@@ -59,72 +62,72 @@
 
   Drupal.behaviors.livePreview = {
     attach: function attach(context) {
-      $(once('views-ajax', 'input#edit-displays-live-preview', context)).on('click', function () {
+      $('input#edit-displays-live-preview', context).once('views-ajax').on('click', function () {
         if ($(this).is(':checked')) {
           $('#preview-submit').trigger('click');
         }
       });
     }
   };
+
   Drupal.behaviors.syncPreviewDisplay = {
     attach: function attach(context) {
-      $(once('views-ajax', '#views-tabset a')).on('click', function () {
+      $('#views-tabset a').once('views-ajax').on('click', function () {
         var href = $(this).attr('href');
+
         var displayId = href.substr(11);
+
         $('#views-live-preview #preview-display-id').val(displayId);
       });
     }
   };
+
   Drupal.behaviors.viewsAjax = {
     collapseReplaced: false,
     attach: function attach(context, settings) {
       var baseElementSettings = {
         event: 'click',
-        progress: {
-          type: 'fullscreen'
-        }
+        progress: { type: 'fullscreen' }
       };
-      once('views-ajax', 'a.views-ajax-link', context).forEach(function (link) {
-        var $link = $(link);
+
+      $('a.views-ajax-link', context).once('views-ajax').each(function () {
         var elementSettings = baseElementSettings;
-        elementSettings.base = $link.attr('id');
-        elementSettings.element = link;
+        elementSettings.base = $(this).attr('id');
+        elementSettings.element = this;
 
-        if ($link.attr('href')) {
-          elementSettings.url = $link.attr('href');
+        if ($(this).attr('href')) {
+          elementSettings.url = $(this).attr('href');
         }
-
         Drupal.ajax(elementSettings);
       });
-      once('views-ajax', 'div#views-live-preview a').forEach(function (link) {
-        var $link = $(link);
 
-        if (!$link.attr('href')) {
+      $('div#views-live-preview a').once('views-ajax').each(function () {
+        if (!$(this).attr('href')) {
           return true;
         }
 
         var elementSettings = baseElementSettings;
-        elementSettings.url = $link.attr('href');
 
+        elementSettings.url = $(this).attr('href');
         if (Drupal.Views.getPath(elementSettings.url).substring(0, 21) !== 'admin/structure/views') {
           return true;
         }
 
         elementSettings.wrapper = 'views-preview-wrapper';
         elementSettings.method = 'replaceWith';
-        elementSettings.base = link.id;
-        elementSettings.element = link;
+        elementSettings.base = $(this).attr('id');
+        elementSettings.element = this;
         Drupal.ajax(elementSettings);
       });
-      once('views-ajax', 'div#views-live-preview input[type=submit]').forEach(function (submit) {
-        var $submit = $(submit);
-        $submit.on('click', function () {
+
+      $('div#views-live-preview input[type=submit]').once('views-ajax').each(function (event) {
+        $(this).on('click', function () {
           this.form.clk = this;
           return true;
         });
         var elementSettings = baseElementSettings;
-        elementSettings.url = $(submit.form).attr('action');
 
+        elementSettings.url = $(this.form).attr('action');
         if (Drupal.Views.getPath(elementSettings.url).substring(0, 21) !== 'admin/structure/views') {
           return true;
         }
@@ -132,8 +135,9 @@
         elementSettings.wrapper = 'views-preview-wrapper';
         elementSettings.method = 'replaceWith';
         elementSettings.event = 'click';
-        elementSettings.base = submit.id;
-        elementSettings.element = submit;
+        elementSettings.base = $(this).attr('id');
+        elementSettings.element = this;
+
         Drupal.ajax(elementSettings);
       });
     }

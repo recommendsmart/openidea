@@ -36,7 +36,7 @@ class CommentTranslationUITest extends ContentTranslationUITestBase {
   protected $adminUser;
 
   /**
-   * {@inheritdoc}
+   * {inheritdoc}
    */
   protected $defaultCacheContexts = [
     'languages:language_interface',
@@ -55,14 +55,14 @@ class CommentTranslationUITest extends ContentTranslationUITestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'content_translation',
     'node',
     'comment',
   ];
 
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityTypeId = 'comment';
     $this->nodeBundle = 'article';
     $this->bundle = 'comment_article';
@@ -148,8 +148,7 @@ class CommentTranslationUITest extends ContentTranslationUITestBase {
       if ($index > 0) {
         $edit = ['status' => 0];
         $url = $entity->toUrl('edit-form', ['language' => ConfigurableLanguage::load($langcode)]);
-        $this->drupalGet($url);
-        $this->submitForm($edit, $this->getFormSubmitAction($entity, $langcode));
+        $this->drupalPostForm($url, $edit, $this->getFormSubmitAction($entity, $langcode));
         $storage->resetCache();
         $entity = $storage->load($this->entityId);
         $this->assertFalse($this->manager->getTranslationMetadata($entity->getTranslation($langcode))->isPublished(), 'The translation has been correctly unpublished.');
@@ -183,16 +182,15 @@ class CommentTranslationUITest extends ContentTranslationUITestBase {
         'date[date]' => $date_formatter->format($values[$langcode]['created'], 'custom', 'Y-m-d'),
         'date[time]' => $date_formatter->format($values[$langcode]['created'], 'custom', 'H:i:s'),
       ];
-      $this->drupalGet($url);
-      $this->submitForm($edit, $this->getFormSubmitAction($entity, $langcode));
+      $this->drupalPostForm($url, $edit, $this->getFormSubmitAction($entity, $langcode));
     }
 
     $storage->resetCache([$this->entityId]);
     $entity = $storage->load($this->entityId);
     foreach ($this->langcodes as $langcode) {
       $metadata = $this->manager->getTranslationMetadata($entity->getTranslation($langcode));
-      $this->assertEquals($values[$langcode]['uid'], $metadata->getAuthor()->id(), 'Translation author correctly stored.');
-      $this->assertEquals($values[$langcode]['created'], $metadata->getCreatedTime(), 'Translation date correctly stored.');
+      $this->assertEqual($metadata->getAuthor()->id(), $values[$langcode]['uid'], 'Translation author correctly stored.');
+      $this->assertEqual($metadata->getCreatedTime(), $values[$langcode]['created'], 'Translation date correctly stored.');
     }
   }
 
@@ -208,9 +206,9 @@ class CommentTranslationUITest extends ContentTranslationUITestBase {
 
     // Verify translation links.
     $this->drupalGet('admin/content/comment');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkByHrefExists('comment/' . $cid_translatable . '/translations');
-    $this->assertSession()->linkByHrefNotExists('comment/' . $cid_untranslatable . '/translations');
+    $this->assertResponse(200);
+    $this->assertLinkByHref('comment/' . $cid_translatable . '/translations');
+    $this->assertNoLinkByHref('comment/' . $cid_untranslatable . '/translations');
   }
 
   /**
@@ -229,7 +227,13 @@ class CommentTranslationUITest extends ContentTranslationUITestBase {
         $options = ['language' => $languages[$langcode]];
         $url = $entity->toUrl('edit-form', $options);
         $this->drupalGet($url);
-        $this->assertSession()->pageTextContains("Edit {$this->entityTypeId} {$entity->getTranslation($langcode)->label()} [{$languages[$langcode]->getName()} translation]");
+
+        $title = t('Edit @type @title [%language translation]', [
+          '@type' => $this->entityTypeId,
+          '@title' => $entity->getTranslation($langcode)->label(),
+          '%language' => $languages[$langcode]->getName(),
+        ]);
+        $this->assertRaw($title);
       }
     }
   }

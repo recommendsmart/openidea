@@ -16,7 +16,7 @@ class MigrateLanguageContentSettingsTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'text',
     'language',
@@ -27,14 +27,11 @@ class MigrateLanguageContentSettingsTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->migrateContentTypes();
-    $this->executeMigrations([
-      'language',
-      'd7_language_content_settings',
-    ]);
+    $this->executeMigration('d7_language_content_settings');
   }
 
   /**

@@ -7,6 +7,7 @@ use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Tests\UnitTestCase;
 
@@ -36,7 +37,7 @@ class DefaultPluginManagerTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->expectedDefinitions = [
       'apple' => [
         'id' => 'apple',
@@ -333,7 +334,7 @@ class DefaultPluginManagerTest extends UnitTestCase {
     $this->expectedDefinitions['banana']['provider'] = 'plugin_test';
 
     $plugin_manager = new TestPluginManager($this->namespaces, $this->expectedDefinitions, $module_handler, NULL);
-    $this->assertIsArray($plugin_manager->getDefinitions());
+    $this->assertInternalType('array', $plugin_manager->getDefinitions());
   }
 
   /**
@@ -343,9 +344,9 @@ class DefaultPluginManagerTest extends UnitTestCase {
     $module_handler = $this->prophesize(ModuleHandlerInterface::class);
     $plugin_manager = new TestPluginManager($this->namespaces, $this->expectedDefinitions, $module_handler->reveal(), NULL);
     $cache_contexts = $plugin_manager->getCacheContexts();
-    $this->assertIsArray($cache_contexts);
+    $this->assertInternalType('array', $cache_contexts);
     array_map(function ($cache_context) {
-      $this->assertIsString($cache_context);
+      $this->assertInternalType('string', $cache_context);
     }, $cache_contexts);
   }
 
@@ -356,9 +357,9 @@ class DefaultPluginManagerTest extends UnitTestCase {
     $module_handler = $this->prophesize(ModuleHandlerInterface::class);
     $plugin_manager = new TestPluginManager($this->namespaces, $this->expectedDefinitions, $module_handler->reveal(), NULL);
     $cache_tags = $plugin_manager->getCacheTags();
-    $this->assertIsArray($cache_tags);
+    $this->assertInternalType('array', $cache_tags);
     array_map(function ($cache_tag) {
-      $this->assertIsString($cache_tag);
+      $this->assertInternalType('string', $cache_tag);
     }, $cache_tags);
   }
 
@@ -369,7 +370,7 @@ class DefaultPluginManagerTest extends UnitTestCase {
     $module_handler = $this->prophesize(ModuleHandlerInterface::class);
     $plugin_manager = new TestPluginManager($this->namespaces, $this->expectedDefinitions, $module_handler->reveal(), NULL);
     $cache_max_age = $plugin_manager->getCacheMaxAge();
-    $this->assertIsInt($cache_max_age);
+    $this->assertInternalType('int', $cache_max_age);
   }
 
   /**
@@ -464,6 +465,35 @@ class DefaultPluginManagerTest extends UnitTestCase {
     return $data;
   }
 
+  /**
+   * @covers ::fixContextAwareDefinitions
+   *
+   * @group legacy
+   * @expectedDeprecation Providing context definitions via the "context" key is deprecated in Drupal 8.7.x and will be removed before Drupal 9.0.0. Use the "context_definitions" key instead.
+   */
+  public function testFixContextAwareDefinitions() {
+    $first_definition = new ContextDefinition('first');
+    $second_definition = new ContextDefinition('bar');
+
+    $definitions = $this->expectedDefinitions;
+    $definitions['apple']['context'] = ['incorrect' => $first_definition];
+    $definitions['apple']['context_definitions'] = ['correct' => $second_definition];
+
+    $expected = $this->expectedDefinitions;
+    $expected['apple']['context']['correct'] = $second_definition;
+    $expected['apple']['context']['incorrect'] = $first_definition;
+    $expected['apple']['context_definitions']['correct'] = $second_definition;
+    $expected['apple']['context_definitions']['incorrect'] = $first_definition;
+
+    $module_handler = $this->prophesize(ModuleHandlerInterface::class);
+    $plugin_manager = new TestPluginManager($this->namespaces, $definitions, $module_handler->reveal(), NULL);
+    $reflection = new \ReflectionMethod($plugin_manager, 'fixContextAwareDefinitions');
+    $reflection->setAccessible(TRUE);
+    $reflection->invokeArgs($plugin_manager, [&$definitions]);
+
+    $this->assertSame($expected, $definitions);
+  }
+
 }
 
 class TestPluginManagerWithDefaults extends TestPluginManager {
@@ -509,11 +539,8 @@ class ObjectDefinition extends PluginDefinition {
    * ObjectDefinition constructor.
    *
    * @param array $definition
-   *   An associative array defining the plugin.
    */
   public function __construct(array $definition) {
-    // This class does not exist but plugin definitions must provide a class.
-    $this->class = 'PluginObject';
     foreach ($definition as $property => $value) {
       $this->{$property} = $value;
     }

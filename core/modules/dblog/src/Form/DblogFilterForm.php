@@ -30,7 +30,6 @@ class DblogFilterForm extends FormBase {
       '#title' => $this->t('Filter log messages'),
       '#open' => TRUE,
     ];
-    $session_filters = $this->getRequest()->getSession()->get('dblog_overview_filter', []);
     foreach ($filters as $key => $filter) {
       $form['filters']['status'][$key] = [
         '#title' => $filter['title'],
@@ -39,9 +38,8 @@ class DblogFilterForm extends FormBase {
         '#size' => 8,
         '#options' => $filter['options'],
       ];
-
-      if (!empty($session_filters[$key])) {
-        $form['filters']['status'][$key]['#default_value'] = $session_filters[$key];
+      if (!empty($_SESSION['dblog_overview_filter'][$key])) {
+        $form['filters']['status'][$key]['#default_value'] = $_SESSION['dblog_overview_filter'][$key];
       }
     }
 
@@ -53,7 +51,7 @@ class DblogFilterForm extends FormBase {
       '#type' => 'submit',
       '#value' => $this->t('Filter'),
     ];
-    if (!empty($session_filters)) {
+    if (!empty($_SESSION['dblog_overview_filter'])) {
       $form['filters']['actions']['reset'] = [
         '#type' => 'submit',
         '#value' => $this->t('Reset'),
@@ -78,13 +76,11 @@ class DblogFilterForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $filters = dblog_filters();
-    $session_filters = $this->getRequest()->getSession()->get('dblog_overview_filter', []);
     foreach ($filters as $name => $filter) {
       if ($form_state->hasValue($name)) {
-        $session_filters[$name] = $form_state->getValue($name);
+        $_SESSION['dblog_overview_filter'][$name] = $form_state->getValue($name);
       }
     }
-    $this->getRequest()->getSession()->set('dblog_overview_filter', $session_filters);
   }
 
   /**
@@ -96,7 +92,7 @@ class DblogFilterForm extends FormBase {
    *   The current state of the form.
    */
   public function resetForm(array &$form, FormStateInterface $form_state) {
-    $this->getRequest()->getSession()->remove('dblog_overview_filter');
+    $_SESSION['dblog_overview_filter'] = [];
   }
 
 }

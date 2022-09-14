@@ -4,8 +4,6 @@ namespace Drupal\database_test\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Query\PagerSelectExtender;
-use Drupal\Core\Database\Query\TableSortExtender;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -50,7 +48,7 @@ class DatabaseTestController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\JsonResponse
    */
   public function dbQueryTemporary() {
-    $table_name = $this->connection->queryTemporary('SELECT [age] FROM {test}', []);
+    $table_name = $this->connection->queryTemporary('SELECT age FROM {test}', []);
     return new JsonResponse([
       'table_name' => $table_name,
       'row_count' => $this->connection->select($table_name)->countQuery()->execute()->fetchField(),
@@ -73,7 +71,7 @@ class DatabaseTestController extends ControllerBase {
 
     // This should result in 2 pages of results.
     $query = $query
-      ->extend(PagerSelectExtender::class)
+      ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
       ->limit($limit);
 
     $names = $query->execute()->fetchCol();
@@ -99,7 +97,7 @@ class DatabaseTestController extends ControllerBase {
 
     // This should result in 4 pages of results.
     $query = $query
-      ->extend(PagerSelectExtender::class)
+      ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
       ->limit($limit);
 
     $names = $query->execute()->fetchCol();
@@ -130,7 +128,7 @@ class DatabaseTestController extends ControllerBase {
       ->fields('t', ['tid', 'pid', 'task', 'priority']);
 
     $query = $query
-      ->extend(TableSortExtender::class)
+      ->extend('Drupal\Core\Database\Query\TableSortExtender')
       ->orderByHeader($header);
 
     // We need all the results at once to check the sort.
@@ -162,7 +160,7 @@ class DatabaseTestController extends ControllerBase {
       ->fields('t', ['tid', 'pid', 'task', 'priority']);
 
     $query = $query
-      ->extend(TableSortExtender::class)
+      ->extend('Drupal\Core\Database\Query\TableSortExtender')
       ->orderByHeader($header)
       ->orderBy('priority');
 

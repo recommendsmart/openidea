@@ -22,14 +22,14 @@ class CommentBookTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['book', 'comment'];
+  public static $modules = ['book', 'comment'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create comment field on book.
@@ -60,30 +60,24 @@ class CommentBookTest extends BrowserTestBase {
     ]);
     $comment->save();
 
-    $commenting_user = $this->drupalCreateUser([
-      'access printer-friendly version',
-      'access comments',
-      'post comments',
-    ]);
+    $commenting_user = $this->drupalCreateUser(['access printer-friendly version', 'access comments', 'post comments']);
     $this->drupalLogin($commenting_user);
 
     $this->drupalGet('node/' . $book_node->id());
 
-    $this->assertSession()->pageTextContains($comment_subject);
-    $this->assertSession()->pageTextContains($comment_body);
-    $this->assertSession()->pageTextContains('Add new comment');
-    // Ensure that the comment form subject field exists.
-    $this->assertSession()->fieldExists('subject[0][value]');
+    $this->assertText($comment_subject, 'Comment subject found');
+    $this->assertText($comment_body, 'Comment body found');
+    $this->assertText(t('Add new comment'), 'Comment form found');
+    $this->assertField('subject[0][value]', 'Comment form subject found');
 
     $this->drupalGet('book/export/html/' . $book_node->id());
 
-    $this->assertSession()->pageTextContains('Comments');
-    $this->assertSession()->pageTextContains($comment_subject);
-    $this->assertSession()->pageTextContains($comment_body);
+    $this->assertText(t('Comments'), 'Comment thread found');
+    $this->assertText($comment_subject, 'Comment subject found');
+    $this->assertText($comment_body, 'Comment body found');
 
-    $this->assertSession()->pageTextNotContains('Add new comment');
-    // Verify that the comment form subject field is not found.
-    $this->assertSession()->fieldNotExists('subject[0][value]');
+    $this->assertNoText(t('Add new comment'), 'Comment form not found');
+    $this->assertNoField('subject[0][value]', 'Comment form subject not found');
   }
 
 }

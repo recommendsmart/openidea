@@ -9,6 +9,7 @@
   var states = {
     postponed: []
   };
+
   Drupal.states = states;
 
   function invert(a, invertState) {
@@ -27,7 +28,6 @@
     if (typeof a === 'undefined') {
       return b;
     }
-
     if (typeof b === 'undefined') {
       return a;
     }
@@ -64,15 +64,12 @@
   states.Dependent = function (args) {
     var _this = this;
 
-    $.extend(this, {
-      values: {},
-      oldValue: null
-    }, args);
+    $.extend(this, { values: {}, oldValue: null }, args);
+
     this.dependees = this.getDependees();
     Object.keys(this.dependees || {}).forEach(function (selector) {
       _this.initializeDependee(selector, _this.dependees[selector]);
     });
-    this.reevaluate();
   };
 
   states.Dependent.comparisons = {
@@ -86,11 +83,13 @@
       return typeof value === 'string' ? _compare2(reference.toString(), value) : _compare2(reference, value);
     }
   };
+
   states.Dependent.prototype = {
     initializeDependee: function initializeDependee(selector, dependeeStates) {
       var _this2 = this;
 
       this.values[selector] = {};
+
       Object.keys(dependeeStates).forEach(function (i) {
         var state = dependeeStates[i];
 
@@ -99,27 +98,18 @@
         }
 
         state = states.State.sanitize(state);
+
         _this2.values[selector][state.name] = null;
-        var $dependee = $(selector);
-        $dependee.on("state:".concat(state), {
-          selector: selector,
-          state: state
-        }, function (e) {
+
+        $(selector).on('state:' + state, { selector: selector, state: state }, function (e) {
           _this2.update(e.data.selector, e.data.state, e.value);
         });
-        new states.Trigger({
-          selector: selector,
-          state: state
-        });
 
-        if ($dependee.data("trigger:".concat(state.name)) !== undefined) {
-          _this2.values[selector][state.name] = $dependee.data("trigger:".concat(state.name));
-        }
+        new states.Trigger({ selector: selector, state: state });
       });
     },
     compare: function compare(reference, selector, state) {
       var value = this.values[selector][state.name];
-
       if (reference.constructor.name in states.Dependent.comparisons) {
         return states.Dependent.comparisons[reference.constructor.name](reference, value);
       }
@@ -137,21 +127,21 @@
 
       if (value !== this.oldValue) {
         this.oldValue = value;
+
         value = invert(value, this.state.invert);
+
         this.element.trigger({
-          type: "state:".concat(this.state),
+          type: 'state:' + this.state,
           value: value,
           trigger: true
         });
       }
     },
     verifyConstraints: function verifyConstraints(constraints, selector) {
-      var result;
-
+      var result = void 0;
       if ($.isArray(constraints)) {
         var hasXor = $.inArray('xor', constraints) === -1;
         var len = constraints.length;
-
         for (var i = 0; i < len; i++) {
           if (constraints[i] !== 'xor') {
             var constraint = this.checkConstraints(constraints[i], selector, i);
@@ -159,22 +149,20 @@
             if (constraint && (hasXor || result)) {
               return hasXor;
             }
-
             result = result || constraint;
           }
         }
       } else if ($.isPlainObject(constraints)) {
-        for (var n in constraints) {
-          if (constraints.hasOwnProperty(n)) {
-            result = ternary(result, this.checkConstraints(constraints[n], selector, n));
+          for (var n in constraints) {
+            if (constraints.hasOwnProperty(n)) {
+              result = ternary(result, this.checkConstraints(constraints[n], selector, n));
 
-            if (result === false) {
-              return false;
+              if (result === false) {
+                return false;
+              }
             }
           }
         }
-      }
-
       return result;
     },
     checkConstraints: function checkConstraints(value, selector, state) {
@@ -194,14 +182,16 @@
     },
     getDependees: function getDependees() {
       var cache = {};
-      var _compare = this.compare;
 
+      var _compare = this.compare;
       this.compare = function (reference, selector, state) {
         (cache[selector] || (cache[selector] = [])).push(state.name);
       };
 
       this.verifyConstraints(this.constraints);
+
       this.compare = _compare;
+
       return cache;
     }
   };
@@ -212,7 +202,7 @@
     if (this.state in states.Trigger.states) {
       this.element = $(this.selector);
 
-      if (this.element.data("trigger:".concat(this.state)) === undefined) {
+      if (!this.element.data('trigger:' + this.state)) {
         this.initialize();
       }
     }
@@ -225,64 +215,75 @@
       var trigger = states.Trigger.states[this.state];
 
       if (typeof trigger === 'function') {
-        this.element.data('trigger:' + this.state, null);
         trigger.call(window, this.element);
       } else {
         Object.keys(trigger || {}).forEach(function (event) {
           _this3.defaultTrigger(event, trigger[event]);
         });
       }
+
+      this.element.data('trigger:' + this.state, true);
     },
     defaultTrigger: function defaultTrigger(event, valueFn) {
       var oldValue = valueFn.call(this.element);
-      this.element.data('trigger:' + this.state, oldValue);
+
       this.element.on(event, $.proxy(function (e) {
         var value = valueFn.call(this.element, e);
 
         if (oldValue !== value) {
           this.element.trigger({
-            type: "state:".concat(this.state),
+            type: 'state:' + this.state,
             value: value,
             oldValue: oldValue
           });
           oldValue = value;
-          this.element.data('trigger:' + this.state, value);
         }
+      }, this));
+
+      states.postponed.push($.proxy(function () {
+        this.element.trigger({
+          type: 'state:' + this.state,
+          value: oldValue,
+          oldValue: null
+        });
       }, this));
     }
   };
+
   states.Trigger.states = {
     empty: {
       keyup: function keyup() {
         return this.val() === '';
       }
     },
+
     checked: {
       change: function change() {
         var checked = false;
         this.each(function () {
           checked = $(this).prop('checked');
+
           return !checked;
         });
         return checked;
       }
     },
+
     value: {
       keyup: function keyup() {
         if (this.length > 1) {
           return this.filter(':checked').val() || false;
         }
-
         return this.val();
       },
       change: function change() {
         if (this.length > 1) {
           return this.filter(':checked').val() || false;
         }
-
         return this.val();
       }
     },
+
     collapsed: {
       collapsed: function collapsed(e) {
         return typeof e !== 'undefined' && 'value' in e ? e.value : !this.is('[open]');
@@ -293,8 +294,8 @@
   states.State = function (state) {
     this.pristine = state;
     this.name = state;
-    var process = true;
 
+    var process = true;
     do {
       while (this.name.charAt(0) === '!') {
         this.name = this.name.substring(1);
@@ -331,26 +332,27 @@
     closed: 'collapsed',
     readwrite: '!readonly'
   };
+
   states.State.prototype = {
     invert: false,
+
     toString: function toString() {
       return this.name;
     }
   };
+
   var $document = $(document);
   $document.on('state:disabled', function (e) {
     if (e.trigger) {
-      $(e.target).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggleClass('form-disabled', e.value).find('select, input, textarea').prop('disabled', e.value);
+      $(e.target).prop('disabled', e.value).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggleClass('form-disabled', e.value).find('select, input, textarea').prop('disabled', e.value);
     }
   });
+
   $document.on('state:required', function (e) {
     if (e.trigger) {
       if (e.value) {
-        var label = "label".concat(e.target.id ? "[for=".concat(e.target.id, "]") : '');
-        var $label = $(e.target).attr({
-          required: 'required',
-          'aria-required': 'true'
-        }).closest('.js-form-item, .js-form-wrapper').find(label);
+        var label = 'label' + (e.target.id ? '[for=' + e.target.id + ']' : '');
+        var $label = $(e.target).attr({ required: 'required', 'aria-required': 'true' }).closest('.js-form-item, .js-form-wrapper').find(label);
 
         if (!$label.hasClass('js-form-required').length) {
           $label.addClass('js-form-required form-required');
@@ -360,16 +362,19 @@
       }
     }
   });
+
   $document.on('state:visible', function (e) {
     if (e.trigger) {
       $(e.target).closest('.js-form-item, .js-form-submit, .js-form-wrapper').toggle(e.value);
     }
   });
+
   $document.on('state:checked', function (e) {
     if (e.trigger) {
-      $(e.target).closest('.js-form-item, .js-form-wrapper').find('input').prop('checked', e.value);
+      $(e.target).prop('checked', e.value);
     }
   });
+
   $document.on('state:collapsed', function (e) {
     if (e.trigger) {
       if ($(e.target).is('[open]') === e.value) {

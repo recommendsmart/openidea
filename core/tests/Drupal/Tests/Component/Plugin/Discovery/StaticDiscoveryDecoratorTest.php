@@ -23,7 +23,7 @@ class StaticDiscoveryDecoratorTest extends TestCase {
    */
   public function getRegisterDefinitionsCallback() {
     $mock_callable = $this->getMockBuilder('\stdClass')
-      ->addMethods(['registerDefinitionsCallback'])
+      ->setMethods(['registerDefinitionsCallback'])
       ->getMock();
     // Set expectations for the callback method.
     $mock_callable->expects($this->once())
@@ -62,7 +62,7 @@ class StaticDiscoveryDecoratorTest extends TestCase {
     // Mock our StaticDiscoveryDecorator.
     $mock_decorator = $this->getMockBuilder('Drupal\Component\Plugin\Discovery\StaticDiscoveryDecorator')
       ->disableOriginalConstructor()
-      ->addMethods(['registeredDefinitionCallback'])
+      ->setMethods(['registeredDefintionCallback'])
       ->getMock();
 
     // Set up the ::$registerDefinitions property.
@@ -87,7 +87,7 @@ class StaticDiscoveryDecoratorTest extends TestCase {
 
     // Mock a decorated object.
     $mock_decorated = $this->getMockBuilder('Drupal\Component\Plugin\Discovery\DiscoveryInterface')
-      ->onlyMethods(['getDefinitions'])
+      ->setMethods(['getDefinitions'])
       ->getMockForAbstractClass();
     // Return our definitions from getDefinitions().
     $mock_decorated->expects($this->once())
@@ -132,7 +132,7 @@ class StaticDiscoveryDecoratorTest extends TestCase {
     // Mock our StaticDiscoveryDecorator.
     $mock_decorator = $this->getMockBuilder('Drupal\Component\Plugin\Discovery\StaticDiscoveryDecorator')
       ->disableOriginalConstructor()
-      ->addMethods(['registeredDefinitionCallback'])
+      ->setMethods(['registeredDefintionCallback'])
       ->getMock();
 
     // Set up the ::$registerDefinitions property.
@@ -157,7 +157,7 @@ class StaticDiscoveryDecoratorTest extends TestCase {
 
     // Mock a decorated object.
     $mock_decorated = $this->getMockBuilder('Drupal\Component\Plugin\Discovery\DiscoveryInterface')
-      ->onlyMethods(['getDefinitions'])
+      ->setMethods(['getDefinitions'])
       ->getMockForAbstractClass();
     // Our mocked method will return any arguments sent to it.
     $mock_decorated->expects($this->once())
@@ -199,7 +199,7 @@ class StaticDiscoveryDecoratorTest extends TestCase {
   public function testCall($method, $args) {
     // Mock a decorated object.
     $mock_decorated = $this->getMockBuilder('Drupal\Component\Plugin\Discovery\DiscoveryInterface')
-      ->addMethods([$method])
+      ->setMethods([$method])
       ->getMockForAbstractClass();
     // Our mocked method will return any arguments sent to it.
     $mock_decorated->expects($this->once())

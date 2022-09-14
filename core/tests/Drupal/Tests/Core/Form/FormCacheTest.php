@@ -95,7 +95,7 @@ class FormCacheTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->moduleHandler = $this->createMock('Drupal\Core\Extension\ModuleHandlerInterface');
@@ -105,10 +105,10 @@ class FormCacheTest extends UnitTestCase {
     $this->keyValueExpirableFactory = $this->createMock('Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface');
     $this->keyValueExpirableFactory->expects($this->any())
       ->method('get')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         ['form', $this->formCacheStore],
         ['form_state', $this->formStateCacheStore],
-      ]);
+      ]));
 
     $this->csrfToken = $this->getMockBuilder('Drupal\Core\Access\CsrfTokenGenerator')
       ->disableOriginalConstructor()
@@ -311,12 +311,12 @@ class FormCacheTest extends UnitTestCase {
         ],
       ],
     ];
-    $this->moduleHandler->expects($this->exactly(2))
+    $this->moduleHandler->expects($this->at(0))
       ->method('loadInclude')
-      ->withConsecutive(
-        ['a_module', 'the_type', 'some_name'],
-        ['another_module', 'inc', 'another_module'],
-      );
+      ->with('a_module', 'the_type', 'some_name');
+    $this->moduleHandler->expects($this->at(1))
+      ->method('loadInclude')
+      ->with('another_module', 'inc', 'another_module');
     $this->formStateCacheStore->expects($this->once())
       ->method('get')
       ->with($form_build_id)

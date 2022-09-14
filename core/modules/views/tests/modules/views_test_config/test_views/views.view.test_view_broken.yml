@@ -77,6 +77,6 @@ display:
           offset: 0
         type: none
     display_plugin: default
-    display_title: Default
+    display_title: Master
     id: default
     position: 0

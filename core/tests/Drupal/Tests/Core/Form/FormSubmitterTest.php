@@ -35,7 +35,7 @@ class FormSubmitterTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->urlGenerator = $this->createMock(UrlGeneratorInterface::class);
     $this->unroutedUrlAssembler = $this->createMock(UnroutedUrlAssemblerInterface::class);
@@ -138,17 +138,10 @@ class FormSubmitterTest extends UnitTestCase {
     $form_submitter = $this->getFormSubmitter();
     $this->urlGenerator->expects($this->once())
       ->method('generateFromRoute')
-      ->willReturnMap(
-        [
+      ->will($this->returnValueMap([
           ['test_route_a', [], ['absolute' => TRUE], FALSE, 'test-route'],
-          [
-            'test_route_b',
-            ['key' => 'value'],
-            ['absolute' => TRUE],
-            FALSE,
-            'test-route/value',
-          ],
-        ]
+          ['test_route_b', ['key' => 'value'], ['absolute' => TRUE], FALSE, 'test-route/value'],
+        ])
       );
 
     $form_state = $this->createMock('Drupal\Core\Form\FormStateInterface');
@@ -256,7 +249,7 @@ class FormSubmitterTest extends UnitTestCase {
     $request_stack->push(Request::create('/test-path'));
     return $this->getMockBuilder('Drupal\Core\Form\FormSubmitter')
       ->setConstructorArgs([$request_stack, $this->urlGenerator])
-      ->onlyMethods(['batchGet'])
+      ->setMethods(['batchGet', 'drupalInstallationAttempted'])
       ->getMock();
   }
 

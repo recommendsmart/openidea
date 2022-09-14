@@ -115,19 +115,18 @@ class Views {
    * @param string $id
    *   The view ID to load.
    *
-   * @return \Drupal\views\ViewExecutable|null
-   *   A view executable instance or NULL if the view does not exist.
+   * @return \Drupal\views\ViewExecutable
+   *   A view executable instance, from the loaded entity.
    */
   public static function getView($id) {
     $view = \Drupal::entityTypeManager()->getStorage('view')->load($id);
     if ($view) {
       return static::executableFactory()->get($view);
     }
-    return NULL;
   }
 
   /**
-   * Fetches a list of all base tables available.
+   * Fetches a list of all base tables available
    *
    * @param string $type
    *   Either 'display', 'style' or 'row'.
@@ -196,7 +195,6 @@ class Views {
    *
    * @return array
    *   A list of arrays containing the $view_id and $display_id.
-   *
    * @code
    * array(
    *   array($view_id, $display_id),
@@ -310,7 +308,6 @@ class Views {
         $filter = ucfirst($filter);
         $views = call_user_func("static::get{$filter}Views");
         break;
-
       default:
         return [];
     }
@@ -327,7 +324,7 @@ class Views {
     else {
       // Append a ':' to the $exclude_view string so we always have more than one
       // item to explode.
-      [$exclude_view_name, $exclude_view_display] = explode(':', "$exclude_view:");
+      list($exclude_view_name, $exclude_view_display) = explode(':', "$exclude_view:");
     }
 
     $options = [];

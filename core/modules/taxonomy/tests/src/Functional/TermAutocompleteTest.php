@@ -21,7 +21,7 @@ class TermAutocompleteTest extends TaxonomyTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
@@ -66,7 +66,7 @@ class TermAutocompleteTest extends TaxonomyTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a vocabulary.
@@ -139,8 +139,8 @@ class TermAutocompleteTest extends TaxonomyTestBase {
 
     // Retrieve the autocomplete url.
     $this->drupalGet('node/add/article');
-    $field = $this->assertSession()->fieldExists("{$this->fieldName}[0][target_id]");
-    $this->autocompleteUrl = $this->getAbsoluteUrl($field->getAttribute('data-autocomplete-path'));
+    $result = $this->xpath('//input[@name="' . $this->fieldName . '[0][target_id]"]');
+    $this->autocompleteUrl = $this->getAbsoluteUrl($result[0]->getAttribute('data-autocomplete-path'));
   }
 
   /**
@@ -172,21 +172,21 @@ class TermAutocompleteTest extends TaxonomyTestBase {
       $this->autocompleteUrl,
       ['query' => ['q' => 'zzz']]
     );
-    $this->assertEmpty($data, 'Autocomplete returned no results');
+    $this->assertTrue(empty($data), 'Autocomplete returned no results');
 
     // Test that only one matching term found, when only one matches.
     $data = $this->drupalGetJson(
       $this->autocompleteUrl,
       ['query' => ['q' => 'aaa 10']]
     );
-    $this->assertCount(1, $data, 'Autocomplete returned 1 result');
+    $this->assertEqual(1, count($data), 'Autocomplete returned 1 result');
 
     // Test the correct number of matches when multiple are partial matches.
     $data = $this->drupalGetJson(
       $this->autocompleteUrl,
       ['query' => ['q' => 'aaa 1']]
     );
-    $this->assertCount(3, $data, 'Autocomplete returned 3 results');
+    $this->assertEqual(3, count($data), 'Autocomplete returned 3 results');
 
     // Tests that only 10 results are returned, even if there are more than 10
     // matches.
@@ -194,7 +194,7 @@ class TermAutocompleteTest extends TaxonomyTestBase {
       $this->autocompleteUrl,
       ['query' => ['q' => 'aaa']]
     );
-    $this->assertCount(10, $data, 'Autocomplete returned only 10 results (for over 10 matches)');
+    $this->assertEqual(10, count($data), 'Autocomplete returned only 10 results (for over 10 matches)');
   }
 
   /**
@@ -228,7 +228,7 @@ class TermAutocompleteTest extends TaxonomyTestBase {
       ['query' => ['q' => 'bbb']]
     );
 
-    $this->assertSame($expected, $data);
+    $this->assertIdentical($expected, $data);
   }
 
 }

@@ -31,7 +31,7 @@ class MachineNameControllerTest extends UnitTestCase {
    */
   protected $tokenGenerator;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // Create the machine name controller.
     $this->tokenGenerator = $this->prophesize(CsrfTokenGenerator::class);
@@ -53,7 +53,6 @@ class MachineNameControllerTest extends UnitTestCase {
    *     - The expected content of the JSONresponse.
    */
   public function providerTestMachineNameController() {
-    // cspell:ignore äwesome
     $valid_data = [
       [['text' => 'Bob', 'langcode' => 'en'], '"Bob"'],
       [['text' => 'Bob', 'langcode' => 'en', 'lowercase' => TRUE], '"bob"'],

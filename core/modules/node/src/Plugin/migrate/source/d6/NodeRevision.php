@@ -7,11 +7,6 @@ use Drupal\Core\Database\Query\SelectInterface;
 /**
  * Drupal 6 node revision source from database.
  *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
- *
  * @MigrateSource(
  *   id = "d6_node_revision",
  *   source_module = "node"

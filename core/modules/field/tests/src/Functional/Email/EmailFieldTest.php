@@ -19,7 +19,7 @@ class EmailFieldTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'entity_test', 'field_ui'];
+  public static $modules = ['node', 'entity_test', 'field_ui'];
 
   /**
    * {@inheritdoc}
@@ -40,7 +40,7 @@ class EmailFieldTest extends BrowserTestBase {
    */
   protected $field;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalLogin($this->drupalCreateUser([
@@ -89,26 +89,26 @@ class EmailFieldTest extends BrowserTestBase {
 
     // Display creation form.
     $this->drupalGet('entity_test/add');
-    $this->assertSession()->fieldValueEquals("{$field_name}[0][value]", '');
-    $this->assertSession()->responseContains('placeholder="example@example.com"');
+    $this->assertFieldByName("{$field_name}[0][value]", '', 'Widget found.');
+    $this->assertRaw('placeholder="example@example.com"');
 
     // Submit a valid email address and ensure it is accepted.
     $value = 'test@example.com';
     $edit = [
       "{$field_name}[0][value]" => $value,
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
     preg_match('|entity_test/manage/(\d+)|', $this->getUrl(), $match);
     $id = $match[1];
-    $this->assertSession()->pageTextContains('entity_test ' . $id . ' has been created.');
-    $this->assertSession()->responseContains($value);
+    $this->assertText(t('entity_test @id has been created.', ['@id' => $id]));
+    $this->assertRaw($value);
 
     // Verify that a mailto link is displayed.
     $entity = EntityTest::load($id);
     $display = $display_repository->getViewDisplay($entity->getEntityTypeId(), $entity->bundle(), 'full');
     $content = $display->build($entity);
     $rendered_content = (string) \Drupal::service('renderer')->renderRoot($content);
-    $this->assertStringContainsString('href="mailto:test@example.com"', $rendered_content);
+    $this->assertContains('href="mailto:test@example.com"', $rendered_content);
   }
 
 }

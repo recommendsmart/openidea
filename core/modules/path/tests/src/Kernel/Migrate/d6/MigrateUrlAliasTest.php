@@ -20,18 +20,20 @@ class MigrateUrlAliasTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'content_translation',
     'path',
     'path_alias',
     'menu_ui',
+    // Required for translation migrations.
+    'migrate_drupal_multilingual',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('node');
     $this->installEntitySchema('path_alias');
@@ -58,10 +60,8 @@ class MigrateUrlAliasTest extends MigrateDrupal6TestBase {
    *   The path conditions.
    * @param \Drupal\path_alias\PathAliasInterface $path_alias
    *   The path alias.
-   *
-   * @internal
    */
-  private function assertPath(int $pid, array $conditions, PathAliasInterface $path_alias): void {
+  private function assertPath($pid, $conditions, PathAliasInterface $path_alias) {
     $this->assertSame($pid, (int) $path_alias->id());
     $this->assertSame($conditions['alias'], $path_alias->getAlias());
     $this->assertSame($conditions['langcode'], $path_alias->get('langcode')->value);
@@ -69,7 +69,7 @@ class MigrateUrlAliasTest extends MigrateDrupal6TestBase {
   }
 
   /**
-   * Tests the url alias migration.
+   * Test the url alias migration.
    */
   public function testUrlAlias() {
     $id_map = $this->getMigration('d6_url_alias')->getIdMap();
@@ -124,9 +124,14 @@ class MigrateUrlAliasTest extends MigrateDrupal6TestBase {
       'langcode' => 'und',
     ];
     $this->assertPath(8, $conditions, $path_alias);
+  }
 
-    // Tests the URL alias migration with translated nodes.
+  /**
+   * Test the URL alias migration with translated nodes.
+   */
+  public function testUrlAliasWithTranslatedNodes() {
     // Alias for the 'The Real McCoy' node in English.
+
     $path_alias = $this->loadPathAliasByConditions(['alias' => '/the-real-mccoy']);
     $this->assertSame('/node/10', $path_alias->getPath());
     $this->assertSame('en', $path_alias->get('langcode')->value);

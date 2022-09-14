@@ -97,7 +97,6 @@ class ShortcutSet extends ConfigEntityBundleBase implements ShortcutSetInterface
 
       // Next, delete the shortcuts for this set.
       $shortcut_ids = \Drupal::entityQuery('shortcut')
-        ->accessCheck(FALSE)
         ->condition('shortcut_set', $entity->id(), '=')
         ->execute();
 

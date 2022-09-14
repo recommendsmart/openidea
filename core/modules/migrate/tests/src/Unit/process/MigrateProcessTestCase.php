@@ -12,7 +12,7 @@ abstract class MigrateProcessTestCase extends MigrateTestCase {
   protected $plugin;
 
   /**
-   * @var \Drupal\migrate\Row|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\migrate\Row
    */
   protected $row;
 

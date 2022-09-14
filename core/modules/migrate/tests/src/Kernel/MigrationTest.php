@@ -18,7 +18,7 @@ class MigrationTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['migrate', 'field'];
+  public static $modules = ['migrate', 'field'];
 
   /**
    * Tests Migration::set().
@@ -30,16 +30,16 @@ class MigrationTest extends KernelTestBase {
       'source' => ['plugin' => 'empty'],
       'destination' => ['plugin' => 'entity:entity_view_mode'],
     ]);
-    $this->assertEquals('empty', $migration->getSourcePlugin()->getPluginId());
-    $this->assertEquals('entity:entity_view_mode', $migration->getDestinationPlugin()->getPluginId());
+    $this->assertEqual('empty', $migration->getSourcePlugin()->getPluginId());
+    $this->assertEqual('entity:entity_view_mode', $migration->getDestinationPlugin()->getPluginId());
 
     // Test the source plugin is invalidated.
     $migration->set('source', ['plugin' => 'embedded_data', 'data_rows' => [], 'ids' => []]);
-    $this->assertEquals('embedded_data', $migration->getSourcePlugin()->getPluginId());
+    $this->assertEqual('embedded_data', $migration->getSourcePlugin()->getPluginId());
 
     // Test the destination plugin is invalidated.
     $migration->set('destination', ['plugin' => 'null']);
-    $this->assertEquals('null', $migration->getDestinationPlugin()->getPluginId());
+    $this->assertEqual('null', $migration->getDestinationPlugin()->getPluginId());
   }
 
 }

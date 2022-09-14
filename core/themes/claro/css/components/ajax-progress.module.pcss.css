@@ -79,8 +79,7 @@
 /**
  * Full screen throbber.
  */
-.ajax-progress--fullscreen,
-.ui-dialog .ajax-progress--throbber {
+.ajax-progress--fullscreen {
   position: fixed;
   z-index: 1000;
   top: 50%;
@@ -94,8 +93,7 @@
   background: var(--color-white);
   box-shadow: 0 0.25rem 0.625rem var(--jui-dropdown-shadow-color);
 }
-.ajax-progress__throbber--fullscreen,
-.ui-dialog .ajax-progress__throbber {
+.ajax-progress__throbber--fullscreen {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -105,10 +103,6 @@
   content: "";
   border: 3px solid var(--color-absolutezero);
   border-right: 3px dotted transparent;
-}
-
-.ui-dialog .ajax-progress__message {
-  display: none;
 }
 
 @media screen and (-ms-high-contrast: active) {

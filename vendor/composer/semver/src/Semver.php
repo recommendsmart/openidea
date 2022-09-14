@@ -37,18 +37,18 @@ class Semver
 
         $versionParser = self::$versionParser;
         $provider = new Constraint('==', $versionParser->normalize($version));
-        $parsedConstraints = $versionParser->parseConstraints($constraints);
+        $constraints = $versionParser->parseConstraints($constraints);
 
-        return $parsedConstraints->matches($provider);
+        return $constraints->matches($provider);
     }
 
     /**
      * Return all versions that satisfy given constraints.
      *
-     * @param string[] $versions
-     * @param string   $constraints
+     * @param array $versions
+     * @param string $constraints
      *
-     * @return string[]
+     * @return array
      */
     public static function satisfiedBy(array $versions, $constraints)
     {
@@ -62,9 +62,9 @@ class Semver
     /**
      * Sort given array of versions.
      *
-     * @param string[] $versions
+     * @param array $versions
      *
-     * @return string[]
+     * @return array
      */
     public static function sort(array $versions)
     {
@@ -74,9 +74,9 @@ class Semver
     /**
      * Sort given array of versions in reverse.
      *
-     * @param string[] $versions
+     * @param array $versions
      *
-     * @return string[]
+     * @return array
      */
     public static function rsort(array $versions)
     {
@@ -84,10 +84,10 @@ class Semver
     }
 
     /**
-     * @param string[] $versions
-     * @param int      $direction
+     * @param array $versions
+     * @param int $direction
      *
-     * @return string[]
+     * @return array
      */
     private static function usort(array $versions, $direction)
     {
@@ -101,9 +101,7 @@ class Semver
         // Normalize outside of usort() scope for minor performance increase.
         // Creates an array of arrays: [[normalized, key], ...]
         foreach ($versions as $key => $version) {
-            $normalizedVersion = $versionParser->normalize($version);
-            $normalizedVersion = $versionParser->normalizeDefaultBranch($normalizedVersion);
-            $normalized[] = array($normalizedVersion, $key);
+            $normalized[] = array($versionParser->normalize($version), $key);
         }
 
         usort($normalized, function (array $left, array $right) use ($direction) {

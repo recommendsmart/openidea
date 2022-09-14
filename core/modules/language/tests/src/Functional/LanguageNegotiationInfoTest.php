@@ -19,7 +19,7 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['language', 'content_translation'];
+  public static $modules = ['language', 'content_translation'];
 
   /**
    * {@inheritdoc}
@@ -29,17 +29,11 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-      'access administration pages',
-      'view the administration theme',
-      'administer modules',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer languages', 'access administration pages', 'view the administration theme', 'administer modules']);
     $this->drupalLogin($admin_user);
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'it'], 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', ['predefined_langcode' => 'it'], t('Add language'));
   }
 
   /**
@@ -91,7 +85,7 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
 
     $type = LanguageInterface::TYPE_CONTENT;
     $language_types = $this->languageManager()->getLanguageTypes();
-    $this->assertContains($type, $language_types, 'Content language type is configurable.');
+    $this->assertTrue(in_array($type, $language_types), 'Content language type is configurable.');
 
     // Enable some core and custom language negotiation methods. The test
     // language type is supposed to be configurable.
@@ -105,8 +99,7 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
       $test_type . '[enabled][' . $test_method_id . ']' => TRUE,
       $test_type . '[configurable]' => TRUE,
     ];
-    $this->drupalGet('admin/config/regional/language/detection');
-    $this->submitForm($edit, 'Save settings');
+    $this->drupalPostForm('admin/config/regional/language/detection', $edit, t('Save settings'));
 
     // Alter language negotiation info to remove interface language negotiation
     // method.
@@ -117,19 +110,18 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
     $negotiation = $this->config('language.types')->get('negotiation.' . $type . '.enabled');
     $this->assertFalse(isset($negotiation[$interface_method_id]), 'Interface language negotiation method removed from the stored settings.');
 
-    // Check that the interface language negotiation method is unavailable.
     $this->drupalGet('admin/config/regional/language/detection');
-    $this->assertSession()->fieldNotExists($form_field);
+    $this->assertNoFieldByName($form_field, NULL, 'Interface language negotiation method unavailable.');
 
     // Check that type-specific language negotiation methods can be assigned
     // only to the corresponding language types.
     foreach ($this->languageManager()->getLanguageTypes() as $type) {
       $form_field = $type . '[enabled][test_language_negotiation_method_ts]';
       if ($type == $test_type) {
-        $this->assertSession()->fieldExists($form_field);
+        $this->assertFieldByName($form_field, NULL, new FormattableMarkup('Type-specific test language negotiation method available for %type.', ['%type' => $type]));
       }
       else {
-        $this->assertSession()->fieldNotExists($form_field);
+        $this->assertNoFieldByName($form_field, NULL, new FormattableMarkup('Type-specific test language negotiation method unavailable for %type.', ['%type' => $type]));
       }
     }
 
@@ -139,7 +131,7 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
     foreach ($this->languageManager()->getDefinedLanguageTypes() as $type) {
       $langcode = $last[$type];
       $value = $type == LanguageInterface::TYPE_CONTENT || strpos($type, 'test') !== FALSE ? 'it' : 'en';
-      $this->assertEquals($langcode, $value, new FormattableMarkup('The negotiated language for %type is %language', ['%type' => $type, '%language' => $value]));
+      $this->assertEqual($langcode, $value, new FormattableMarkup('The negotiated language for %type is %language', ['%type' => $type, '%language' => $value]));
     }
 
     // Uninstall language_test and check that everything is set back to the
@@ -149,7 +141,7 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
 
     // Check that only the core language types are available.
     foreach ($this->languageManager()->getDefinedLanguageTypes() as $type) {
-      $this->assertStringNotContainsString('test', $type, new FormattableMarkup('The %type language is still available', ['%type' => $type]));
+      $this->assertTrue(strpos($type, 'test') === FALSE, new FormattableMarkup('The %type language is still available', ['%type' => $type]));
     }
 
     // Check that fixed language types are properly configured, even those
@@ -162,8 +154,8 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
     $this->assertFalse(isset($negotiation[$test_method_id]), 'The disabled test language negotiation method is not part of the content language negotiation settings.');
 
     // Check that configuration page presents the correct options and settings.
-    $this->assertSession()->pageTextNotContains("Test language detection");
-    $this->assertSession()->pageTextNotContains("This is a test language negotiation method");
+    $this->assertNoRaw(t('Test language detection'), 'No test language type configuration available.');
+    $this->assertNoRaw(t('This is a test language negotiation method'), 'No test language negotiation method available.');
   }
 
   /**
@@ -190,18 +182,15 @@ class LanguageNegotiationInfoTest extends BrowserTestBase {
 
     // Editing config.
     $edit = [$test_type . '[configurable]' => TRUE];
-    $this->drupalGet('admin/config/regional/language/detection');
-    $this->submitForm($edit, 'Save settings');
+    $this->drupalPostForm('admin/config/regional/language/detection', $edit, t('Save settings'));
     $this->assertTrue($this->isLanguageTypeConfigurable($test_type), 'Language type is now configurable.');
 
     // After installing another module, the config should be the same.
-    $this->drupalGet('admin/modules');
-    $this->submitForm(['modules[test_module][enable]' => 1], 'Install');
+    $this->drupalPostForm('admin/modules', ['modules[test_module][enable]' => 1], t('Install'));
     $this->assertTrue($this->isLanguageTypeConfigurable($test_type), 'Language type is still configurable.');
 
     // After uninstalling the other module, the config should be the same.
-    $this->drupalGet('admin/modules/uninstall');
-    $this->submitForm(['uninstall[test_module]' => 1], 'Uninstall');
+    $this->drupalPostForm('admin/modules/uninstall', ['uninstall[test_module]' => 1], t('Uninstall'));
     $this->assertTrue($this->isLanguageTypeConfigurable($test_type), 'Language type is still configurable.');
   }
 

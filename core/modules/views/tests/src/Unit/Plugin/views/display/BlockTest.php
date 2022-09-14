@@ -34,12 +34,12 @@ class BlockTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->executable = $this->getMockBuilder('Drupal\views\ViewExecutable')
       ->disableOriginalConstructor()
-      ->onlyMethods(['executeDisplay', 'setDisplay', 'setItemsPerPage'])
+      ->setMethods(['executeDisplay', 'setDisplay', 'setItemsPerPage'])
       ->getMock();
     $this->executable->expects($this->any())
       ->method('setDisplay')
@@ -48,7 +48,7 @@ class BlockTest extends UnitTestCase {
 
     $this->blockDisplay = $this->executable->display_handler = $this->getMockBuilder('Drupal\views\Plugin\views\display\Block')
       ->disableOriginalConstructor()
-      ->onlyMethods([])
+      ->setMethods(NULL)
       ->getMock();
 
     $this->blockDisplay->view = $this->executable;

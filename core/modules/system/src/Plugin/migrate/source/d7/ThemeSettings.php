@@ -5,13 +5,7 @@ namespace Drupal\system\Plugin\migrate\source\d7;
 use Drupal\migrate_drupal\Plugin\migrate\source\VariableMultiRow;
 
 /**
- * Drupal 7 theme settings source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate_drupal\Plugin\migrate\source\VariableMultiRow
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Drupal 7 system source from database.
  *
  * @MigrateSource(
  *   id = "d7_theme_settings",

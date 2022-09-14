@@ -45,7 +45,7 @@ class WorkspaceCRUDTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'user',
     'system',
     'workspaces',
@@ -59,11 +59,12 @@ class WorkspaceCRUDTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->setUpCurrentUser();
 
+    $this->installSchema('system', ['key_value_expire']);
     $this->installSchema('node', ['node_access']);
 
     $this->installEntitySchema('workspace');

@@ -34,15 +34,19 @@ class ViewsExposedForm extends FormBase {
   protected $currentPathStack;
 
   /**
-   * Constructs a new ViewsExposedForm.
+   * Constructs a new ViewsExposedForm
    *
    * @param \Drupal\views\ExposedFormCache $exposed_form_cache
    *   The exposed form cache.
    * @param \Drupal\Core\Path\CurrentPathStack $current_path_stack
    *   The current path stack.
    */
-  public function __construct(ExposedFormCache $exposed_form_cache, CurrentPathStack $current_path_stack) {
+  public function __construct(ExposedFormCache $exposed_form_cache, CurrentPathStack $current_path_stack = NULL) {
     $this->exposedFormCache = $exposed_form_cache;
+    if ($current_path_stack === NULL) {
+      @trigger_error('The path.current service must be passed to ViewsExposedForm::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/3066604', E_USER_DEPRECATED);
+      $current_path_stack = \Drupal::service('path.current');
+    }
     $this->currentPathStack = $current_path_stack;
   }
 
@@ -81,16 +85,6 @@ class ViewsExposedForm extends FormBase {
     /** @var \Drupal\views\ViewExecutable $view */
     $view = $form_state->get('view');
     $display = &$form_state->get('display');
-    // Existing arguments need to be passed as this exposed form might
-    // be used in a block. Without this contextual views arguments
-    // will be lost.
-    /** @var \Drupal\Core\Routing\CurrentRouteMatch $route_match */
-    $route_match = \Drupal::service('current_route_match');
-    $route_name = $route_match->getRouteName();
-    if ($route_name !== 'views.ajax' && empty($view->args)) {
-      $args = $this->buildArgs();
-      $view->setArguments($args);
-    }
 
     $form_state->setUserInput($view->getExposedInput());
 
@@ -111,7 +105,7 @@ class ViewsExposedForm extends FormBase {
           // Grouped exposed filters have their own forms.
           // Instead of render the standard exposed form, a new Select or
           // Radio form field is rendered with the available groups.
-          // When a user chooses an option the selected value is split
+          // When an user choose an option the selected value is split
           // into the operator and value that the item represents.
           if ($handler->isAGroup()) {
             $handler->groupForm($form, $form_state);
@@ -167,45 +161,6 @@ class ViewsExposedForm extends FormBase {
   }
 
   /**
-   * @return array
-   *
-   * This code copied from \Drupal\views\Routing\ViewPageController::handle
-   *
-   * TODO: Don't repeat it.
-   *
-   * @see \Drupal\views\Routing\ViewPageController::handle
-   * @see https://www.drupal.org/project/drupal/issues/2821962
-   */
-  protected function buildArgs() {
-    /** @var \Drupal\Core\Routing\CurrentRouteMatch $route_match */
-    $route_match = \Drupal::service('current_route_match');
-    $args = [];
-    $route = $route_match->getRouteObject();
-    $map = $route->hasOption('_view_argument_map') ? $route->getOption('_view_argument_map') : [];
-
-    foreach ($map as $attribute => $parameter_name) {
-      // Allow parameters be pulled from the request.
-      // The map stores the actual name of the parameter in the request. Views
-      // which override existing controller, use for example 'node' instead of
-      // arg_nid as name.
-      if (isset($map[$attribute])) {
-        $attribute = $map[$attribute];
-      }
-      if ($arg = $route_match->getRawParameter($attribute)) {
-      }
-      else {
-        $arg = $route_match->getParameter($attribute);
-      }
-
-      if (isset($arg)) {
-        $args[] = $arg;
-      }
-    }
-
-    return $args;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
@@ -257,7 +212,7 @@ class ViewsExposedForm extends FormBase {
       if (!empty($key) && !in_array($key, $exclude)) {
         if (is_array($value)) {
           // Handle checkboxes, we only want to include the checked options.
-          // @todo revisit the need for this when
+          // @todo: revisit the need for this when
           //   https://www.drupal.org/node/342316 is resolved.
           $checked = Checkboxes::getCheckedCheckboxes($value);
           foreach ($checked as $option_id) {

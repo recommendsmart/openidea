@@ -41,9 +41,6 @@ process:
         - module
         - 'constants/suffix'
   path: module
-  configuration:
-    plugin: default_value
-    default_value: [ ]
   'configuration/rankings':
     plugin: search_configuration_rankings
 destination:

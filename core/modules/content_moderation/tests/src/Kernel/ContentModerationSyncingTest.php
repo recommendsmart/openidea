@@ -18,7 +18,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'user',
     'workflows',
     'content_moderation',
@@ -28,7 +28,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('workflow');
     $this->installEntitySchema('content_moderation_state');
@@ -40,7 +40,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   }
 
   /**
-   * Tests no new revision is forced during a sync.
+   * Test no new revision is forced during a sync.
    */
   public function testNoRevisionForcedDuringSync() {
     $entity = EntityTestMulRevPub::create([
@@ -58,7 +58,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   }
 
   /**
-   * Tests changing the moderation state during a sync.
+   * Test changing the moderation state during a sync.
    */
   public function testSingleRevisionStateChangedDuringSync() {
     $entity = EntityTestMulRevPub::create([
@@ -84,7 +84,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   }
 
   /**
-   * Tests state changes with multiple revisions during a sync.
+   * Test state changes with multiple revisions during a sync.
    */
   public function testMultipleRevisionStateChangedDuringSync() {
     $entity = EntityTestMulRevPub::create([
@@ -112,7 +112,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   }
 
   /**
-   * Tests modifying a previous revision during a sync.
+   * Test modifying a previous revision during a sync.
    */
   public function testUpdatingPreviousRevisionDuringSync() {
     $storage = $this->container->get('entity_type.manager')->getStorage('entity_test_mulrevpub');
@@ -139,7 +139,7 @@ class ContentModerationSyncingTest extends KernelTestBase {
   }
 
   /**
-   * Tests a moderation state changed on a previous revision during a sync.
+   * Test a moderation state changed on a previous revision during a sync.
    */
   public function testStateChangedPreviousRevisionDuringSync() {
     $storage = $this->container->get('entity_type.manager')->getStorage('entity_test_mulrevpub');
@@ -192,7 +192,6 @@ class ContentModerationSyncingTest extends KernelTestBase {
     return array_map(function ($revision_id) use ($storage) {
       return $storage->loadRevision($revision_id)->name->value;
     }, array_keys($storage->getQuery()
-      ->accessCheck(FALSE)
       ->allRevisions()
       ->condition('id', $entity->id())
       ->sort('revision_id', 'ASC')

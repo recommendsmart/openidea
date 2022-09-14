@@ -3,7 +3,6 @@
 namespace Drupal\Tests\rest\Functional\EntityResource;
 
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Extension\ExtensionLifecycle;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -32,7 +31,7 @@ class EntityResourceRestTestCoverageTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $all_modules = $this->container->get('extension.list.module')->getList();
@@ -43,7 +42,7 @@ class EntityResourceRestTestCoverageTest extends BrowserTestBase {
         empty($module->info['hidden']) &&
         $module->status == FALSE &&
         $module->info['package'] !== 'Testing' &&
-        $module->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER] !== ExtensionLifecycle::EXPERIMENTAL;
+        $module->info['package'] !== 'Core (Experimental)';
     });
 
     $this->container->get('module_installer')->install(array_keys($stable_core_modules));

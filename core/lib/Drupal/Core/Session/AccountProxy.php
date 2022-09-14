@@ -3,7 +3,7 @@
 namespace Drupal\Core\Session;
 
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * A proxied implementation of AccountInterface.
@@ -35,19 +35,33 @@ class AccountProxy implements AccountProxyInterface {
   protected $id = 0;
 
   /**
+   * Initial account id.
+   *
+   * @var int
+   *
+   * @deprecated in drupal:8.3.0 and is removed from drupal:9.0.0. Use
+   *   $this->id instead.
+   */
+  protected $initialAccountId;
+
+  /**
    * Event dispatcher.
    *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected $eventDispatcher;
 
   /**
    * AccountProxy constructor.
    *
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   Event dispatcher.
    */
-  public function __construct(EventDispatcherInterface $eventDispatcher) {
+  public function __construct(EventDispatcherInterface $eventDispatcher = NULL) {
+    if (!$eventDispatcher) {
+      @trigger_error('Calling AccountProxy::__construct() without the $eventDispatcher argument is deprecated in drupal:8.8.0. The $eventDispatcher argument will be required in drupal:9.0.0. See https://www.drupal.org/node/3009387', E_USER_DEPRECATED);
+      $eventDispatcher = \Drupal::service('event_dispatcher');
+    }
     $this->eventDispatcher = $eventDispatcher;
   }
 
@@ -62,7 +76,7 @@ class AccountProxy implements AccountProxyInterface {
     }
     $this->account = $account;
     $this->id = $account->id();
-    $this->eventDispatcher->dispatch(new AccountSetEvent($account), AccountEvents::SET_USER);
+    $this->eventDispatcher->dispatch(AccountEvents::SET_USER, new AccountSetEvent($account));
   }
 
   /**
@@ -136,6 +150,14 @@ class AccountProxy implements AccountProxyInterface {
   /**
    * {@inheritdoc}
    */
+  public function getUsername() {
+    @trigger_error('\Drupal\Core\Session\AccountInterface::getUsername() is deprecated in Drupal 8.0.0, will be removed before Drupal 9.0.0. Use \Drupal\Core\Session\AccountInterface::getAccountName() or \Drupal\user\UserInterface::getDisplayName() instead. See https://www.drupal.org/node/2572493', E_USER_DEPRECATED);
+    return $this->getAccountName();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getAccountName() {
     return $this->getAccount()->getAccountName();
   }
@@ -176,19 +198,19 @@ class AccountProxy implements AccountProxyInterface {
       throw new \LogicException('AccountProxyInterface::setInitialAccountId() cannot be called after an account was set on the AccountProxy');
     }
 
-    $this->id = $account_id;
+    $this->id = $this->initialAccountId = $account_id;
   }
 
   /**
    * Load a user entity.
    *
-   * The entity type manager requires additional initialization code and cache
+   * The entity manager requires additional initialization code and cache
    * clearing after the list of modules is changed. Therefore it is necessary to
    * retrieve it as late as possible.
    *
    * Because of serialization issues it is currently not possible to inject the
    * container into the AccountProxy. Thus it is necessary to retrieve the
-   * entity type manager statically.
+   * entity manager statically.
    *
    * @see https://www.drupal.org/node/2430447
    *

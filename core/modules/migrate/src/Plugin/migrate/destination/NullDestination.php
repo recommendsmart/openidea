@@ -2,6 +2,7 @@
 
 namespace Drupal\migrate\Plugin\migrate\destination;
 
+use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
 
 /**
@@ -24,7 +25,7 @@ class NullDestination extends DestinationBase {
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(MigrationInterface $migration = NULL) {
     return [];
   }
 

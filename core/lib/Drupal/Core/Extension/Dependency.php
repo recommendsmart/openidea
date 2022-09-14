@@ -6,8 +6,13 @@ use Drupal\Component\Version\Constraint;
 
 /**
  * A value object representing dependency information.
+ *
+ * This class implements \ArrayAccess to provide a backwards compatibility layer
+ * for Drupal 8.x. This will be removed before Drupal 9.x.
+ *
+ * @see https://www.drupal.org/node/2756875
  */
-class Dependency {
+class Dependency implements \ArrayAccess {
 
   /**
    * The name of the dependency.
@@ -110,6 +115,56 @@ class Dependency {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function offsetExists($offset) {
+    @trigger_error(sprintf('Array access to %s properties is deprecated. Use accessor methods instead. See https://www.drupal.org/node/2756875', __CLASS__), E_USER_DEPRECATED);
+    return in_array($offset, ['name', 'project', 'original_version', 'versions'], TRUE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function offsetGet($offset) {
+    switch ($offset) {
+      case 'name':
+        @trigger_error(sprintf('Array access to the %s name property is deprecated. Use %s::getName() instead. See https://www.drupal.org/node/2756875', __CLASS__, __CLASS__), E_USER_DEPRECATED);
+        return $this->getName();
+
+      case 'project':
+        @trigger_error(sprintf('Array access to the %s project property is deprecated. Use %s::getProject() instead. See https://www.drupal.org/node/2756875', __CLASS__, __CLASS__), E_USER_DEPRECATED);
+        return $this->getProject();
+
+      case 'original_version':
+        @trigger_error(sprintf('Array access to the %s original_version property is deprecated. Use %s::getConstraintString() instead. See https://www.drupal.org/node/2756875', __CLASS__, __CLASS__), E_USER_DEPRECATED);
+        $constraint = $this->getConstraintString();
+        if ($constraint) {
+          $constraint = ' (' . $constraint . ')';
+        }
+        return $constraint;
+
+      case 'versions':
+        @trigger_error(sprintf('Array access to the %s versions property is deprecated. See https://www.drupal.org/node/2756875', __CLASS__), E_USER_DEPRECATED);
+        return $this->getConstraint()->toArray();
+    }
+    throw new \InvalidArgumentException("The $offset key is not supported");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function offsetSet($offset, $value) {
+    throw new \BadMethodCallException(sprintf('%s() is not supported', __METHOD__));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function offsetUnset($offset) {
+    throw new \BadMethodCallException(sprintf('%s() is not supported', __METHOD__));
+  }
+
+  /**
    * Creates a new instance of this class from a dependency string.
    *
    * @param string $dependency
@@ -124,7 +179,7 @@ class Dependency {
    */
   public static function createFromString($dependency) {
     if (strpos($dependency, ':') !== FALSE) {
-      [$project, $dependency] = explode(':', $dependency);
+      list($project, $dependency) = explode(':', $dependency);
     }
     else {
       $project = '';
@@ -139,7 +194,7 @@ class Dependency {
    * Prevents unnecessary serialization of constraint objects.
    *
    * @return array
-   *   The properties to serialize.
+   *   The properties to seriailize.
    */
   public function __sleep() {
     return ['name', 'project', 'constraintString'];

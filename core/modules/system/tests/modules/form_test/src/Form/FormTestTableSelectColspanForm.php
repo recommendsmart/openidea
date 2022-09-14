@@ -22,7 +22,7 @@ class FormTestTableSelectColspanForm extends FormTestTableSelectFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    [$header, $options] = _form_test_tableselect_get_data();
+    list($header, $options) = _form_test_tableselect_get_data();
 
     // Change the data so that the third column has colspan=2.
     $header['three'] = ['data' => 'Three', 'colspan' => 2];

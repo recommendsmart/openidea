@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\system\Functional\Menu;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Url;
 
 /**
@@ -35,11 +36,11 @@ trait AssertMenuActiveTrailTrait {
           ':href' => Url::fromUri('base:' . $link_path)->toString(),
           ':title' => $link_title,
         ];
-        $xpath .= $this->assertSession()->buildXPathQuery($part_xpath, $part_args);
+        $xpath .= $this->buildXPathQuery($part_xpath, $part_args);
         $i++;
       }
       $elements = $this->xpath($xpath);
-      $this->assertNotEmpty($elements, 'Active trail to current page should be visible in menu tree.');
+      $this->assertTrue(!empty($elements), 'Active trail to current page was found in menu tree.');
 
       // Append prefix for active link asserted below.
       $xpath .= '/following-sibling::ul/descendant::';
@@ -56,7 +57,10 @@ trait AssertMenuActiveTrailTrait {
       ':title' => $active_link_title,
     ];
     $elements = $this->xpath($xpath, $args);
-    $this->assertNotEmpty($elements, sprintf('Active link %s should be visible in menu tree, including active trail links %s.', $active_link_title, implode(' » ', $tree)));
+    $this->assertTrue(!empty($elements), new FormattableMarkup('Active link %title was found in menu tree, including active trail links %tree.', [
+      '%title' => $active_link_title,
+      '%tree' => implode(' » ', $tree),
+    ]));
   }
 
 }

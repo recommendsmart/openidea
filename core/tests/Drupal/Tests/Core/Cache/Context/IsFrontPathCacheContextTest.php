@@ -32,7 +32,6 @@ class IsFrontPathCacheContextTest extends UnitTestCase {
    * Creates a PathMatcherInterface prophecy.
    *
    * @param bool $is_front
-   *   Whether the page is the front page.
    *
    * @return \Prophecy\Prophecy\ObjectProphecy
    */

@@ -13,11 +13,11 @@ class QueryTest extends DatabaseTestBase {
    * Tests that we can pass an array of values directly in the query.
    */
   public function testArraySubstitution() {
-    $names = $this->connection->query('SELECT [name] FROM {test} WHERE [age] IN ( :ages[] ) ORDER BY [age]', [':ages[]' => [25, 26, 27]])->fetchAll();
-    $this->assertCount(3, $names, 'Correct number of names returned');
+    $names = $this->connection->query('SELECT name FROM {test} WHERE age IN ( :ages[] ) ORDER BY age', [':ages[]' => [25, 26, 27]])->fetchAll();
+    $this->assertEqual(count($names), 3, 'Correct number of names returned');
 
-    $names = $this->connection->query('SELECT [name] FROM {test} WHERE [age] IN ( :ages[] ) ORDER BY [age]', [':ages[]' => [25]])->fetchAll();
-    $this->assertCount(1, $names, 'Correct number of names returned');
+    $names = $this->connection->query('SELECT name FROM {test} WHERE age IN ( :ages[] ) ORDER BY age', [':ages[]' => [25]])->fetchAll();
+    $this->assertEqual(count($names), 1, 'Correct number of names returned');
   }
 
   /**
@@ -25,11 +25,11 @@ class QueryTest extends DatabaseTestBase {
    */
   public function testScalarSubstitution() {
     try {
-      $names = $this->connection->query('SELECT [name] FROM {test} WHERE [age] IN ( :ages[] ) ORDER BY [age]', [':ages[]' => 25])->fetchAll();
+      $names = $this->connection->query('SELECT name FROM {test} WHERE age IN ( :ages[] ) ORDER BY age', [':ages[]' => 25])->fetchAll();
       $this->fail('Array placeholder with scalar argument should result in an exception.');
     }
-    catch (\Exception $e) {
-      $this->assertInstanceOf(\InvalidArgumentException::class, $e);
+    catch (\InvalidArgumentException $e) {
+      $this->pass('Array placeholder with scalar argument should result in an exception.');
     }
 
   }
@@ -44,11 +44,11 @@ class QueryTest extends DatabaseTestBase {
       '1' => '',
     ];
     try {
-      $this->connection->query("SELECT * FROM {test} WHERE [name] = :name", [':name' => $condition])->fetchObject();
+      $this->connection->query("SELECT * FROM {test} WHERE name = :name", [':name' => $condition])->fetchObject();
       $this->fail('SQL injection attempt via array arguments should result in a database exception.');
     }
     catch (\InvalidArgumentException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('SQL injection attempt via array arguments should result in a database exception.');
     }
 
     // Test that the insert query that was used in the SQL injection attempt did
@@ -67,14 +67,14 @@ class QueryTest extends DatabaseTestBase {
   public function testConditionOperatorArgumentsSQLInjection() {
     $injection = "IS NOT NULL) ;INSERT INTO {test} (name) VALUES ('test12345678'); -- ";
 
-    $previous_error_handler = set_error_handler(function ($severity, $message, $filename, $lineno) use (&$previous_error_handler) {
+    $previous_error_handler = set_error_handler(function ($severity, $message, $filename, $lineno, $context) use (&$previous_error_handler) {
       // Normalize the filename to use UNIX directory separators.
       if (preg_match('@core/lib/Drupal/Core/Database/Query/Condition.php$@', str_replace(DIRECTORY_SEPARATOR, '/', $filename))) {
         // Convert errors to exceptions for testing purposes below.
         throw new \ErrorException($message, 0, $severity, $filename, $lineno);
       }
       if ($previous_error_handler) {
-        return $previous_error_handler($severity, $message, $filename, $lineno);
+        return $previous_error_handler($severity, $message, $filename, $lineno, $context);
       }
     });
     try {
@@ -85,7 +85,7 @@ class QueryTest extends DatabaseTestBase {
       $this->fail('Should not be able to attempt SQL injection via condition operator.');
     }
     catch (\ErrorException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('SQL injection attempt via condition arguments should result in a database exception.');
     }
 
     // Test that the insert query that was used in the SQL injection attempt did
@@ -113,7 +113,7 @@ class QueryTest extends DatabaseTestBase {
       $this->fail('Should not be able to attempt SQL injection via operator.');
     }
     catch (\ErrorException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('SQL injection attempt via condition arguments should result in a database exception.');
     }
 
     // Attempt SQLi via union query - uppercase tablename.
@@ -130,7 +130,7 @@ class QueryTest extends DatabaseTestBase {
       $this->fail('Should not be able to attempt SQL injection via operator.');
     }
     catch (\ErrorException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('SQL injection attempt via condition arguments should result in a database exception.');
     }
     restore_error_handler();
   }
@@ -147,17 +147,7 @@ class QueryTest extends DatabaseTestBase {
     $count = $this->connection->query('SELECT COUNT(*) + :count FROM {test}', [
       ':count' => 3,
     ])->fetchField();
-    $this->assertEquals($count_expected, $count);
-  }
-
-  /**
-   * Tests quoting identifiers in queries.
-   */
-  public function testQuotingIdentifiers() {
-    // Use the table named an ANSI SQL reserved word with a column that is as
-    // well.
-    $result = $this->connection->query('SELECT [update] FROM {select}')->fetchObject();
-    $this->assertEquals('Update value 1', $result->update);
+    $this->assertEqual($count, $count_expected);
   }
 
 }

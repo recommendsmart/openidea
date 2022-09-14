@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 class QueryParameterTest extends UnitTestCase {
 
   /**
-   * Tests the getArgument() method.
+   * Test the getArgument() method.
    *
    * @covers ::getArgument
    * @dataProvider providerGetArgument
@@ -21,7 +21,7 @@ class QueryParameterTest extends UnitTestCase {
   public function testGetArgument($options, Request $request, $expected) {
     $view = $this->getMockBuilder('Drupal\views\ViewExecutable')
       ->disableOriginalConstructor()
-      ->onlyMethods([])
+      ->setMethods(NULL)
       ->getMock();
     $view->setRequest($request);
     $display_plugin = $this->getMockBuilder('Drupal\views\Plugin\views\display\DisplayPluginBase')

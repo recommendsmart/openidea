@@ -25,7 +25,7 @@ class OperationData {
   protected $data;
 
   /**
-   * The destination path.
+   * The destination path
    *
    * @var string
    */
@@ -34,8 +34,6 @@ class OperationData {
   /**
    * OperationData constructor.
    *
-   * @param string $destination
-   *   The destination path.
    * @param mixed $data
    *   The raw data array to wrap.
    */
@@ -55,7 +53,7 @@ class OperationData {
   }
 
   /**
-   * Gets operation mode.
+   * Gets operation mode
    *
    * @return string
    *   Operation mode.
@@ -65,7 +63,7 @@ class OperationData {
   }
 
   /**
-   * Checks if path exists.
+   * Checks if path exists
    *
    * @return bool
    *   Returns true if path exists
@@ -75,7 +73,7 @@ class OperationData {
   }
 
   /**
-   * Gets path.
+   * Gets path
    *
    * @return string
    *   The path.

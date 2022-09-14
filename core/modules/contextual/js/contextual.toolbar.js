@@ -23,6 +23,7 @@
     }, {
       contextualCollection: Drupal.contextual.collection
     });
+
     var viewOptions = {
       el: $('.toolbar .toolbar-bar .contextual-toolbar-tab'),
       model: contextualToolbar.model,
@@ -34,11 +35,12 @@
 
   Drupal.behaviors.contextualToolbar = {
     attach: function attach(context) {
-      if (once('contextualToolbar-init', 'body').length) {
+      if ($('body').once('contextualToolbar-init').length) {
         initContextualToolbar(context);
       }
     }
   };
+
   Drupal.contextualToolbar = {
     model: null
   };

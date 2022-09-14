@@ -19,7 +19,7 @@ class CKEditorToolbarButtonTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['filter', 'editor', 'ckeditor', 'locale'];
+  public static $modules = ['filter', 'editor', 'ckeditor', 'locale'];
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class CKEditorToolbarButtonTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a text format and associate this with CKEditor.
@@ -62,12 +62,10 @@ class CKEditorToolbarButtonTest extends BrowserTestBase {
     // Install the Arabic language (which is RTL) and configure as the default.
     $edit = [];
     $edit['predefined_langcode'] = 'ar';
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add language'));
 
     $edit = ['site_default_language' => 'ar'];
-    $this->drupalGet('admin/config/regional/language');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/regional/language', $edit, t('Save configuration'));
     // Once the default language is changed, go to the tested text format
     // configuration page.
     $this->drupalGet('admin/config/content/formats/manage/full_html');
@@ -76,10 +74,8 @@ class CKEditorToolbarButtonTest extends BrowserTestBase {
     $json_encode = function ($html) {
       return trim(Json::encode($html), '"');
     };
-    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
-    $file_url_generator = \Drupal::service('file_url_generator');
-    $markup = $json_encode($file_url_generator->generateString('core/modules/ckeditor/js/plugins/drupalimage/icons/drupalimage.png'));
-    $this->assertSession()->responseContains($markup);
+    $markup = $json_encode(file_url_transform_relative(file_create_url('core/modules/ckeditor/js/plugins/drupalimage/icons/drupalimage.png')));
+    $this->assertRaw($markup);
   }
 
 }

@@ -2,7 +2,7 @@
  * @file
  * Message API.
  */
-((Drupal) => {
+(Drupal => {
   /**
    * @typedef {class} Drupal.Message~messageDefinition
    */
@@ -42,7 +42,7 @@
         wrapper = document.querySelector('[data-drupal-messages-fallback]');
         wrapper.removeAttribute('data-drupal-messages-fallback');
         wrapper.setAttribute('data-drupal-messages', '');
-        wrapper.classList.remove('hidden');
+        wrapper.removeAttribute('class');
       }
       return wrapper.innerHTML === ''
         ? Drupal.Message.messageInternalWrapper(wrapper)
@@ -80,7 +80,7 @@
      *   Message type, can be either 'status', 'error' or 'warning'.
      * @param {string} [options.announce]
      *   Screen-reader version of the message if necessary. To prevent a message
-     *   being sent to Drupal.announce() this should be an empty string.
+     *   being sent to Drupal.announce() this should be an emptry string.
      * @param {string} [options.priority]
      *   Priority of the message for Drupal.announce().
      *
@@ -104,7 +104,9 @@
        */
       options.id = options.id
         ? String(options.id)
-        : `${options.type}-${Math.random().toFixed(15).replace('0.', '')}`;
+        : `${options.type}-${Math.random()
+            .toFixed(15)
+            .replace('0.', '')}`;
 
       // Throw an error if an unexpected message type is used.
       if (!Drupal.Message.getMessageTypeLabels().hasOwnProperty(options.type)) {
@@ -162,7 +164,7 @@
     clear() {
       Array.prototype.forEach.call(
         this.messageWrapper.querySelectorAll('[data-drupal-message-id]'),
-        (message) => {
+        message => {
           this.messageWrapper.removeChild(message);
         },
       );

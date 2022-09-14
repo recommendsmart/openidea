@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\config\Functional;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\user\Entity\Role;
 
@@ -16,7 +15,7 @@ class ConfigDraggableListBuilderTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['config_test'];
+  public static $modules = ['config_test'];
 
   /**
    * {@inheritdoc}
@@ -24,7 +23,7 @@ class ConfigDraggableListBuilderTest extends BrowserTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * Tests draggable lists.
+   * Test draggable lists.
    */
   public function testDraggableList() {
     $this->drupalLogin($this->drupalCreateUser(['administer permissions']));
@@ -50,13 +49,6 @@ class ConfigDraggableListBuilderTest extends BrowserTestBase {
     for ($i = 0; $i < 51; $i++) {
       $this->assertSession()->pageTextContains("Role $i");
     }
-
-    $role = Role::load('role_0');
-    $role_name = 'Role <b>0</b>';
-    $role->set('label', $role_name)->save();
-
-    $this->drupalGet('admin/people/roles');
-    $this->assertSession()->responseContains('<td>' . Html::escape($role_name));
   }
 
 }

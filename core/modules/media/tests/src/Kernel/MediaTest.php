@@ -35,13 +35,13 @@ class MediaTest extends MediaKernelTestBase {
   }
 
   /**
-   * Tests permissions based on a media type have the correct permissions.
+   * Tests the legacy method used as the default entity owner.
+   *
+   * @group legacy
+   * @expectedDeprecation The ::getCurrentUserId method is deprecated in 8.6.x and will be removed before 9.0.0.
    */
-  public function testPermissions() {
-    $permissions = $this->container->get('user.permissions')->getPermissions();
-    $name = "create {$this->testMediaType->id()} media";
-    $this->assertArrayHasKey($name, $permissions);
-    $this->assertSame(['config' => [$this->testMediaType->getConfigDependencyName()]], $permissions[$name]['dependencies']);
+  public function testGetCurrentUserId() {
+    $this->assertEquals(['1'], Media::getCurrentUserId());
   }
 
 }

@@ -82,7 +82,6 @@ class QueryTest extends QueryPluginBase {
    * Implements Drupal\views\Plugin\views\query\QueryPluginBase::build().
    *
    * @param \Drupal\views\ViewExecutable $view
-   *   The view executable.
    */
   public function build(ViewExecutable $view) {
     $this->view = $view;
@@ -136,7 +135,6 @@ class QueryTest extends QueryPluginBase {
     switch ($condition['operator']) {
       case '=':
         return $value == $condition['value'];
-
       case 'IN':
         return in_array($value, $condition['value']);
     }

@@ -12,6 +12,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\Core\Routing\UrlGeneratorTrait;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
@@ -33,9 +34,10 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class EntityController implements ContainerInjectionInterface {
 
   use StringTranslationTrait;
+  use UrlGeneratorTrait;
 
   /**
-   * The entity type manager.
+   * The entity manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -183,7 +185,7 @@ class EntityController implements ContainerInjectionInterface {
     foreach ($bundles as $bundle_name => $bundle_info) {
       $build['#bundles'][$bundle_name] = [
         'label' => $bundle_info['label'],
-        'description' => $bundle_info['description'] ?? '',
+        'description' => isset($bundle_info['description']) ? $bundle_info['description'] : '',
         'add_link' => Link::createFromRoute($bundle_info['label'], $form_route_name, [$bundle_argument => $bundle_name]),
       ];
     }

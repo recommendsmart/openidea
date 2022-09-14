@@ -13,9 +13,9 @@ use Drupal\user\RoleInterface;
  */
 class FilterDefaultConfigTest extends KernelTestBase {
 
-  protected static $modules = ['system', 'user', 'filter', 'filter_test'];
+  public static $modules = ['system', 'user', 'filter', 'filter_test'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Drupal\filter\FilterPermissions::permissions() builds a URL to output
@@ -34,32 +34,37 @@ class FilterDefaultConfigTest extends KernelTestBase {
     // Verify that the format was installed correctly.
     $format = FilterFormat::load('filter_test');
     $this->assertTrue((bool) $format);
-    $this->assertEquals('filter_test', $format->id());
-    $this->assertEquals('Test format', $format->label());
-    $this->assertEquals(2, $format->get('weight'));
+    $this->assertEqual($format->id(), 'filter_test');
+    $this->assertEqual($format->label(), 'Test format');
+    $this->assertEqual($format->get('weight'), 2);
 
     // Verify that format default property values have been added/injected.
     $this->assertNotEmpty($format->uuid());
 
     // Verify that the loaded format does not contain any roles.
-    $this->assertNull($format->get('roles'));
+    $this->assertEqual($format->get('roles'), NULL);
     // Verify that the defined roles in the default config have been processed.
-    $this->assertEquals([RoleInterface::ANONYMOUS_ID, RoleInterface::AUTHENTICATED_ID], array_keys(filter_get_roles_by_format($format)));
+    $this->assertEqual(array_keys(filter_get_roles_by_format($format)), [
+      RoleInterface::ANONYMOUS_ID,
+      RoleInterface::AUTHENTICATED_ID,
+    ]);
 
     // Verify enabled filters.
     $filters = $format->get('filters');
-    $this->assertEquals(1, $filters['filter_html_escape']['status']);
-    $this->assertEquals(-10, $filters['filter_html_escape']['weight']);
-    $this->assertEquals('filter', $filters['filter_html_escape']['provider']);
-    $this->assertEquals([], $filters['filter_html_escape']['settings']);
-    $this->assertEquals(1, $filters['filter_autop']['status']);
-    $this->assertEquals(0, $filters['filter_autop']['weight']);
-    $this->assertEquals('filter', $filters['filter_autop']['provider']);
-    $this->assertEquals([], $filters['filter_autop']['settings']);
-    $this->assertEquals(1, $filters['filter_url']['status']);
-    $this->assertEquals(0, $filters['filter_url']['weight']);
-    $this->assertEquals('filter', $filters['filter_url']['provider']);
-    $this->assertEquals(['filter_url_length' => 72], $filters['filter_url']['settings']);
+    $this->assertEqual($filters['filter_html_escape']['status'], 1);
+    $this->assertEqual($filters['filter_html_escape']['weight'], -10);
+    $this->assertEqual($filters['filter_html_escape']['provider'], 'filter');
+    $this->assertEqual($filters['filter_html_escape']['settings'], []);
+    $this->assertEqual($filters['filter_autop']['status'], 1);
+    $this->assertEqual($filters['filter_autop']['weight'], 0);
+    $this->assertEqual($filters['filter_autop']['provider'], 'filter');
+    $this->assertEqual($filters['filter_autop']['settings'], []);
+    $this->assertEqual($filters['filter_url']['status'], 1);
+    $this->assertEqual($filters['filter_url']['weight'], 0);
+    $this->assertEqual($filters['filter_url']['provider'], 'filter');
+    $this->assertEqual($filters['filter_url']['settings'], [
+      'filter_url_length' => 72,
+    ]);
   }
 
   /**
@@ -68,7 +73,10 @@ class FilterDefaultConfigTest extends KernelTestBase {
   public function testUpdateRoles() {
     // Verify role permissions declared in default config.
     $format = FilterFormat::load('filter_test');
-    $this->assertEquals([RoleInterface::ANONYMOUS_ID, RoleInterface::AUTHENTICATED_ID], array_keys(filter_get_roles_by_format($format)));
+    $this->assertEqual(array_keys(filter_get_roles_by_format($format)), [
+      RoleInterface::ANONYMOUS_ID,
+      RoleInterface::AUTHENTICATED_ID,
+    ]);
 
     // Attempt to change roles.
     $format->set('roles', [
@@ -78,7 +86,10 @@ class FilterDefaultConfigTest extends KernelTestBase {
 
     // Verify that roles have not been updated.
     $format = FilterFormat::load('filter_test');
-    $this->assertEquals([RoleInterface::ANONYMOUS_ID, RoleInterface::AUTHENTICATED_ID], array_keys(filter_get_roles_by_format($format)));
+    $this->assertEqual(array_keys(filter_get_roles_by_format($format)), [
+      RoleInterface::ANONYMOUS_ID,
+      RoleInterface::AUTHENTICATED_ID,
+    ]);
   }
 
 }

@@ -21,10 +21,7 @@ class ConfigFormOverrideTest extends BrowserTestBase {
    * Tests that overrides do not affect forms.
    */
   public function testFormsWithOverrides() {
-    $this->drupalLogin($this->drupalCreateUser([
-      'access administration pages',
-      'administer site configuration',
-    ]));
+    $this->drupalLogin($this->drupalCreateUser(['access administration pages', 'administer site configuration']));
 
     $overridden_name = 'Site name global conf override';
 
@@ -38,17 +35,18 @@ class ConfigFormOverrideTest extends BrowserTestBase {
     // Test that everything on the form is the same, but that the override
     // worked for the actual site name.
     $this->drupalGet('admin/config/system/site-information');
-    $this->assertSession()->titleEquals('Basic site settings | ' . $overridden_name);
-    $this->assertSession()->fieldValueEquals("site_name", 'Drupal');
+    $this->assertTitle('Basic site settings | ' . $overridden_name);
+    $elements = $this->xpath('//input[@name="site_name"]');
+    $this->assertIdentical($elements[0]->getValue(), 'Drupal');
 
     // Submit the form and ensure the site name is not changed.
     $edit = [
       'site_name' => 'Custom site name',
     ];
-    $this->drupalGet('admin/config/system/site-information');
-    $this->submitForm($edit, 'Save configuration');
-    $this->assertSession()->titleEquals('Basic site settings | ' . $overridden_name);
-    $this->assertSession()->fieldValueEquals("site_name", $edit['site_name']);
+    $this->drupalPostForm('admin/config/system/site-information', $edit, t('Save configuration'));
+    $this->assertTitle('Basic site settings | ' . $overridden_name);
+    $elements = $this->xpath('//input[@name="site_name"]');
+    $this->assertIdentical($elements[0]->getValue(), $edit['site_name']);
   }
 
 }

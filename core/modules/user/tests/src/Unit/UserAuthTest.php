@@ -3,15 +3,8 @@
 namespace Drupal\Tests\user\Unit;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Routing\RequestContext;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Tests\UnitTestCase;
-use Drupal\user\Authentication\Provider\Cookie;
 use Drupal\user\UserAuth;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 /**
  * @coversDefaultClass \Drupal\user\UserAuth
@@ -64,7 +57,7 @@ class UserAuthTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->userStorage = $this->createMock('Drupal\Core\Entity\EntityStorageInterface');
 
     /** @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject $entity_type_manager */
@@ -78,7 +71,7 @@ class UserAuthTest extends UnitTestCase {
 
     $this->testUser = $this->getMockBuilder('Drupal\user\Entity\User')
       ->disableOriginalConstructor()
-      ->onlyMethods(['id', 'setPassword', 'save', 'getPassword'])
+      ->setMethods(['id', 'setPassword', 'save', 'getPassword'])
       ->getMock();
 
     $this->userAuth = new UserAuth($entity_type_manager, $this->passwordService);
@@ -165,7 +158,7 @@ class UserAuthTest extends UnitTestCase {
       ->with($this->password, $this->testUser->getPassword())
       ->will($this->returnValue(TRUE));
 
-    $this->assertSame(1, $this->userAuth->authenticate($this->username, $this->password));
+    $this->assertsame(1, $this->userAuth->authenticate($this->username, $this->password));
   }
 
   /**
@@ -192,11 +185,11 @@ class UserAuthTest extends UnitTestCase {
       ->with(0, 0)
       ->will($this->returnValue(TRUE));
 
-    $this->assertSame(2, $this->userAuth->authenticate($this->username, 0));
+    $this->assertsame(2, $this->userAuth->authenticate($this->username, 0));
   }
 
   /**
-   * Tests the authenticate method with a correct password & new password hash.
+   * Tests the authenticate method with a correct password and new password hash.
    *
    * @covers ::authenticate
    */
@@ -224,60 +217,7 @@ class UserAuthTest extends UnitTestCase {
       ->with($this->testUser->getPassword())
       ->will($this->returnValue(TRUE));
 
-    $this->assertSame(1, $this->userAuth->authenticate($this->username, $this->password));
-  }
-
-  /**
-   * Tests the auth that ends in a redirect from subdomain to TLD.
-   */
-  public function testAddCheckToUrlForTrustedRedirectResponse(): void {
-    $site_domain = 'site.com';
-    $frontend_url = "https://$site_domain";
-    $backend_url = "https://api.$site_domain";
-    $request = Request::create($backend_url);
-    $response = new TrustedRedirectResponse($frontend_url);
-
-    $request_context = $this->createMock(RequestContext::class);
-    $request_context
-      ->method('getCompleteBaseUrl')
-      ->willReturn($backend_url);
-
-    $container = new ContainerBuilder();
-    $container->set('router.request_context', $request_context);
-    \Drupal::setContainer($container);
-
-    $session_mock = $this->createMock(SessionInterface::class);
-    $session_mock
-      ->expects($this->once())
-      ->method('has')
-      ->with('check_logged_in')
-      ->willReturn(TRUE);
-    $session_mock
-      ->expects($this->once())
-      ->method('remove')
-      ->with('check_logged_in');
-
-    $event_mock = $this->createMock(ResponseEvent::class);
-    $event_mock
-      ->expects($this->once())
-      ->method('getResponse')
-      ->willReturn($response);
-    $event_mock
-      ->expects($this->exactly(3))
-      ->method('getRequest')
-      ->willReturn($request);
-
-    $request
-      ->setSession($session_mock);
-
-    $this
-      ->getMockBuilder(Cookie::class)
-      ->disableOriginalConstructor()
-      ->onlyMethods([])
-      ->getMock()
-      ->addCheckToUrl($event_mock);
-
-    $this->assertSame("$frontend_url?check_logged_in=1", $response->getTargetUrl());
+    $this->assertsame(1, $this->userAuth->authenticate($this->username, $this->password));
   }
 
 }

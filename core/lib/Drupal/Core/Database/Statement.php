@@ -2,8 +2,6 @@
 
 namespace Drupal\Core\Database;
 
-@trigger_error('\Drupal\Core\Database\Statement is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Database drivers should use or extend StatementWrapper instead, and encapsulate client-level statement objects. See https://www.drupal.org/node/3177488', E_USER_DEPRECATED);
-
 /**
  * Default implementation of StatementInterface.
  *
@@ -14,12 +12,6 @@ namespace Drupal\Core\Database;
  * constructor.
  *
  * @see http://php.net/pdostatement
- *
- * @deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Database
- *   drivers should use or extend StatementWrapper instead, and encapsulate
- *   client-level statement objects.
- *
- * @see https://www.drupal.org/node/3177488
  */
 class Statement extends \PDOStatement implements StatementInterface {
 
@@ -47,13 +39,6 @@ class Statement extends \PDOStatement implements StatementInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConnectionTarget(): string {
-    return $this->connection->getTarget();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function execute($args = [], $options = []) {
     if (isset($options['fetch'])) {
       if (is_string($options['fetch'])) {
@@ -75,7 +60,7 @@ class Statement extends \PDOStatement implements StatementInterface {
 
     if (!empty($logger)) {
       $query_end = microtime(TRUE);
-      $logger->log($this, $args, $query_end - $query_start, $query_start);
+      $logger->log($this, $args, $query_end - $query_start);
     }
 
     return $return;
@@ -168,10 +153,8 @@ class Statement extends \PDOStatement implements StatementInterface {
     switch (func_num_args()) {
       case 1:
         return parent::setFetchMode($mode);
-
       case 2:
         return parent::setFetchMode($mode, $a1);
-
       case 3:
       default:
         return parent::setFetchMode($mode, $a1, $a2);
@@ -188,13 +171,10 @@ class Statement extends \PDOStatement implements StatementInterface {
     switch (func_num_args()) {
       case 0:
         return parent::fetchAll();
-
       case 1:
         return parent::fetchAll($mode);
-
       case 2:
         return parent::fetchAll($mode, $column_index);
-
       case 3:
       default:
         return parent::fetchAll($mode, $column_index, $constructor_arguments);

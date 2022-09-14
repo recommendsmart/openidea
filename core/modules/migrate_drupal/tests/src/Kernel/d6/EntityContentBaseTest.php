@@ -17,12 +17,12 @@ class EntityContentBaseTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate_overwrite_test'];
+  public static $modules = ['migrate_overwrite_test'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a field on the user entity so that we can test nested property
@@ -64,9 +64,9 @@ class EntityContentBaseTest extends MigrateDrupal6TestBase {
     $this->executeMigration('d6_user');
     /** @var \Drupal\user\UserInterface $account */
     $account = User::load(2);
-    $this->assertSame('john.doe', $account->label());
-    $this->assertSame('john.doe@example.com', $account->getEmail());
-    $this->assertSame('doe@example.com', $account->getInitialEmail());
+    $this->assertIdentical('john.doe', $account->label());
+    $this->assertIdentical('john.doe@example.com', $account->getEmail());
+    $this->assertIdentical('doe@example.com', $account->getInitialEmail());
   }
 
   /**
@@ -80,16 +80,16 @@ class EntityContentBaseTest extends MigrateDrupal6TestBase {
 
     /** @var \Drupal\user\UserInterface $account */
     $account = User::load(2);
-    $this->assertSame('john.doe', $account->label());
-    $this->assertSame('john.doe@example.com', $account->getEmail());
-    $this->assertSame('The answer is 42.', $account->signature->value);
+    $this->assertIdentical('john.doe', $account->label());
+    $this->assertIdentical('john.doe@example.com', $account->getEmail());
+    $this->assertIdentical('The answer is 42.', $account->signature->value);
     // This value is not overwritten because it's not listed in
     // overwrite_properties.
-    $this->assertSame('proto@zo.an', $account->getInitialEmail());
+    $this->assertIdentical('proto@zo.an', $account->getInitialEmail());
   }
 
   /**
-   * Tests that translation destination fails for untranslatable entities.
+   * Test that translation destination fails for untranslatable entities.
    */
   public function testUntranslatable() {
     $this->enableModules(['language_test']);

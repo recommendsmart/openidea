@@ -18,7 +18,7 @@ class MigrateShortcutSetTest extends MigrateDrupal7TestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'link',
     'field',
     'shortcut',
@@ -28,17 +28,19 @@ class MigrateShortcutSetTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('shortcut');
     $this->installEntitySchema('menu_link_content');
+    \Drupal::service('router.builder')->rebuild();
     $this->executeMigration('d7_shortcut_set');
     $this->executeMigration('d7_menu');
+    $this->executeMigration('d7_menu_links');
     $this->executeMigration('d7_shortcut');
   }
 
   /**
-   * Tests the shortcut set migration.
+   * Test the shortcut set migration.
    */
   public function testShortcutSetMigration() {
     $this->assertEntity('default', 'Default', 2);
@@ -54,19 +56,17 @@ class MigrateShortcutSetTest extends MigrateDrupal7TestBase {
    *   The expected shortcut set label.
    * @param int $expected_size
    *   The number of shortcuts expected to be in the set.
-   *
-   * @internal
    */
-  protected function assertEntity(string $id, string $label, int $expected_size): void {
+  protected function assertEntity($id, $label, $expected_size) {
     $shortcut_set = ShortcutSet::load($id);
-    $this->assertInstanceOf(ShortcutSetInterface::class, $shortcut_set);
+    $this->assertTrue($shortcut_set instanceof ShortcutSetInterface);
     /** @var \Drupal\shortcut\ShortcutSetInterface $shortcut_set */
-    $this->assertSame($id, $shortcut_set->id());
-    $this->assertSame($label, $shortcut_set->label());
+    $this->assertIdentical($id, $shortcut_set->id());
+    $this->assertIdentical($label, $shortcut_set->label());
 
     // Check the number of shortcuts in the set.
     $shortcuts = $shortcut_set->getShortcuts();
-    $this->assertCount($expected_size, $shortcuts);
+    $this->assertIdentical(count($shortcuts), $expected_size);
   }
 
 }

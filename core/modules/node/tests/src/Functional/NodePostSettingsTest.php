@@ -15,14 +15,10 @@ class NodePostSettingsTest extends NodeTestBase {
    */
   protected $defaultTheme = 'classy';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
-    $web_user = $this->drupalCreateUser([
-      'create page content',
-      'administer content types',
-      'access user profiles',
-    ]);
+    $web_user = $this->drupalCreateUser(['create page content', 'administer content types', 'access user profiles']);
     $this->drupalLogin($web_user);
   }
 
@@ -34,36 +30,34 @@ class NodePostSettingsTest extends NodeTestBase {
     // Set "Basic page" content type to display post information.
     $edit = [];
     $edit['display_submitted'] = TRUE;
-    $this->drupalGet('admin/structure/types/manage/page');
-    $this->submitForm($edit, 'Save content type');
+    $this->drupalPostForm('admin/structure/types/manage/page', $edit, t('Save content type'));
 
     // Create a node.
     $edit = [];
     $edit['title[0][value]'] = $this->randomMachineName(8);
     $edit['body[0][value]'] = $this->randomMachineName(16);
-    $this->drupalGet('node/add/page');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('node/add/page', $edit, t('Save'));
 
     // Check that the post information is displayed.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    $this->assertSession()->elementsCount('xpath', '//div[contains(@class, "node__submitted")]', 1);
+    $elements = $this->xpath('//div[contains(@class, :class)]', [':class' => 'node__submitted']);
+    $this->assertEqual(count($elements), 1, 'Post information is displayed.');
     $node->delete();
 
     // Set "Basic page" content type to display post information.
     $edit = [];
     $edit['display_submitted'] = FALSE;
-    $this->drupalGet('admin/structure/types/manage/page');
-    $this->submitForm($edit, 'Save content type');
+    $this->drupalPostForm('admin/structure/types/manage/page', $edit, t('Save content type'));
 
     // Create a node.
     $edit = [];
     $edit['title[0][value]'] = $this->randomMachineName(8);
     $edit['body[0][value]'] = $this->randomMachineName(16);
-    $this->drupalGet('node/add/page');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('node/add/page', $edit, t('Save'));
 
-    // Check that the post information is not displayed.
-    $this->assertSession()->elementNotExists('xpath', '//div[contains(@class, "node__submitted")]');
+    // Check that the post information is displayed.
+    $elements = $this->xpath('//div[contains(@class, :class)]', [':class' => 'node__submitted']);
+    $this->assertEqual(count($elements), 0, 'Post information is not displayed.');
   }
 
 }

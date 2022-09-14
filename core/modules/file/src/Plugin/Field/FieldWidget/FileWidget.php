@@ -8,6 +8,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\file\Element\ManagedFile;
@@ -26,7 +27,7 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
  *   }
  * )
  */
-class FileWidget extends WidgetBase {
+class FileWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
@@ -173,7 +174,7 @@ class FileWidget extends WidgetBase {
       $elements['#open'] = TRUE;
       $elements['#theme'] = 'file_widget_multiple';
       $elements['#theme_wrappers'] = ['details'];
-      $elements['#process'] = [[static::class, 'processMultiple']];
+      $elements['#process'] = [[get_class($this), 'processMultiple']];
       $elements['#title'] = $title;
 
       $elements['#description'] = $description;
@@ -229,8 +230,8 @@ class FileWidget extends WidgetBase {
       '#type' => 'managed_file',
       '#upload_location' => $items[$delta]->getUploadLocation(),
       '#upload_validators' => $items[$delta]->getUploadValidators(),
-      '#value_callback' => [static::class, 'value'],
-      '#process' => array_merge($element_info['#process'], [[static::class, 'process']]),
+      '#value_callback' => [get_class($this), 'value'],
+      '#process' => array_merge($element_info['#process'], [[get_class($this), 'process']]),
       '#progress_indicator' => $this->getSetting('progress_indicator'),
       // Allows this field to return an array instead of a single value.
       '#extended' => TRUE,
@@ -263,7 +264,7 @@ class FileWidget extends WidgetBase {
       $element['#description'] = \Drupal::service('renderer')->renderPlain($file_upload_help);
       $element['#multiple'] = $cardinality != 1 ? TRUE : FALSE;
       if ($cardinality != 1 && $cardinality != -1) {
-        $element['#element_validate'] = [[static::class, 'validateMultipleCount']];
+        $element['#element_validate'] = [[get_class($this), 'validateMultipleCount']];
       }
     }
 
@@ -409,7 +410,7 @@ class FileWidget extends WidgetBase {
       $element['description'] = [
         '#type' => $config->get('description.type'),
         '#title' => t('Description'),
-        '#value' => $item['description'] ?? '',
+        '#value' => isset($item['description']) ? $item['description'] : '',
         '#maxlength' => $config->get('description.length'),
         '#description' => t('The description may be used as the label of the link to the file.'),
       ];
@@ -440,7 +441,7 @@ class FileWidget extends WidgetBase {
     // the rebuild logic in file_field_widget_form() requires the entire field,
     // not just the individual item, to be valid.
     foreach (['upload_button', 'remove_button'] as $key) {
-      $element[$key]['#submit'][] = [static::class, 'submit'];
+      $element[$key]['#submit'][] = [get_called_class(), 'submit'];
       $element[$key]['#limit_validation_errors'] = [array_slice($element['#parents'], 0, -1)];
     }
 
@@ -503,7 +504,7 @@ class FileWidget extends WidgetBase {
   }
 
   /**
-   * Retrieves the file description from a field element.
+   * Retrieves the file description from a field field element.
    *
    * This helper static method is used by processMultiple() method.
    *

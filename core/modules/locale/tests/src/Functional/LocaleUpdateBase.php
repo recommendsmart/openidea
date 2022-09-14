@@ -47,7 +47,7 @@ abstract class LocaleUpdateBase extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['locale', 'locale_test'];
+  public static $modules = ['locale', 'locale_test'];
 
   /**
    * {@inheritdoc}
@@ -89,8 +89,7 @@ abstract class LocaleUpdateBase extends BrowserTestBase {
    */
   protected function addLanguage($langcode) {
     $edit = ['predefined_langcode' => $langcode];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add language'));
     $this->container->get('language_manager')->reset();
     $this->assertNotEmpty(\Drupal::languageManager()->getLanguage($langcode), new FormattableMarkup('Language %langcode added.', ['%langcode' => $langcode]));
   }
@@ -139,8 +138,8 @@ EOF;
       'uri' => $path . '/' . $filename,
       'filemime' => 'text/x-gettext-translation',
       'timestamp' => $timestamp,
+      'status' => FILE_STATUS_PERMANENT,
     ]);
-    $file->setPermanent();
     file_put_contents($file->getFileUri(), $po_header . $text);
     touch(\Drupal::service('file_system')->realpath($file->getFileUri()), $timestamp);
     $file->save();
@@ -294,7 +293,7 @@ EOF;
    * @param string $source
    *   Translation source string.
    * @param string $translation
-   *   Translation to check. Use empty string to check for a non-existent
+   *   Translation to check. Use empty string to check for a not existing
    *   translation.
    * @param string $langcode
    *   Language code of the language to translate to.
@@ -302,15 +301,9 @@ EOF;
    *   (optional) A message to display with the assertion.
    */
   protected function assertTranslation($source, $translation, $langcode, $message = '') {
-    $query = Database::getConnection()->select('locales_target', 'lt');
-    $query->innerJoin('locales_source', 'ls', '[ls].[lid] = [lt].[lid]');
-    $db_translation = $query->fields('lt', ['translation'])
-      ->condition('ls.source', $source)
-      ->condition('lt.language', $langcode)
-      ->execute()
-      ->fetchField();
+    $db_translation = Database::getConnection()->query('SELECT translation FROM {locales_target} lt INNER JOIN {locales_source} ls ON ls.lid = lt.lid WHERE ls.source = :source AND lt.language = :langcode', [':source' => $source, ':langcode' => $langcode])->fetchField();
     $db_translation = $db_translation == FALSE ? '' : $db_translation;
-    $this->assertEquals($translation, $db_translation, $message ? $message : new FormattableMarkup('Correct translation of %source (%language)', ['%source' => $source, '%language' => $langcode]));
+    $this->assertEqual($translation, $db_translation, $message ? $message : new FormattableMarkup('Correct translation of %source (%language)', ['%source' => $source, '%language' => $langcode]));
   }
 
 }

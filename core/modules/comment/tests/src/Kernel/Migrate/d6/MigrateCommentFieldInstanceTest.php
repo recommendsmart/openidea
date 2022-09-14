@@ -16,12 +16,12 @@ class MigrateCommentFieldInstanceTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'menu_ui'];
+  public static $modules = ['comment', 'menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['comment']);
     $this->migrateContentTypes();
@@ -45,16 +45,14 @@ class MigrateCommentFieldInstanceTest extends MigrateDrupal6TestBase {
    *   The field's default_mode setting.
    * @param int $per_page
    *   The field's per_page setting.
-   * @param int $anonymous
+   * @param bool $anonymous
    *   The field's anonymous setting.
-   * @param bool $form_location
+   * @param int $form_location
    *   The field's form_location setting.
-   * @param int $preview
+   * @param bool $preview
    *   The field's preview setting.
-   *
-   * @internal
    */
-  protected function assertEntity(string $bundle, string $field_name, int $default_value, int $default_mode, int $per_page, int $anonymous, bool $form_location, int $preview): void {
+  protected function assertEntity($bundle, $field_name, $default_value, $default_mode, $per_page, $anonymous, $form_location, $preview) {
     $entity = FieldConfig::load("node.$bundle.$field_name");
     $this->assertInstanceOf(FieldConfig::class, $entity);
     $this->assertSame('node', $entity->getTargetEntityTypeId());
@@ -71,7 +69,7 @@ class MigrateCommentFieldInstanceTest extends MigrateDrupal6TestBase {
   }
 
   /**
-   * Tests the migrated field instance values.
+   * Test the migrated field instance values.
    */
   public function testMigration() {
     $this->assertEntity('article', 'comment_node_article', 2, 1, 50, 0, FALSE, 1);

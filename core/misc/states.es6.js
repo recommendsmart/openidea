@@ -3,7 +3,7 @@
  * Drupal's states library.
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   /**
    * The base States namespace.
    *
@@ -99,7 +99,7 @@
         const config = JSON.parse(
           $states[i].getAttribute('data-drupal-states'),
         );
-        Object.keys(config || {}).forEach((state) => {
+        Object.keys(config || {}).forEach(state => {
           new states.Dependent({
             element: $($states[i]),
             state: states.State.sanitize(state),
@@ -131,15 +131,13 @@
    *   element depends on. It can be nested and can contain
    *   arbitrary AND and OR clauses.
    */
-  states.Dependent = function (args) {
+  states.Dependent = function(args) {
     $.extend(this, { values: {}, oldValue: null }, args);
 
     this.dependees = this.getDependees();
-    Object.keys(this.dependees || {}).forEach((selector) => {
+    Object.keys(this.dependees || {}).forEach(selector => {
       this.initializeDependee(selector, this.dependees[selector]);
     });
-    // Reevaluate to execute initial states.
-    this.reevaluate();
   };
 
   /**
@@ -189,7 +187,7 @@
       // Cache for the states of this dependee.
       this.values[selector] = {};
 
-      Object.keys(dependeeStates).forEach((i) => {
+      Object.keys(dependeeStates).forEach(i => {
         let state = dependeeStates[i];
         // Make sure we're not initializing this selector/state combination
         // twice.
@@ -203,18 +201,12 @@
         this.values[selector][state.name] = null;
 
         // Monitor state changes of the specified state for this dependee.
-        let $dependee = $(selector);
-        $dependee.on(`state:${state}`, { selector, state }, e => {
+        $(selector).on(`state:${state}`, { selector, state }, e => {
           this.update(e.data.selector, e.data.state, e.value);
         });
 
         // Make sure the event we just bound ourselves to is actually fired.
         new states.Trigger({ selector, state });
-
-        // Update initial state value, if set by data attribute.
-        if ($dependee.data(`trigger:${state.name}`) !== undefined) {
-          this.values[selector][state.name] = $dependee.data(`trigger:${state.name}`);
-        }
       });
     },
 
@@ -411,7 +403,7 @@
       // Swivel the lookup function so that we can record all available
       // selector- state combinations for initialization.
       const _compare = this.compare;
-      this.compare = function (reference, selector, state) {
+      this.compare = function(reference, selector, state) {
         (cache[selector] || (cache[selector] = [])).push(state.name);
         // Return nothing (=== undefined) so that the constraint loops are not
         // broken.
@@ -437,7 +429,7 @@
    * @param {object} args
    *   Trigger arguments.
    */
-  states.Trigger = function (args) {
+  states.Trigger = function(args) {
     $.extend(this, args);
 
     if (this.state in states.Trigger.states) {
@@ -445,7 +437,7 @@
 
       // Only call the trigger initializer when it wasn't yet attached to this
       // element. Otherwise we'd end up with duplicate events.
-      if (this.element.data(`trigger:${this.state}`) === undefined) {
+      if (!this.element.data(`trigger:${this.state}`)) {
         this.initialize();
       }
     }
@@ -460,16 +452,15 @@
 
       if (typeof trigger === 'function') {
         // We have a custom trigger initialization function.
-        // Create data attribute for trigger, to prevent multiple
-        // calls to this method.
-        this.element.data('trigger:' + this.state, null);
-        // Call custom trigger initialization function.
         trigger.call(window, this.element);
       } else {
-        Object.keys(trigger || {}).forEach((event) => {
+        Object.keys(trigger || {}).forEach(event => {
           this.defaultTrigger(event, trigger[event]);
         });
       }
+
+      // Mark this trigger as initialized for this element.
+      this.element.data(`trigger:${this.state}`, true);
     },
 
     /**
@@ -483,13 +474,10 @@
     defaultTrigger(event, valueFn) {
       let oldValue = valueFn.call(this.element);
 
-      // Save current value to element data attribute.
-      this.element.data('trigger:' + this.state, oldValue);
-
       // Attach the event callback.
       this.element.on(
         event,
-        $.proxy(function (e) {
+        $.proxy(function(e) {
           const value = valueFn.call(this.element, e);
           // Only trigger the event if the value has actually changed.
           if (oldValue !== value) {
@@ -499,9 +487,18 @@
               oldValue,
             });
             oldValue = value;
-            // Save current value to element data attribute.
-            this.element.data('trigger:' + this.state, value);
           }
+        }, this),
+      );
+
+      states.postponed.push(
+        $.proxy(function() {
+          // Trigger the event once for initialization purposes.
+          this.element.trigger({
+            type: `state:${this.state}`,
+            value: oldValue,
+            oldValue: null,
+          });
         }, this),
       );
     },
@@ -537,7 +534,7 @@
         // support selectors matching multiple checkboxes, iterate over all and
         // return whether any is checked.
         let checked = false;
-        this.each(function () {
+        this.each(function() {
           // Use prop() here as we want a boolean of the checkbox state.
           // @see http://api.jquery.com/prop/
           checked = $(this).prop('checked');
@@ -585,7 +582,7 @@
    * @param {string} state
    *   The name of the state.
    */
-  states.State = function (state) {
+  states.State = function(state) {
     /**
      * Original unresolved name.
      */
@@ -621,7 +618,7 @@
    * @return {Drupal.states.state}
    *   A state object.
    */
-  states.State.sanitize = function (state) {
+  states.State.sanitize = function(state) {
     if (state instanceof states.State) {
       return state;
     }
@@ -677,11 +674,12 @@
    */
 
   const $document = $(document);
-  $document.on('state:disabled', (e) => {
+  $document.on('state:disabled', e => {
     // Only act when this change was triggered by a dependency and not by the
     // element monitoring itself.
     if (e.trigger) {
       $(e.target)
+        .prop('disabled', e.value)
         .closest('.js-form-item, .js-form-submit, .js-form-wrapper')
         .toggleClass('form-disabled', e.value)
         .find('select, input, textarea')
@@ -692,7 +690,7 @@
     }
   });
 
-  $document.on('state:required', (e) => {
+  $document.on('state:required', e => {
     if (e.trigger) {
       if (e.value) {
         const label = `label${e.target.id ? `[for=${e.target.id}]` : ''}`;
@@ -714,7 +712,7 @@
     }
   });
 
-  $document.on('state:visible', (e) => {
+  $document.on('state:visible', e => {
     if (e.trigger) {
       $(e.target)
         .closest('.js-form-item, .js-form-submit, .js-form-wrapper')
@@ -722,19 +720,18 @@
     }
   });
 
-  $document.on('state:checked', (e) => {
+  $document.on('state:checked', e => {
     if (e.trigger) {
-      $(e.target)
-        .closest('.js-form-item, .js-form-wrapper')
-        .find('input')
-        .prop('checked', e.value);
+      $(e.target).prop('checked', e.value);
     }
   });
 
-  $document.on('state:collapsed', (e) => {
+  $document.on('state:collapsed', e => {
     if (e.trigger) {
       if ($(e.target).is('[open]') === e.value) {
-        $(e.target).find('> summary').trigger('click');
+        $(e.target)
+          .find('> summary')
+          .trigger('click');
       }
     }
   });

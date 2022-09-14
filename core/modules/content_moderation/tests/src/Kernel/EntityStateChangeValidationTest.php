@@ -21,7 +21,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'content_moderation',
     'user',
@@ -41,7 +41,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installSchema('node', 'node_access');
@@ -55,7 +55,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   }
 
   /**
-   * Tests valid transitions.
+   * Test valid transitions.
    *
    * @covers ::validate
    */
@@ -85,7 +85,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   }
 
   /**
-   * Tests invalid transitions.
+   * Test invalid transitions.
    *
    * @covers ::validate
    */
@@ -115,7 +115,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   }
 
   /**
-   * Tests validation with an invalid state.
+   * Test validation with an invalid state.
    */
   public function testInvalidState() {
     $node_type = NodeType::create([
@@ -138,7 +138,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   }
 
   /**
-   * Tests validation with no initial state or an invalid state.
+   * Test validation with content that has no initial state or an invalid state.
    */
   public function testInvalidStateWithoutExisting() {
     $this->setCurrentUser($this->adminUser);
@@ -187,7 +187,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
   }
 
   /**
-   * Tests state transition validation with multiple languages.
+   * Test state transition validation with multiple languages.
    */
   public function testInvalidStateMultilingual() {
     $this->setCurrentUser($this->adminUser);
@@ -348,7 +348,7 @@ class EntityStateChangeValidationTest extends KernelTestBase {
     ]);
     $this->assertTrue($node->isNew());
     $violations = $node->validate();
-    $this->assertSameSize($messages, $violations);
+    $this->assertCount(count($messages), $violations);
     foreach ($messages as $i => $message) {
       $this->assertEquals($message, $violations->get($i)->getMessage());
     }

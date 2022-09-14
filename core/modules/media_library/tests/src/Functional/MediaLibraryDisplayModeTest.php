@@ -37,7 +37,7 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->drupalLogin($this->drupalCreateUser([
       'access media overview',
@@ -111,9 +111,8 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
       'id' => $type_five_id,
       'source' => 'file',
     ];
-    $this->drupalGet('admin/structure/media/add');
-    $this->submitForm($edit, 'Save');
-    $this->submitForm([], 'Save');
+    $this->drupalPostForm('admin/structure/media/add', $edit, 'Save');
+    $this->drupalPostForm(NULL, [], t('Save'));
     $this->assertSession()->pageTextContains("Media Library form and view displays have been created for the $type_five_id media type.");
     $this->assertFormDisplay($type_five_id, TRUE, FALSE);
     $this->assertViewDisplay($type_five_id, 'medium');
@@ -125,12 +124,11 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
       'id' => $type_six_id,
       'source' => 'file',
     ];
-    $this->drupalGet('admin/structure/media/add');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('admin/structure/media/add', $edit, 'Save');
     $edit = [
       'field_map[name]' => File::METADATA_ATTRIBUTE_NAME,
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
     $this->assertSession()->pageTextContains("Media Library form and view displays have been created for the $type_six_id media type.");
     $this->assertFormDisplay($type_six_id, FALSE, FALSE);
     $this->assertViewDisplay($type_six_id, 'medium');
@@ -142,9 +140,8 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
       'id' => $type_seven_id,
       'source' => 'image',
     ];
-    $this->drupalGet('admin/structure/media/add');
-    $this->submitForm($edit, 'Save');
-    $this->submitForm([], 'Save');
+    $this->drupalPostForm('admin/structure/media/add', $edit, 'Save');
+    $this->drupalPostForm(NULL, [], t('Save'));
     $this->assertSession()->pageTextContains("Media Library form and view displays have been created for the $type_seven_id media type.");
     $this->assertFormDisplay($type_seven_id, TRUE, TRUE);
     $this->assertViewDisplay($type_seven_id, 'medium');
@@ -156,40 +153,21 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
       'id' => $type_eight_id,
       'source' => 'image',
     ];
-    $this->drupalGet('admin/structure/media/add');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('admin/structure/media/add', $edit, 'Save');
     $edit = [
       'field_map[name]' => Image::METADATA_ATTRIBUTE_NAME,
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
     $this->assertSession()->pageTextContains("Media Library form and view displays have been created for the $type_eight_id media type.");
     $this->assertFormDisplay($type_eight_id, FALSE, TRUE);
     $this->assertViewDisplay($type_eight_id, 'medium');
-
-    // Create an oEmbed media type with a mapped name field in the UI.
-    $type_id = 'pinto_bean';
-    $edit = [
-      'label' => $type_id,
-      'id' => $type_id,
-      'source' => 'oembed:video',
-    ];
-    $this->drupalGet('admin/structure/media/add');
-    $this->submitForm($edit, 'Save');
-    $edit = [
-      'field_map[title]' => 'name',
-    ];
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Media Library form and view displays have been created for the $type_id media type.");
-    $this->assertFormDisplay($type_id, FALSE, FALSE);
-    $this->assertViewDisplay($type_id, 'medium');
 
     // Delete a form and view display.
     EntityFormDisplay::load('media.type_one.media_library')->delete();
     EntityViewDisplay::load('media.type_one.media_library')->delete();
     // Make sure the form and view display are not created when saving existing
     // media types.
-    $this->drupalGet('admin/structure/media/manage/type_one');
-    $this->submitForm([], 'Save');
+    $this->drupalPostForm('admin/structure/media/manage/type_one', [], 'Save');
     $this->assertNull(EntityFormDisplay::load('media.type_one.media_library'));
     $this->assertNull(EntityViewDisplay::load('media.type_one.media_library'));
 
@@ -203,9 +181,8 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
       'id' => $type_nine_id,
       'source' => 'image',
     ];
-    $this->drupalGet('admin/structure/media/add');
-    $this->submitForm($edit, 'Save');
-    $this->submitForm([], 'Save');
+    $this->drupalPostForm('admin/structure/media/add', $edit, 'Save');
+    $this->drupalPostForm(NULL, [], t('Save'));
     $this->assertSession()->pageTextContains("Media Library form and view displays have been created for the $type_nine_id media type.");
     $this->assertFormDisplay($type_nine_id, TRUE, TRUE);
     $this->assertViewDisplay($type_nine_id, 'media_library');
@@ -222,10 +199,8 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
    * @param bool $has_source_field
    *   Whether the media library form display should contain the source field or
    *   not.
-   *
-   * @internal
    */
-  protected function assertFormDisplay(string $type_id, bool $has_name, bool $has_source_field): void {
+  protected function assertFormDisplay($type_id, $has_name, $has_source_field) {
     // These components are added by default and invisible.
     $components = [
       'revision_log_message',
@@ -256,17 +231,15 @@ class MediaLibraryDisplayModeTest extends BrowserTestBase {
    *   The media type ID.
    * @param string $image_style
    *   The ID of the image style that should be configured for the thumbnail.
-   *
-   * @internal
    */
-  protected function assertViewDisplay(string $type_id, string $image_style): void {
+  protected function assertViewDisplay($type_id, $image_style) {
     $view_display = EntityViewDisplay::load('media.' . $type_id . '.media_library');
     $this->assertInstanceOf(EntityViewDisplay::class, $view_display);
     // Assert the media library view display contains only the thumbnail.
     $this->assertSame(['thumbnail'], array_keys($view_display->getComponents()));
     // Assert the thumbnail image style.
     $thumbnail = $view_display->getComponent('thumbnail');
-    $this->assertIsArray($thumbnail);
+    $this->assertInternalType('array', $thumbnail);
     $this->assertSame($image_style, $thumbnail['settings']['image_style']);
   }
 

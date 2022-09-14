@@ -19,7 +19,7 @@ class SearchPageAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\search\SearchPageInterface $entity */
+    /** @var $entity \Drupal\search\SearchPageInterface */
     if (in_array($operation, ['delete', 'disable'])) {
       if ($entity->isDefaultSearch()) {
         return AccessResult::forbidden()->addCacheableDependency($entity);

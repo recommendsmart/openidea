@@ -3,7 +3,7 @@
  * Polyfill for HTML5 details elements.
  */
 
-(function ($, Modernizr, Drupal) {
+(function($, Modernizr, Drupal) {
   /**
    * The collapsible details object represents a single details element.
    *
@@ -24,8 +24,10 @@
     if (this.$node.find(`.error${anchor}`).length) {
       this.$node.attr('open', true);
     }
-    // Initialize and set up the summary polyfill.
-    this.setupSummaryPolyfill();
+    // Initialize and setup the summary,
+    this.setupSummary();
+    // Initialize and setup the legend.
+    this.setupLegend();
   }
 
   $.extend(
@@ -44,42 +46,59 @@
     CollapsibleDetails.prototype,
     /** @lends Drupal.CollapsibleDetails# */ {
       /**
-       * Initialize and setup summary markup.
+       * Initialize and setup summary events and markup.
+       *
+       * @fires event:summaryUpdated
+       *
+       * @listens event:summaryUpdated
        */
-      setupSummaryPolyfill() {
-        // Turn the summary into a clickable link.
-        const $summary = this.$node.find('> summary');
+      setupSummary() {
+        this.$summary = $('<span class="summary"></span>');
+        this.$node
+          .on('summaryUpdated', $.proxy(this.onSummaryUpdated, this))
+          .trigger('summaryUpdated');
+      },
 
-        // If this polyfill is in use, the browser does not recognize
-        // <summary> as a focusable element. The tabindex is set to -1 so the
-        // tabbable library does not incorrectly identify it as tabbable.
-        $summary.attr('tabindex', '-1');
+      /**
+       * Initialize and setup legend markup.
+       */
+      setupLegend() {
+        // Turn the summary into a clickable link.
+        const $legend = this.$node.find('> summary');
 
         $('<span class="details-summary-prefix visually-hidden"></span>')
           .append(this.$node.attr('open') ? Drupal.t('Hide') : Drupal.t('Show'))
-          .prependTo($summary)
+          .prependTo($legend)
           .after(document.createTextNode(' '));
 
         // .wrapInner() does not retain bound events.
         $('<a class="details-title"></a>')
           .attr('href', `#${this.$node.attr('id')}`)
-          .prepend($summary.contents())
-          .appendTo($summary);
+          .prepend($legend.contents())
+          .appendTo($legend);
 
-        $summary
+        $legend
           .append(this.$summary)
-          .on('click', $.proxy(this.onSummaryClick, this));
+          .on('click', $.proxy(this.onLegendClick, this));
       },
 
       /**
-       * Handle summary clicks.
+       * Handle legend clicks.
        *
        * @param {jQuery.Event} e
        *   The event triggered.
        */
-      onSummaryClick(e) {
+      onLegendClick(e) {
         this.toggle();
         e.preventDefault();
+      },
+
+      /**
+       * Update summary.
+       */
+      onSummaryUpdated() {
+        const text = $.trim(this.$node.drupalGetSummary());
+        this.$summary.html(text ? ` (${text})` : '');
       },
 
       /**
@@ -117,11 +136,17 @@
       if (Modernizr.details) {
         return;
       }
-      once('collapse', 'details', context).forEach((detail) => {
-        // This class is used for styling purpose only.
-        detail.classList.add('collapse-processed');
-        CollapsibleDetails.instances.push(new CollapsibleDetails(detail));
-      });
+      const $collapsibleDetails = $(context)
+        .find('details')
+        .once('collapse')
+        .addClass('collapse-processed');
+      if ($collapsibleDetails.length) {
+        for (let i = 0; i < $collapsibleDetails.length; i++) {
+          CollapsibleDetails.instances.push(
+            new CollapsibleDetails($collapsibleDetails[i]),
+          );
+        }
+      }
     },
   };
 
@@ -139,7 +164,11 @@
    *   The targeted node as a jQuery object.
    */
   const handleFragmentLinkClickOrHashChange = (e, $target) => {
-    $target.parents('details').not('[open]').find('> summary').trigger('click');
+    $target
+      .parents('details')
+      .not('[open]')
+      .find('> summary')
+      .trigger('click');
   };
 
   /**

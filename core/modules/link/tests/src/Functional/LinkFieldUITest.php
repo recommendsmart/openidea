@@ -5,6 +5,8 @@ namespace Drupal\Tests\link\Functional;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\link\LinkItemInterface;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\field_ui\Traits\FieldUiTestTrait;
@@ -23,7 +25,7 @@ class LinkFieldUITest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'link', 'field_ui', 'block'];
+  public static $modules = ['node', 'link', 'field_ui', 'block'];
 
   /**
    * {@inheritdoc}
@@ -45,27 +47,29 @@ class LinkFieldUITest extends BrowserTestBase {
   protected $helpTextUser;
 
   /**
-   * The content type to add fields to.
+   * The first content type to add fields to.
    *
    * @var \Drupal\node\Entity\NodeType
    */
-  protected $contentType;
+  protected $firstContentType;
+
+  /**
+   * The second content type to add fields to.
+   *
+   * @var \Drupal\node\Entity\NodeType
+   */
+  protected $secondContentType;
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
-    $this->contentType = $this->drupalCreateContentType();
-    $this->adminUser = $this->drupalCreateUser([
-      'administer content types',
-      'administer node fields',
-      'administer node display',
-    ]);
-    $this->helpTextUser = $this->drupalCreateUser([
-      'create ' . $this->contentType->id() . ' content',
-    ]);
+    $this->firstContentType = $this->drupalCreateContentType();
+    $this->secondContentType = $this->drupalCreateContentType();
+    $this->adminUser = $this->drupalCreateUser(['administer content types', 'administer node fields', 'administer node display']);
+    $this->helpTextUser = $this->drupalCreateUser(['create ' . $this->secondContentType->id() . ' content']);
     $this->drupalPlaceBlock('system_breadcrumb_block');
   }
 
@@ -74,8 +78,8 @@ class LinkFieldUITest extends BrowserTestBase {
    */
   public function testFieldUI() {
     foreach ($this->providerTestFieldUI() as $item) {
-      [$cardinality, $link_type, $title, $label, $field_name, $default_uri] = $item;
-      $this->runFieldUIItem($cardinality, $link_type, $title, $label, $field_name, $default_uri);
+      list($cardinality, $link_type, $title, $label, $field_name) = $item;
+      $this->runFieldUIItem($cardinality, $link_type, $title, $label, $field_name);
     }
   }
 
@@ -94,14 +98,14 @@ class LinkFieldUITest extends BrowserTestBase {
       DRUPAL_OPTIONAL,
     ];
     $link_types = [
-      LinkItemInterface::LINK_EXTERNAL => 'http://drupal.org',
-      LinkItemInterface::LINK_GENERIC => '',
-      LinkItemInterface::LINK_INTERNAL => '<front>',
+      LinkItemInterface::LINK_EXTERNAL,
+      LinkItemInterface::LINK_GENERIC,
+      LinkItemInterface::LINK_INTERNAL,
     ];
 
     // Test all variations of link types on all cardinalities.
     foreach ($cardinalities as $cardinality) {
-      foreach ($link_types as $link_type => $default_uri) {
+      foreach ($link_types as $link_type) {
         // Now, test this with both the title enabled and disabled.
         foreach ($title_settings as $title_setting) {
           // Test both empty and non-empty labels.
@@ -125,7 +129,6 @@ class LinkFieldUITest extends BrowserTestBase {
               $title_setting,
               $label_provided ? $label : '',
               $id,
-              $default_uri,
             ];
           }
         }
@@ -146,36 +149,46 @@ class LinkFieldUITest extends BrowserTestBase {
    *   The field label.
    * @param string $field_name
    *   The unique machine name for the field.
-   * @param string $default_uri
-   *   The default URI value.
    */
-  public function runFieldUIItem($cardinality, $link_type, $title, $label, $field_name, $default_uri) {
+  public function runFieldUIItem($cardinality, $link_type, $title, $label, $field_name) {
     $this->drupalLogin($this->adminUser);
-    $type_path = 'admin/structure/types/manage/' . $this->contentType->id();
+    $type_path = 'admin/structure/types/manage/' . $this->firstContentType->id();
 
-    // Add a link field to the newly-created type.
+    // Add a link field to the newly-created type. It defaults to allowing both
+    // internal and external links.
+    $field_label = str_replace('_', ' ', $field_name);
     $description = 'link field description';
     $field_edit = [
       'description' => $description,
-      'settings[link_type]' => (int) $link_type,
     ];
-    if (!empty($default_uri)) {
-      $field_edit['default_value_input[field_' . $field_name . '][0][uri]'] = $default_uri;
-      $field_edit['default_value_input[field_' . $field_name . '][0][title]'] = 'Default title';
-    }
-    $storage_edit = [
-      'cardinality_number' => $cardinality,
-    ];
-    $this->fieldUIAddNewField($type_path, $field_name, $label, 'link', $storage_edit, $field_edit);
+    $this->fieldUIAddNewField($type_path, $field_name, $field_label, 'link', [], $field_edit);
 
     // Load the formatter page to check that the settings summary does not
     // generate warnings.
     // @todo Mess with the formatter settings a bit here.
     $this->drupalGet("$type_path/display");
-    $this->assertSession()->pageTextContains('Link text trimmed to 80 characters');
+    $this->assertText(t('Link text trimmed to @limit characters', ['@limit' => 80]));
+
+    $storage = FieldStorageConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => 'node',
+      'type' => 'link',
+      'cardinality' => $cardinality,
+    ]);
+    $storage->save();
+
+    FieldConfig::create([
+      'field_storage' => $storage,
+      'label' => $label,
+      'bundle' => $this->secondContentType->id(),
+      'settings' => [
+        'title' => $title,
+        'link_type' => $link_type,
+      ],
+    ])->save();
 
     // Make the fields visible in the form display.
-    $form_display_id = implode('.', ['node', $this->contentType->id(), 'default']);
+    $form_display_id = implode('.', ['node', $this->secondContentType->id(), 'default']);
     $form_display = EntityFormDisplay::load($form_display_id);
     $form_display->setComponent($field_name, ['region' => 'content']);
     $form_display->save();
@@ -184,7 +197,7 @@ class LinkFieldUITest extends BrowserTestBase {
     // the user can see the expected help text.
     $this->drupalLogin($this->helpTextUser);
 
-    $add_path = 'node/add/' . $this->contentType->id();
+    $add_path = 'node/add/' . $this->secondContentType->id();
     $this->drupalGet($add_path);
 
     $expected_help_texts = [
@@ -206,9 +219,6 @@ class LinkFieldUITest extends BrowserTestBase {
     if (!empty($label)) {
       $this->assertFieldContainsRawText($field_name, $label);
     }
-
-    // Test the default field value is used as expected.
-    $this->assertSession()->fieldValueEquals('field_' . $field_name . '[0][uri]', $default_uri);
   }
 
   /**
@@ -218,10 +228,8 @@ class LinkFieldUITest extends BrowserTestBase {
    *   The name of the field to check.
    * @param string $text
    *   The text to check.
-   *
-   * @internal
    */
-  protected function assertFieldContainsRawText(string $field_name, string $text): void {
+  protected function assertFieldContainsRawText($field_name, $text) {
     $this->assertTrue((bool) preg_match('/' . preg_quote($text, '/') . '/ui', $this->getFieldHtml($field_name)));
   }
 
@@ -232,10 +240,8 @@ class LinkFieldUITest extends BrowserTestBase {
    *   The name of the field to check.
    * @param string $text
    *   The text to check.
-   *
-   * @internal
    */
-  protected function assertNoFieldContainsRawText(string $field_name, string $text): void {
+  protected function assertNoFieldContainsRawText($field_name, $text) {
     $this->assertFalse((bool) preg_match('/' . preg_quote($text, '/') . '/ui', $this->getFieldHtml($field_name)));
   }
 
@@ -249,7 +255,7 @@ class LinkFieldUITest extends BrowserTestBase {
    *   The raw HTML.
    */
   protected function getFieldHtml($field_name) {
-    $css_id = Html::cleanCssIdentifier('edit-field-' . $field_name . '-wrapper');
+    $css_id = Html::cleanCssIdentifier('edit-' . $field_name . '-wrapper');
     return $this->xpath('//*[@id=:id]', [':id' => $css_id])[0]->getHtml();
   }
 

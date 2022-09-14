@@ -18,7 +18,7 @@ class FieldUIRouteTest extends BrowserTestBase {
    *
    * @var string[]
    */
-  protected static $modules = ['block', 'entity_test', 'field_ui'];
+  public static $modules = ['block', 'entity_test', 'field_ui'];
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class FieldUIRouteTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalLogin($this->rootUser);
@@ -40,42 +40,41 @@ class FieldUIRouteTest extends BrowserTestBase {
    */
   public function testFieldUIRoutes() {
     $this->drupalGet('entity_test_no_id/structure/entity_test/fields');
-    $this->assertSession()->pageTextContains('No fields are present yet.');
+    $this->assertText('No fields are present yet.');
 
     $this->drupalGet('admin/config/people/accounts/fields');
-    $this->assertSession()->titleEquals('Manage fields | Drupal');
+    $this->assertTitle('Manage fields | Drupal');
     $this->assertLocalTasks();
 
     // Test manage display tabs and titles.
     $this->drupalGet('admin/config/people/accounts/display/compact');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     $this->drupalGet('admin/config/people/accounts/display');
-    $this->assertSession()->titleEquals('Manage display | Drupal');
+    $this->assertTitle('Manage display | Drupal');
     $this->assertLocalTasks();
 
     $edit = ['display_modes_custom[compact]' => TRUE];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
     $this->drupalGet('admin/config/people/accounts/display/compact');
-    $this->assertSession()->titleEquals('Manage display | Drupal');
+    $this->assertTitle('Manage display | Drupal');
     $this->assertLocalTasks();
 
     // Test manage form display tabs and titles.
     $this->drupalGet('admin/config/people/accounts/form-display/register');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     $this->drupalGet('admin/config/people/accounts/form-display');
-    $this->assertSession()->titleEquals('Manage form display | Drupal');
+    $this->assertTitle('Manage form display | Drupal');
     $this->assertLocalTasks();
 
     $edit = ['display_modes_custom[register]' => TRUE];
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->drupalPostForm(NULL, $edit, t('Save'));
+    $this->assertResponse(200);
     $this->drupalGet('admin/config/people/accounts/form-display/register');
-    $this->assertSession()->titleEquals('Manage form display | Drupal');
+    $this->assertTitle('Manage form display | Drupal');
     $this->assertLocalTasks();
-    // Test that default secondary tab is in first position.
-    $this->assertSession()->elementsCount('xpath', "//ul/li[1]/a[contains(text(), 'Default')]", 1);
+    $this->assert(count($this->xpath('//ul/li[1]/a[contains(text(), :text)]', [':text' => 'Default'])) == 1, 'Default secondary tab is in first position.');
 
     // Create new view mode and verify it's available on the Manage Display
     // screen after enabling it.
@@ -87,9 +86,8 @@ class FieldUIRouteTest extends BrowserTestBase {
     $this->container->get('router.builder')->rebuildIfNeeded();
 
     $edit = ['display_modes_custom[test]' => TRUE];
-    $this->drupalGet('admin/config/people/accounts/display');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->linkExists('Test');
+    $this->drupalPostForm('admin/config/people/accounts/display', $edit, t('Save'));
+    $this->assertLink('Test');
 
     // Create new form mode and verify it's available on the Manage Form
     // Display screen after enabling it.
@@ -101,21 +99,18 @@ class FieldUIRouteTest extends BrowserTestBase {
     $this->container->get('router.builder')->rebuildIfNeeded();
 
     $edit = ['display_modes_custom[test]' => TRUE];
-    $this->drupalGet('admin/config/people/accounts/form-display');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->linkExists('Test');
+    $this->drupalPostForm('admin/config/people/accounts/form-display', $edit, t('Save'));
+    $this->assertLink('Test');
   }
 
   /**
    * Asserts that local tasks exists.
-   *
-   * @internal
    */
-  public function assertLocalTasks(): void {
-    $this->assertSession()->linkExists('Settings');
-    $this->assertSession()->linkExists('Manage fields');
-    $this->assertSession()->linkExists('Manage display');
-    $this->assertSession()->linkExists('Manage form display');
+  public function assertLocalTasks() {
+    $this->assertLink('Settings');
+    $this->assertLink('Manage fields');
+    $this->assertLink('Manage display');
+    $this->assertLink('Manage form display');
   }
 
   /**

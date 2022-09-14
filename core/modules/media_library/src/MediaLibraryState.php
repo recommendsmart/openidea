@@ -3,8 +3,6 @@
 namespace Drupal\media_library;
 
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Cache\Cache;
-use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\Site\Settings;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,7 +37,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
  *
  * @see \Drupal\media_library\MediaLibraryOpenerInterface
  */
-class MediaLibraryState extends ParameterBag implements CacheableDependencyInterface {
+class MediaLibraryState extends ParameterBag {
 
   /**
    * {@inheritdoc}
@@ -269,27 +267,6 @@ class MediaLibraryState extends ParameterBag implements CacheableDependencyInter
    */
   public function getOpenerParameters() {
     return $this->get('media_library_opener_parameters', []);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheContexts() {
-    return ['url.query_args'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheMaxAge() {
-    return Cache::PERMANENT;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return [];
   }
 
 }

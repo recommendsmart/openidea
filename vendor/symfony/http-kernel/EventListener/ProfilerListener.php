@@ -24,8 +24,6 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
  * ProfilerListener collects data for the current request by listening to the kernel events.
  *
  * @author Fabien Potencier <fabien@symfony.com>
- *
- * @final since Symfony 4.3
  */
 class ProfilerListener implements EventSubscriberInterface
 {
@@ -39,15 +37,18 @@ class ProfilerListener implements EventSubscriberInterface
     protected $parents;
 
     /**
-     * @param bool $onlyException      True if the profiler only collects data when an exception occurs, false otherwise
-     * @param bool $onlyMasterRequests True if the profiler only collects data when the request is a master request, false otherwise
+     * @param Profiler                     $profiler           A Profiler instance
+     * @param RequestStack                 $requestStack       A RequestStack instance
+     * @param RequestMatcherInterface|null $matcher            A RequestMatcher instance
+     * @param bool                         $onlyException      True if the profiler only collects data when an exception occurs, false otherwise
+     * @param bool                         $onlyMasterRequests True if the profiler only collects data when the request is a master request, false otherwise
      */
-    public function __construct(Profiler $profiler, RequestStack $requestStack, RequestMatcherInterface $matcher = null, bool $onlyException = false, bool $onlyMasterRequests = false)
+    public function __construct(Profiler $profiler, RequestStack $requestStack, RequestMatcherInterface $matcher = null, $onlyException = false, $onlyMasterRequests = false)
     {
         $this->profiler = $profiler;
         $this->matcher = $matcher;
-        $this->onlyException = $onlyException;
-        $this->onlyMasterRequests = $onlyMasterRequests;
+        $this->onlyException = (bool) $onlyException;
+        $this->onlyMasterRequests = (bool) $onlyMasterRequests;
         $this->profiles = new \SplObjectStorage();
         $this->parents = new \SplObjectStorage();
         $this->requestStack = $requestStack;
@@ -62,7 +63,7 @@ class ProfilerListener implements EventSubscriberInterface
             return;
         }
 
-        $this->exception = $event->getThrowable();
+        $this->exception = $event->getException();
     }
 
     /**
@@ -120,7 +121,7 @@ class ProfilerListener implements EventSubscriberInterface
     {
         return [
             KernelEvents::RESPONSE => ['onKernelResponse', -100],
-            KernelEvents::EXCEPTION => ['onKernelException', 0],
+            KernelEvents::EXCEPTION => 'onKernelException',
             KernelEvents::TERMINATE => ['onKernelTerminate', -1024],
         ];
     }

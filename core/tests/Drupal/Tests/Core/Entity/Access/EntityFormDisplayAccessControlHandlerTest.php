@@ -82,7 +82,7 @@ class EntityFormDisplayAccessControlHandlerTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->anon = $this->createMock(AccountInterface::class);
@@ -99,9 +99,9 @@ class EntityFormDisplayAccessControlHandlerTest extends UnitTestCase {
     $this->member
       ->expects($this->any())
       ->method('hasPermission')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         ['administer foobar form display', TRUE],
-      ]);
+      ]));
     $this->member
       ->expects($this->any())
       ->method('id')
@@ -111,9 +111,9 @@ class EntityFormDisplayAccessControlHandlerTest extends UnitTestCase {
     $this->parent_member
       ->expects($this->any())
       ->method('hasPermission')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         ['Llama', TRUE],
-      ]);
+      ]));
     $this->parent_member
       ->expects($this->any())
       ->method('id')
@@ -126,9 +126,9 @@ class EntityFormDisplayAccessControlHandlerTest extends UnitTestCase {
     $entity_form_display_entity_type
       ->expects($this->any())
       ->method('getKey')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         ['langcode', 'langcode'],
-      ]);
+      ]));
     $entity_form_display_entity_type->expects($this->any())
       ->method('entityClassImplements')
       ->will($this->returnValue(TRUE));
@@ -202,10 +202,8 @@ class EntityFormDisplayAccessControlHandlerTest extends UnitTestCase {
    *   A list of allowed operations.
    * @param \Drupal\Core\Session\AccountInterface $user
    *   The account to use for get access.
-   *
-   * @internal
    */
-  public function assertAllowOperations(array $allow_operations, AccountInterface $user): void {
+  public function assertAllowOperations(array $allow_operations, AccountInterface $user) {
     foreach (['view', 'update', 'delete'] as $operation) {
       $expected = in_array($operation, $allow_operations);
       $actual = $this->accessControlHandler->access($this->entity, $operation, $user);

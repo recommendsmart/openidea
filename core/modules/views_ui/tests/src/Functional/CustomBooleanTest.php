@@ -73,17 +73,17 @@ class CustomBooleanTest extends UITestBase {
       'plain' => [
         'true' => $custom_true,
         'false' => $custom_false,
-        'test' => 'assertStringContainsString',
+        'test' => 'assertContains',
       ],
       'allowed tag' => [
         'true' => '<p>' . $custom_true . '</p>',
         'false' => '<p>' . $custom_false . '</p>',
-        'test' => 'assertStringContainsString',
+        'test' => 'assertContains',
       ],
       'disallowed tag' => [
         'true' => '<script>' . $custom_true . '</script>',
         'false' => '<script>' . $custom_false . '</script>',
-        'test' => 'assertStringNotContainsString',
+        'test' => 'assertNotContains',
       ],
     ];
 
@@ -94,12 +94,10 @@ class CustomBooleanTest extends UITestBase {
         'options[type_custom_true]' => $values['true'],
         'options[type_custom_false]' => $values['false'],
       ];
-      $this->drupalGet('admin/structure/views/nojs/handler/test_view/default/field/age');
-      $this->submitForm($options, 'Apply');
+      $this->drupalPostForm('admin/structure/views/nojs/handler/test_view/default/field/age', $options, 'Apply');
 
       // Save the view.
-      $this->drupalGet('admin/structure/views/view/test_view');
-      $this->submitForm([], 'Save');
+      $this->drupalPostForm('admin/structure/views/view/test_view', [], 'Save');
 
       $view = Views::getView('test_view');
       $output = $view->preview();
@@ -120,7 +118,7 @@ class CustomBooleanTest extends UITestBase {
     $this->config('system.theme')
       ->set('default', 'views_test_theme')
       ->save();
-    $this->assertEquals('views_test_theme', $this->config('system.theme')->get('default'));
+    $this->assertEqual($this->config('system.theme')->get('default'), 'views_test_theme');
 
     // Add the boolean field handler to the test view.
     $view = Views::getView('test_view');
@@ -147,17 +145,17 @@ class CustomBooleanTest extends UITestBase {
       'plain' => [
         'true' => $custom_true,
         'false' => $custom_false,
-        'test' => 'assertStringContainsString',
+        'test' => 'assertContains',
       ],
       'allowed tag' => [
         'true' => '<p>' . $custom_true . '</p>',
         'false' => '<p>' . $custom_false . '</p>',
-        'test' => 'assertStringContainsString',
+        'test' => 'assertContains',
       ],
       'disallowed tag' => [
         'true' => '<script>' . $custom_true . '</script>',
         'false' => '<script>' . $custom_false . '</script>',
-        'test' => 'assertStringNotContainsString',
+        'test' => 'assertNotContains',
       ],
     ];
 
@@ -168,12 +166,10 @@ class CustomBooleanTest extends UITestBase {
         'options[type_custom_true]' => $values['true'],
         'options[type_custom_false]' => $values['false'],
       ];
-      $this->drupalGet('admin/structure/views/nojs/handler/test_view/default/field/age');
-      $this->submitForm($options, 'Apply');
+      $this->drupalPostForm('admin/structure/views/nojs/handler/test_view/default/field/age', $options, 'Apply');
 
       // Save the view.
-      $this->drupalGet('admin/structure/views/view/test_view');
-      $this->submitForm([], 'Save');
+      $this->drupalPostForm('admin/structure/views/view/test_view', [], 'Save');
 
       $view = Views::getView('test_view');
       $output = $view->preview();
@@ -182,7 +178,7 @@ class CustomBooleanTest extends UITestBase {
       $this->{$values['test']}($values['false'], (string) $output, new FormattableMarkup('Expected custom boolean FALSE value %value in output for %type', ['%value' => $values['false'], '%type' => $type]));
 
       // Assert that we are using the correct template.
-      $this->assertStringContainsString('llama', (string) $output);
+      $this->assertContains('llama', (string) $output);
     }
   }
 

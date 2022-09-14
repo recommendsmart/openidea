@@ -42,7 +42,7 @@ class BuildTestTest extends BuildTestBase {
       'autoload.php',
       'composer.json',
       'index.php',
-      'README.md',
+      'README.txt',
       '.git',
       '.ht.router.php',
     ];
@@ -95,7 +95,7 @@ class BuildTestTest extends BuildTestBase {
     // Mock BuildTestBase so that it thinks our VFS is the Drupal root.
     /** @var \PHPUnit\Framework\MockObject\MockBuilder|\Drupal\BuildTests\Framework\BuildTestBase $base */
     $base = $this->getMockBuilder(BuildTestBase::class)
-      ->onlyMethods(['getDrupalRoot'])
+      ->setMethods(['getDrupalRoot'])
       ->getMockForAbstractClass();
     $base->expects($this->exactly(2))
       ->method('getDrupalRoot')

@@ -148,7 +148,7 @@ class Interpolator {
     }
     $tokens = [];
     foreach ($matches as $matchSet) {
-      [$sourceText, $key] = $matchSet;
+      list($sourceText, $key) = $matchSet;
       $tokens[$sourceText] = $key;
     }
     return $tokens;

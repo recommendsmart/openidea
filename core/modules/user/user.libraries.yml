@@ -9,8 +9,7 @@ drupal.user:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
 
 drupal.user.admin:
   version: VERSION
@@ -24,8 +23,7 @@ drupal.user.permissions:
     user.permissions.js: {}
   dependencies:
     - core/jquery
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/drupal
     - core/drupalSettings
     - user/drupal.user.admin

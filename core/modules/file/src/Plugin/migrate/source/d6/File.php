@@ -42,8 +42,8 @@ class File extends DrupalSqlBase {
   public function query() {
     return $this->select('files', 'f')
       ->fields('f')
-      ->condition('f.filepath', '/tmp%', 'NOT LIKE')
-      ->orderBy('f.timestamp')
+      ->condition('filepath', '/tmp%', 'NOT LIKE')
+      ->orderBy('timestamp')
       // If two or more files have the same timestamp, they'll end up in a
       // non-deterministic order. Ordering by fid (or any other unique field)
       // will prevent this.
@@ -54,7 +54,7 @@ class File extends DrupalSqlBase {
    * {@inheritdoc}
    */
   protected function initializeIterator() {
-    $site_path = $this->configuration['site_path'] ?? 'sites/default';
+    $site_path = isset($this->configuration['site_path']) ? $this->configuration['site_path'] : 'sites/default';
     $this->filePath = $this->variableGet('file_directory_path', $site_path . '/files') . '/';
     $this->tempFilePath = $this->variableGet('file_directory_temp', '/tmp') . '/';
 
@@ -95,7 +95,6 @@ class File extends DrupalSqlBase {
    */
   public function getIds() {
     $ids['fid']['type'] = 'integer';
-    $ids['fid']['alias'] = 'f';
     return $ids;
   }
 

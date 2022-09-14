@@ -17,12 +17,4 @@ class TrustedHostsTestController {
     return ['#markup' => 'Host: ' . $request->getHost()];
   }
 
-  /**
-   * Creates a fake request and prints out the class name of the specified bag.
-   */
-  public function bagType($bag) {
-    $request = Request::create('/');
-    return ['#markup' => 'Type: ' . get_class($request->$bag)];
-  }
-
 }

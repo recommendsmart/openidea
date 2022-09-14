@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\migrate\Kernel;
 
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\migrate\MigrateException;
 use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 
@@ -17,7 +18,7 @@ class MigrateLookupTest extends MigrateTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'system',
     'node',
     'field',
@@ -36,7 +37,7 @@ class MigrateLookupTest extends MigrateTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
     $this->setTestLogger();
     $this->migrateLookup = $this->container->get('migrate.lookup');
@@ -75,6 +76,16 @@ class MigrateLookupTest extends MigrateTestBase {
 
     // Test invalidly indexed source id.
     $this->migrateLookup->lookup('sample_lookup_migration', ['invalid_id' => 25]);
+  }
+
+  /**
+   * Tests an invalid lookup.
+   */
+  public function testInvalidMigrationLookup() {
+    $this->expectException(PluginNotFoundException::class);
+    $this->expectExceptionMessage("Plugin ID 'invalid_migration' was not found.");
+    // Test invalid migration_id.
+    $this->migrateLookup->lookup('invalid_migration', ['id' => 1337]);
   }
 
   /**

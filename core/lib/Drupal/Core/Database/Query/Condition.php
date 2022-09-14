@@ -78,19 +78,8 @@ class Condition implements ConditionInterface, \Countable {
    *
    * @param string $conjunction
    *   The operator to use to combine conditions: 'AND' or 'OR'.
-   * @param bool $trigger_deprecation
-   *   If TRUE then trigger the deprecation warning.
-   *
-   * @deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Creating an
-   *   instance of this class is deprecated.
-   *
-   * @see https://www.drupal.org/node/3159568
    */
-  public function __construct($conjunction, $trigger_deprecation = TRUE) {
-    if ($trigger_deprecation) {
-      @trigger_error('Creating an instance of this class is deprecated in drupal:9.1.0 and is removed in drupal:10.0.0. Use Database::getConnection()->condition() instead. See https://www.drupal.org/node/3159568', E_USER_DEPRECATED);
-    }
-
+  public function __construct($conjunction) {
     $this->conditions['#conjunction'] = $conjunction;
   }
 
@@ -101,7 +90,6 @@ class Condition implements ConditionInterface, \Countable {
    * size of its conditional array minus one, because one element is the
    * conjunction.
    */
-  #[\ReturnTypeWillChange]
   public function count() {
     return count($this->conditions) - 1;
   }
@@ -399,7 +387,7 @@ class Condition implements ConditionInterface, \Countable {
       // do not need the more expensive mb_strtoupper() because SQL statements
       // are ASCII.
       $operator = strtoupper($operator);
-      $return = static::$conditionOperatorMap[$operator] ?? [];
+      $return = isset(static::$conditionOperatorMap[$operator]) ? static::$conditionOperatorMap[$operator] : [];
     }
 
     $return += ['operator' => $operator];
@@ -411,7 +399,7 @@ class Condition implements ConditionInterface, \Countable {
    * {@inheritdoc}
    */
   public function conditionGroupFactory($conjunction = 'AND') {
-    return new static($conjunction);
+    return new Condition($conjunction);
   }
 
   /**

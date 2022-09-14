@@ -18,14 +18,14 @@ use Symfony\Component\DependencyInjection\Definition;
  *
  * @author Marco Pivetta <ocramius@gmail.com>
  *
- * @final
+ * @final since version 3.3
  */
 class NullDumper implements DumperInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function isProxyCandidate(Definition $definition): bool
+    public function isProxyCandidate(Definition $definition)
     {
         return false;
     }
@@ -33,7 +33,7 @@ class NullDumper implements DumperInterface
     /**
      * {@inheritdoc}
      */
-    public function getProxyFactoryCode(Definition $definition, $id, $factoryCode = null): string
+    public function getProxyFactoryCode(Definition $definition, $id, $factoryCode = null)
     {
         return '';
     }
@@ -41,7 +41,7 @@ class NullDumper implements DumperInterface
     /**
      * {@inheritdoc}
      */
-    public function getProxyCode(Definition $definition): string
+    public function getProxyCode(Definition $definition)
     {
         return '';
     }

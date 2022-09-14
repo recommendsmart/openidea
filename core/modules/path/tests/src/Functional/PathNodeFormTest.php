@@ -14,21 +14,18 @@ class PathNodeFormTest extends PathTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'path'];
+  public static $modules = ['node', 'path'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'classy';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create test user and log in.
-    $web_user = $this->drupalCreateUser([
-      'create page content',
-      'create url aliases',
-    ]);
+    $web_user = $this->drupalCreateUser(['create page content', 'create url aliases']);
     $this->drupalLogin($web_user);
   }
 

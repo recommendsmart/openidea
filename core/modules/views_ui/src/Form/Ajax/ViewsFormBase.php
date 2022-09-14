@@ -85,10 +85,9 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
    * {@inheritdoc}
    */
   public function getForm(ViewEntityInterface $view, $display_id, $js) {
-    /** @var \Drupal\Core\Form\FormStateInterface $form_state */
     $form_state = $this->getFormState($view, $display_id, $js);
     $view = $form_state->get('view');
-    $form_key = $form_state->get('form_key');
+    $key = $form_state->get('form_key');
 
     // @todo Remove the need for this.
     \Drupal::moduleHandler()->loadInclude('views_ui', 'inc', 'admin');
@@ -102,14 +101,14 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
     // it off; if it isn't, the user clicked somewhere else and the stack is
     // now irrelevant.
     if (!empty($view->stack)) {
-      $identifier = implode('-', array_filter([$form_key, $view->id(), $display_id, $form_state->get('type'), $form_state->get('id')]));
+      $identifier = implode('-', array_filter([$key, $view->id(), $display_id, $form_state->get('type'), $form_state->get('id')]));
       // Retrieve the first form from the stack without changing the integer keys,
       // as they're being used for the "2 of 3" progress indicator.
       reset($view->stack);
-      $stack_key = key($view->stack);
+      $key = key($view->stack);
       $top = current($view->stack);
       next($view->stack);
-      unset($view->stack[$stack_key]);
+      unset($view->stack[$key]);
 
       if (array_shift($top) != $identifier) {
         $view->stack = [];
@@ -119,7 +118,7 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
     // Automatically remove the form cache if it is set and the key does
     // not match. This way navigating away from the form without hitting
     // update will work.
-    if (isset($view->form_cache) && $view->form_cache['key'] !== $form_key) {
+    if (isset($view->form_cache) && $view->form_cache['key'] != $key) {
       unset($view->form_cache);
     }
 
@@ -138,6 +137,7 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
 
       // Build the new form state for the next form in the stack.
       $reflection = new \ReflectionClass($view::$forms[$top[1]]);
+      /** @var $form_state \Drupal\Core\Form\FormStateInterface */
       $form_state = $reflection->newInstanceArgs(array_slice($top, 3, 2))->getFormState($view, $top[2], $form_state->get('ajax'));
       $form_class = get_class($form_state->getFormObject());
 

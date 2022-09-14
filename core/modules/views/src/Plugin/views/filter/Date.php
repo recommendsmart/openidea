@@ -23,7 +23,7 @@ class Date extends NumericFilter {
   }
 
   /**
-   * Add a type selector to the value form.
+   * Add a type selector to the value form
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
     if (!$form_state->get('exposed')) {
@@ -167,7 +167,7 @@ class Date extends NumericFilter {
 
   protected function opBetween($field) {
     $a = intval(strtotime($this->value['min'], 0));
-    $b = intval(strtotime($this->value['max'] . ' +1 day', 0)) - 1;
+    $b = intval(strtotime($this->value['max'], 0));
 
     if ($this->value['type'] == 'offset') {
       // Keep sign.

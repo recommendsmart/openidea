@@ -6,12 +6,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 
 /**
- * Drupal 6 profile fields values source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Drupal 6 profile fields values source.
  *
  * @MigrateSource(
  *   id = "d6_profile_field_values",
@@ -38,7 +33,7 @@ class ProfileFieldValues extends DrupalSqlBase {
     // Find profile values for this row.
     $query = $this->select('profile_values', 'pv')
       ->fields('pv', ['fid', 'value']);
-    $query->leftJoin('profile_fields', 'pf', '[pf].[fid] = [pv].[fid]');
+    $query->leftJoin('profile_fields', 'pf', 'pf.fid=pv.fid');
     $query->fields('pf', ['name', 'type']);
     $query->condition('uid', $row->getSourceProperty('uid'));
     $results = $query->execute();
@@ -74,7 +69,7 @@ class ProfileFieldValues extends DrupalSqlBase {
 
     $query = $this->select('profile_values', 'pv')
       ->fields('pv', ['fid', 'value']);
-    $query->leftJoin('profile_fields', 'pf', '[pf].[fid] = [pv].[fid]');
+    $query->leftJoin('profile_fields', 'pf', 'pf.fid=pv.fid');
     $query->fields('pf', ['name', 'title']);
     $results = $query->execute();
     foreach ($results as $profile) {

@@ -17,31 +17,36 @@ use Drupal\user\UserInterface;
  *
  * @coversDefaultClass \Drupal\Core\Entity\RevisionableContentEntityBase
  * @group Entity
+ * @group legacy
  */
 class RevisionableContentEntityBaseTest extends EntityKernelTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['entity_test_revlog', 'system', 'user'];
+  public static $modules = ['entity_test_revlog', 'system', 'user'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('entity_test_mul_revlog');
   }
 
   /**
    * Tests the correct functionality CRUD operations of entity revisions.
+   *
+   * @expectedDeprecation The revision_user revision metadata key is not set for entity type: entity_test_mul_revlog See: https://www.drupal.org/node/2831499
+   * @expectedDeprecation The revision_created revision metadata key is not set for entity type: entity_test_mul_revlog See: https://www.drupal.org/node/2831499
+   * @expectedDeprecation The revision_log_message revision metadata key is not set for entity type: entity_test_mul_revlog See: https://www.drupal.org/node/2831499
    */
   public function testRevisionableContentEntity() {
     $entity_type = 'entity_test_mul_revlog';
     $definition = \Drupal::entityTypeManager()->getDefinition($entity_type);
     $user = User::create(['name' => 'test name']);
     $user->save();
-    /** @var \Drupal\entity_test_revlog\Entity\EntityTestMulWithRevisionLog $entity */
+    /** @var \Drupal\entity_test_mul_revlog\Entity\EntityTestMulWithRevisionLog $entity */
     $entity = EntityTestMulWithRevisionLog::create([
       'type' => $entity_type,
     ]);
@@ -80,7 +85,7 @@ class RevisionableContentEntityBaseTest extends EntityKernelTestBase {
     }
     $this->assertItemsTableCount(6, $definition);
 
-    $this->assertCount(6, $revision_ids);
+    $this->assertEqual(6, count($revision_ids));
 
     // Delete the first 3 revisions.
     foreach (range(0, 2) as $key) {
@@ -95,6 +100,10 @@ class RevisionableContentEntityBaseTest extends EntityKernelTestBase {
    * Tests the behavior of the "revision_default" flag.
    *
    * @covers \Drupal\Core\Entity\ContentEntityBase::wasDefaultRevision
+   *
+   * @expectedDeprecation The revision_user revision metadata key is not set for entity type: entity_test_mul_revlog See: https://www.drupal.org/node/2831499
+   * @expectedDeprecation The revision_created revision metadata key is not set for entity type: entity_test_mul_revlog See: https://www.drupal.org/node/2831499
+   * @expectedDeprecation The revision_log_message revision metadata key is not set for entity type: entity_test_mul_revlog See: https://www.drupal.org/node/2831499
    */
   public function testWasDefaultRevision() {
     $entity_type_id = 'entity_test_mul_revlog';
@@ -166,16 +175,13 @@ class RevisionableContentEntityBaseTest extends EntityKernelTestBase {
    *   The number of items expected to be in revisions related tables.
    * @param \Drupal\Core\Entity\EntityTypeInterface $definition
    *   The definition and metadata of the entity being tested.
-   *
-   * @internal
    */
-  protected function assertItemsTableCount(int $count, EntityTypeInterface $definition): void {
+  protected function assertItemsTableCount($count, EntityTypeInterface $definition) {
     $connection = Database::getConnection();
-    $this->assertEquals(1, (int) $connection->select($definition->getBaseTable())->countQuery()->execute()->fetchField());
-    $this->assertEquals(1, (int) $connection->select($definition->getDataTable())->countQuery()->execute()->fetchField());
-    $this->assertEquals($count, (int) $connection->select($definition->getRevisionTable())->countQuery()->execute()->fetchField());
-    $this->assertEquals($count, (int) $connection->select($definition->getRevisionDataTable())->countQuery()->execute()->fetchField());
-
+    $this->assertEqual(1, $connection->query('SELECT COUNT(*) FROM {' . $definition->getBaseTable() . '}')->fetchField());
+    $this->assertEqual(1, $connection->query('SELECT COUNT(*) FROM {' . $definition->getDataTable() . '}')->fetchField());
+    $this->assertEqual($count, $connection->query('SELECT COUNT(*) FROM {' . $definition->getRevisionTable() . '}')->fetchField());
+    $this->assertEqual($count, $connection->query('SELECT COUNT(*) FROM {' . $definition->getRevisionDataTable() . '}')->fetchField());
   }
 
   /**

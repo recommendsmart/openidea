@@ -23,28 +23,7 @@ class DefaultConfigTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'config_test'];
-
-  /**
-   * Config files to be ignored by this test.
-   *
-   * @var array
-   */
-  protected $toSkip = [
-    // Skip files provided by the config_schema_test module since that module
-    // is explicitly for testing schema.
-    'config_schema_test.ignore',
-    'config_schema_test.noschema',
-    'config_schema_test.plugin_types',
-    'config_schema_test.someschema.somemodule.section_one.subsection',
-    'config_schema_test.someschema.somemodule.section_two.subsection',
-    'config_schema_test.someschema.with_parents',
-    'config_schema_test.someschema',
-    // Skip tour-test-legacy files as they intentionally have deprecated
-    // properties.
-    'tour.tour.tour-test-legacy',
-    'tour.tour.tour-test-legacy-location',
-  ];
+  public static $modules = ['system', 'config_test'];
 
   /**
    * Themes which provide default configuration and need enabling.
@@ -57,7 +36,7 @@ class DefaultConfigTest extends KernelTestBase {
    */
   protected $themes = ['seven'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     \Drupal::service('theme_installer')->install($this->themes);
   }
@@ -83,8 +62,11 @@ class DefaultConfigTest extends KernelTestBase {
     // Create a configuration storage with access to default configuration in
     // every module, profile and theme.
     $default_config_storage = new TestInstallStorage();
+
     foreach ($default_config_storage->listAll() as $config_name) {
-      if (in_array($config_name, $this->toSkip)) {
+      // Skip files provided by the config_schema_test module since that module
+      // is explicitly for testing schema.
+      if (strpos($config_name, 'config_schema_test') === 0) {
         continue;
       }
 

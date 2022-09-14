@@ -12,7 +12,7 @@ use Drupal\views\Views;
  */
 class FilterStringTest extends ViewsKernelTestBase {
 
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
 
   /**
    * Views used by this test.
@@ -118,6 +118,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -174,6 +175,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -207,7 +209,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'name',
         'relationship' => 'none',
         'operator' => 'contains',
-        'value' => 'iNg',
+        'value' => 'ing',
       ],
     ]);
 
@@ -229,6 +231,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -253,7 +256,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'description',
         'relationship' => 'none',
         'operator' => 'word',
-        'value' => 'aCtor',
+        'value' => 'actor',
       ],
     ]);
 
@@ -338,6 +341,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -382,7 +386,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'description',
         'relationship' => 'none',
         'operator' => 'starts',
-        'value' => 'gEorge',
+        'value' => 'George',
       ],
     ]);
 
@@ -404,6 +408,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -427,7 +432,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'description',
         'relationship' => 'none',
         'operator' => 'not_starts',
-        'value' => 'gEorge',
+        'value' => 'George',
       ],
     ]);
 
@@ -456,6 +461,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -486,7 +492,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'description',
         'relationship' => 'none',
         'operator' => 'ends',
-        'value' => 'bEatles.',
+        'value' => 'Beatles.',
       ],
     ]);
 
@@ -511,6 +517,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -537,7 +544,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'description',
         'relationship' => 'none',
         'operator' => 'not_ends',
-        'value' => 'bEatles.',
+        'value' => 'Beatles.',
       ],
     ]);
 
@@ -563,6 +570,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -590,7 +598,7 @@ class FilterStringTest extends ViewsKernelTestBase {
         'field' => 'description',
         'relationship' => 'none',
         'operator' => 'not',
-        'value' => 'bEatles.',
+        'value' => 'Beatles.',
       ],
     ]);
 
@@ -616,6 +624,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
 
@@ -669,6 +678,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
     $resultset = [
@@ -716,6 +726,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
     $resultset = [
@@ -759,6 +770,7 @@ class FilterStringTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
     $resultset = [

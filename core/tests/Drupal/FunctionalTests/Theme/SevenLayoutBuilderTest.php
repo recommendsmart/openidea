@@ -19,7 +19,7 @@ class SevenLayoutBuilderTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'views',
     'layout_builder',
     'layout_builder_views_test',
@@ -33,7 +33,7 @@ class SevenLayoutBuilderTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalPlaceBlock('page_title_block', ['region' => 'header']);
@@ -87,7 +87,7 @@ class SevenLayoutBuilderTest extends BrowserTestBase {
     $assert_session->linkNotExists('Manage layout');
     $assert_session->fieldDisabled('layout[allow_custom]');
 
-    $this->submitForm(['layout[enabled]' => TRUE], 'Save');
+    $this->drupalPostForm(NULL, ['layout[enabled]' => TRUE], 'Save');
     $assert_session->linkExists('Manage layout');
     $this->clickLink('Manage layout');
 

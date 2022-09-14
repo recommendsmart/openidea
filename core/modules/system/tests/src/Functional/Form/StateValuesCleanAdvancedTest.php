@@ -23,7 +23,7 @@ class StateValuesCleanAdvancedTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['file', 'form_test'];
+  public static $modules = ['file', 'form_test'];
 
   /**
    * {@inheritdoc}
@@ -47,18 +47,17 @@ class StateValuesCleanAdvancedTest extends BrowserTestBase {
     $this->image = current($image_files);
 
     // Check if the physical file is there.
-    $this->assertFileExists($this->image->uri);
+    $this->assertTrue(is_file($this->image->uri), "The image file we're going to upload exists.");
 
     // "Browse" for the desired file.
     $edit = ['files[image]' => \Drupal::service('file_system')->realpath($this->image->uri)];
 
     // Post the form.
-    $this->drupalGet('form_test/form-state-values-clean-advanced');
-    $this->submitForm($edit, 'Submit');
+    $this->drupalPostForm('form_test/form-state-values-clean-advanced', $edit, t('Submit'));
 
     // Expecting a 200 HTTP code.
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains("You WIN!");
+    $this->assertResponse(200, 'Received a 200 response for posted test file.');
+    $this->assertRaw(t('You WIN!'), 'Found the success message.');
   }
 
 }

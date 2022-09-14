@@ -9,7 +9,6 @@ table {
   width: 100%;
   margin-top: var(--space-l);
   margin-bottom: var(--space-l);
-  border-collapse: collapse;
 }
 
 .sticky-header {
@@ -29,7 +28,7 @@ th {
   padding: var(--space-xs) var(--space-m);
   text-align: left; /* LTR */
   color: var(--color-text);
-  background: var(--color-gray-050);
+  background: var(--color-whitesmoke);
   line-height: 1.25rem; /* 20px */
 }
 [dir="rtl"] th {
@@ -80,14 +79,8 @@ _:-ms-fullscreen, /* Only IE 11 */
   margin-top: -0.5rem;
   content: "";
   opacity: 0.5;
-  background: url(../../images/icons/222330/sort--inactive--ltr.svg) no-repeat 50% 50%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='m1.75,0.25v1.5h10.5v-1.5z m0,3v1.5h7.5v-1.5z m0,3v1.5h4.5v-1.5z' fill='%23222330'/%3E%3C/svg%3E") no-repeat 50% 50%;
   background-size: contain;
-
-  @media (forced-colors: active) {
-    opacity: 1;
-    background: linktext;
-    mask: url(../../images/icons/222330/sort--inactive--ltr.svg) no-repeat 50% 50%;
-  }
 }
 /* stylelint-disable-next-line selector-type-no-unknown */
 _:-ms-fullscreen, /* Only IE 11 */
@@ -100,12 +93,7 @@ _:-ms-fullscreen, /* Only IE 11 */
 [dir="rtl"] .sortable-heading > a::after {
   right: auto;
   left: 1rem;
-  background-image: url(../../images/icons/222330/sort--inactive--rtl.svg);
-
-  @media (forced-colors: active) {
-    background: linktext;
-    mask: url(../../images/icons/222330/sort--inactive--rtl.svg) no-repeat 50% 50%;
-  }
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='m12.25,0.25v1.5H1.75v-1.5z m0,3v1.5h-7.5v-1.5z m0,3v1.5h-4.5v-1.5z' fill='%23222330'/%3E%3C/svg%3E");
 }
 /* stylelint-disable-next-line selector-type-no-unknown */
 _:-ms-fullscreen, /* Only IE 11 */
@@ -139,7 +127,7 @@ _:-ms-fullscreen, /* Only IE 11 */
 }
 
 tr {
-  border-bottom: 0.0625rem solid var(--color-gray-200);
+  border-bottom: 0.0625rem solid var(--color-lightgray);
 }
 tr,
 .draggable-table.tabledrag-disabled tr {
@@ -218,7 +206,7 @@ tfoot tr:last-child {
   border-bottom: 0;
 }
 tfoot tr:first-child td {
-  border-top: 0.0625rem solid var(--color-gray-500);
+  border-top: 0.0625rem solid var(--color-grayblue);
 }
 
 /**

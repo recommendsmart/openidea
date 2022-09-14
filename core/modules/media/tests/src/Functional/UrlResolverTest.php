@@ -23,7 +23,7 @@ class UrlResolverTest extends MediaFunctionalTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->lockHttpClientToFixtures();
     $this->useFixtureProviders();
@@ -49,10 +49,6 @@ class UrlResolverTest extends MediaFunctionalTestBase {
       'match by endpoint: CollegeHumor' => [
         'http://www.collegehumor.com/video/40002870/lets-not-get-a-drink-sometime',
         'http://www.collegehumor.com/oembed.json?url=http://www.collegehumor.com/video/40002870/lets-not-get-a-drink-sometime',
-      ],
-      'match by endpoint: Facebook' => [
-        'https://www.facebook.com/facebook/videos/10153231379946729/',
-        'https://www.facebook.com/plugins/video/oembed.json?url=https://www.facebook.com/facebook/videos/10153231379946729/',
       ],
     ];
   }
@@ -89,7 +85,7 @@ class UrlResolverTest extends MediaFunctionalTestBase {
     $resource_url = $this->container->get('media.oembed.url_resolver')
       ->getResourceUrl('https://vimeo.com/14782834');
 
-    $this->assertStringContainsString('altered=1', parse_url($resource_url, PHP_URL_QUERY));
+    $this->assertContains('altered=1', parse_url($resource_url, PHP_URL_QUERY));
   }
 
   /**

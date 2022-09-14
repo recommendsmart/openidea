@@ -7,7 +7,6 @@ dependencies:
   module:
     - text
     - user
-third_party_settings: {  }
 id: node.options_install_test.default
 targetEntityType: node
 bundle: options_install_test
@@ -17,11 +16,12 @@ content:
     weight: 100
     region: content
   body:
-    type: text_default
     label: hidden
-    settings: {  }
-    third_party_settings: {  }
+    type: text_default
     weight: 101
     region: content
+    settings: {  }
+    third_party_settings: {  }
 hidden:
   langcode: true
+third_party_settings: {  }

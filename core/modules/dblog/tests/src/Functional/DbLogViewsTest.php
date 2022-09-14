@@ -19,7 +19,7 @@ class DbLogViewsTest extends DbLogTest {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'dblog',
     'node',
     'forum',
@@ -63,9 +63,9 @@ class DbLogViewsTest extends DbLogTest {
     $data = $view->storage->toArray();
     $area = $data['display']['default']['display_options']['empty']['area'];
 
-    $this->assertEquals('text_custom', $area['plugin_id']);
-    $this->assertEquals('area_text_custom', $area['field']);
-    $this->assertEquals('No log messages available.', $area['content']);
+    $this->assertEqual('text_custom', $area['plugin_id']);
+    $this->assertEqual('area_text_custom', $area['field']);
+    $this->assertEqual('No log messages available.', $area['content']);
   }
 
 }

@@ -9,7 +9,7 @@ use Drupal\views\Plugin\ViewsPluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form controller for the Views add form.
+ * Form controller for the Views edit form.
  *
  * @internal
  */
@@ -23,7 +23,7 @@ class ViewAddForm extends ViewFormBase {
   protected $wizardManager;
 
   /**
-   * Constructs a new ViewAddForm object.
+   * Constructs a new ViewEditForm object.
    *
    * @param \Drupal\views\Plugin\ViewsPluginManager $wizard_manager
    *   The wizard plugin manager.
@@ -57,7 +57,7 @@ class ViewAddForm extends ViewFormBase {
 
     $form['name'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('View basic information'),
+      '#title' => t('View basic information'),
       '#attributes' => ['class' => ['fieldset-no-legend']],
     ];
 
@@ -107,7 +107,7 @@ class ViewAddForm extends ViewFormBase {
     // properties of what the view will display.
     $form['displays']['show'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('View settings'),
+      '#title' => t('View settings'),
       '#tree' => TRUE,
       '#attributes' => ['class' => ['container-inline']],
     ];
@@ -123,7 +123,6 @@ class ViewAddForm extends ViewFormBase {
       '#type' => 'select',
       '#title' => $this->t('Show'),
       '#options' => $options,
-      '#sort_options' => TRUE,
     ];
     $show_form = &$form['displays']['show'];
     $default_value = \Drupal::moduleHandler()->moduleExists('node') ? 'node' : 'users';
@@ -186,7 +185,7 @@ class ViewAddForm extends ViewFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
-      /** @var \Drupal\views\Plugin\views\wizard\WizardInterface $wizard */
+      /** @var $wizard \Drupal\views\Plugin\views\wizard\WizardInterface */
       $wizard = $form_state->get('wizard_instance');
       $this->entity = $wizard->createView($form, $form_state);
     }

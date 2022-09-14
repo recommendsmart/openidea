@@ -78,7 +78,7 @@ class UrlGeneratorTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $cache_contexts_manager = $this->getMockBuilder('Drupal\Core\Cache\Context\CacheContextsManager')
       ->disableOriginalConstructor()
       ->getMock();
@@ -137,10 +137,10 @@ class UrlGeneratorTest extends UnitTestCase {
     $this->provider = $provider;
     $this->provider->expects($this->any())
       ->method('getRouteByName')
-      ->willReturnMap($route_name_return_map);
+      ->will($this->returnValueMap($route_name_return_map));
     $provider->expects($this->any())
       ->method('getRoutesByNames')
-      ->willReturnMap($routes_names_return_map);
+      ->will($this->returnValueMap($routes_names_return_map));
 
     // Create an alias manager stub.
     $alias_manager = $this->getMockBuilder('Drupal\path_alias\AliasManager')
@@ -149,7 +149,7 @@ class UrlGeneratorTest extends UnitTestCase {
 
     $alias_manager->expects($this->any())
       ->method('getAliasByPath')
-      ->willReturnCallback([$this, 'aliasManagerCallback']);
+      ->will($this->returnCallback([$this, 'aliasManagerCallback']));
 
     $this->aliasManager = $alias_manager;
 
@@ -189,13 +189,10 @@ class UrlGeneratorTest extends UnitTestCase {
     switch ($args[0]) {
       case '/test/one':
         return '/hello/world';
-
       case '/test/two/5':
         return '/goodbye/cruel/world';
-
       case '/<front>':
         return '/';
-
       default:
         return $args[0];
     }
@@ -390,7 +387,7 @@ class UrlGeneratorTest extends UnitTestCase {
       ->method('processOutbound');
 
     $path = $this->generator->getPathFromRoute('test_3');
-    $this->assertEquals('test/two', $path);
+    $this->assertEquals($path, 'test/two');
   }
 
   /**
@@ -430,7 +427,7 @@ class UrlGeneratorTest extends UnitTestCase {
   }
 
   /**
-   * Confirms that explicitly setting the base_url works with generated routes.
+   * Confirms that explicitly setting the base_url works with generated routes
    */
   public function testBaseURLGeneration() {
     $options = ['base_url' => 'http://www.example.com:8888'];
@@ -452,8 +449,7 @@ class UrlGeneratorTest extends UnitTestCase {
   }
 
   /**
-   * Tests that the 'scheme' route requirement is respected during url
-   * generation.
+   * Test that the 'scheme' route requirement is respected during url generation.
    */
   public function testUrlGenerationWithHttpsRequirement() {
     $url = $this->generator->generate('test_4', [], TRUE);
@@ -529,20 +525,18 @@ class UrlGeneratorTest extends UnitTestCase {
   /**
    * Asserts \Drupal\Core\Routing\UrlGenerator::generateFromRoute()'s output.
    *
-   * @param string $route_name
+   * @param $route_name
    *   The route name to test.
    * @param array $route_parameters
    *   The route parameters to test.
    * @param array $options
    *   The options to test.
-   * @param string $expected_url
+   * @param $expected_url
    *   The expected generated URL string.
    * @param \Drupal\Core\Render\BubbleableMetadata $expected_bubbleable_metadata
    *   The expected generated bubbleable metadata.
-   *
-   * @internal
    */
-  protected function assertGenerateFromRoute(string $route_name, array $route_parameters, array $options, string $expected_url, BubbleableMetadata $expected_bubbleable_metadata): void {
+  protected function assertGenerateFromRoute($route_name, array $route_parameters, array $options, $expected_url, BubbleableMetadata $expected_bubbleable_metadata) {
     // First, test with $collect_cacheability_metadata set to the default value.
     $url = $this->generator->generateFromRoute($route_name, $route_parameters, $options);
     $this->assertSame($expected_url, $url);

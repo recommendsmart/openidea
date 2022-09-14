@@ -237,14 +237,14 @@ class InspectorTest extends TestCase {
   }
 
   /**
-   * Defines a test method referenced by ::testAllCallable().
+   * Test method referenced by ::testAllCallable().
    */
   public function callMe() {
     return TRUE;
   }
 
   /**
-   * Defines a test method referenced by ::testAllCallable().
+   * Test method referenced by ::testAllCallable().
    */
   public static function callMeStatic() {
     return TRUE;

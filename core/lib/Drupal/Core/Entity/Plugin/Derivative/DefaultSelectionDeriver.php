@@ -3,6 +3,7 @@
 namespace Drupal\Core\Entity\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,6 +18,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see plugin_api
  */
 class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInterface {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The entity type manager.
@@ -26,7 +33,7 @@ class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInt
   protected $entityTypeManager;
 
   /**
-   * Creates a DefaultSelectionDeriver object.
+   * Creates an SelectionBase object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -58,7 +65,7 @@ class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInt
       // definition, we have to use the alternate PhpSelection class as default
       // plugin, which allows filtering the target entities by their label()
       // method. The major downside of PhpSelection is that it is more expensive
-      // performance-wise than DefaultSelection because it has to load all the
+      // performance-wise than SelectionBase because it has to load all the
       // target entities in order to perform the filtering process, regardless
       // of whether a limit has been passed.
       // @see \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection

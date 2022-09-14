@@ -27,7 +27,7 @@ class ReadOnlyStreamWrapperTest extends FileTestBase {
   protected $classname = 'Drupal\file_test\StreamWrapper\DummyReadOnlyStreamWrapper';
 
   /**
-   * Tests read-only specific behavior.
+   * Test read-only specific behavior.
    */
   public function testReadOnlyBehavior() {
     $type = DummyReadOnlyStreamWrapper::getType();
@@ -38,7 +38,7 @@ class ReadOnlyStreamWrapperTest extends FileTestBase {
 
     // Generate a test file
     $filename = $this->randomMachineName();
-    $site_path = $this->container->getParameter('site.path');
+    $site_path = $this->container->get('site.path');
     $filepath = $site_path . '/files/' . $filename;
     file_put_contents($filepath, $filename);
 
@@ -81,7 +81,7 @@ class ReadOnlyStreamWrapperTest extends FileTestBase {
     $this->assertFalse(@rename($uri, $this->scheme . '://newname.txt'), 'Unable to rename files using the read-only stream wrapper.');
     // Test the unlink() function
     $this->assertTrue(@$file_system->unlink($uri), 'Able to unlink file using read-only stream wrapper.');
-    $this->assertFileExists($filepath);
+    $this->assertTrue(file_exists($filepath), 'Unlink File was not actually deleted.');
 
     // Test the mkdir() function by attempting to create a directory.
     $dirname = $this->randomMachineName();

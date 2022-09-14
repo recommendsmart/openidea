@@ -2,12 +2,12 @@
 
 namespace Drupal\Core\Config\Importer;
 
-use Drupal\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Wraps a configuration event for event listeners.
  *
- * @see \Drupal\Core\Config\ConfigEvents::IMPORT_MISSING_CONTENT
+ * @see \Drupal\Core\Config\Config\ConfigEvents::IMPORT_MISSING_CONTENT
  */
 class MissingContentEvent extends Event {
 

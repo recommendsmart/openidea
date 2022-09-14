@@ -14,7 +14,7 @@ class TaxonomyTermFilterDepthTest extends TaxonomyTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'taxonomy',
     'taxonomy_test_views',
     'views',
@@ -44,7 +44,7 @@ class TaxonomyTermFilterDepthTest extends TaxonomyTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     // Create a hierarchy 3 deep. Note the parent setup function creates two
@@ -70,14 +70,6 @@ class TaxonomyTermFilterDepthTest extends TaxonomyTestBase {
     $this->terms[2] = $third;
 
     $this->view = Views::getView('test_filter_taxonomy_index_tid_depth');
-
-    // Fix the created date to match the expectations of the order by in the
-    // view. Node 1 should be the most recent node and node 6 should be the
-    // oldest.
-    $request_time = \Drupal::time()->getRequestTime();
-    foreach ($this->nodes as $i => $node) {
-      $node->setCreatedTime($request_time - $i)->save();
-    }
   }
 
   /**
@@ -137,10 +129,8 @@ class TaxonomyTermFilterDepthTest extends TaxonomyTestBase {
    *   The depth to search.
    * @param array $expected
    *   The expected views result.
-   *
-   * @internal
    */
-  protected function assertTermWithDepthResult(int $tid, int $depth, array $expected): void {
+  protected function assertTermWithDepthResult($tid, $depth, array $expected) {
     $this->view->destroy();
     $this->view->initDisplay();
     $filters = $this->view->displayHandlers->get('default')

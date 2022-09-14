@@ -2,7 +2,7 @@
 
 namespace Drupal\migrate\Plugin\Discovery;
 
-use Drupal\Component\Annotation\Doctrine\StaticReflectionParser as BaseStaticReflectionParser;
+use Doctrine\Common\Reflection\StaticReflectionParser as BaseStaticReflectionParser;
 
 /**
  * Allows getting the reflection parser for the parent class.
@@ -17,11 +17,11 @@ class StaticReflectionParser extends BaseStaticReflectionParser {
   /**
    * If the current class extends another, get the parser for the latter.
    *
-   * @param \Drupal\Component\Annotation\Doctrine\StaticReflectionParser $parser
+   * @param \Doctrine\Common\Reflection\StaticReflectionParser $parser
    *   The current static parser.
    * @param $finder
    *   The class finder. Must implement
-   *   \Drupal\Component\ClassFinder\ClassFinderInterface, but can do so
+   *   \Doctrine\Common\Reflection\ClassFinderInterface, but can do so
    *   implicitly (i.e., implements the interface's methods but not the actual
    *   interface).
    *

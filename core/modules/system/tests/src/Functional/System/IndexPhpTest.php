@@ -16,21 +16,21 @@ class IndexPhpTest extends BrowserTestBase {
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
   }
 
   /**
-   * Tests index.php handling.
+   * Test index.php handling.
    */
   public function testIndexPhpHandling() {
     $index_php = $GLOBALS['base_url'] . '/index.php';
 
     $this->drupalGet($index_php, ['external' => TRUE]);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200, 'Make sure index.php returns a valid page.');
 
     $this->drupalGet($index_php . '/user', ['external' => TRUE]);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200, 'Make sure index.php/user returns a valid page.');
   }
 
 }

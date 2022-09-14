@@ -3,7 +3,7 @@
  * Block admin behaviors.
  */
 
-(function ($, Drupal, debounce, once) {
+(function($, Drupal, debounce) {
   /**
    * Filters the block list by a text input search string.
    *
@@ -22,7 +22,7 @@
    */
   Drupal.behaviors.blockFilterByText = {
     attach(context, settings) {
-      const $input = $(once('block-filter-text', 'input.block-filter-text'));
+      const $input = $('input.block-filter-text').once('block-filter-text');
       const $table = $($input.attr('data-element'));
       let $filterRows;
 
@@ -33,7 +33,9 @@
        *   The jQuery event for the keyup event that triggered the filter.
        */
       function filterBlockList(e) {
-        const query = $(e.target).val().toLowerCase();
+        const query = $(e.target)
+          .val()
+          .toLowerCase();
 
         /**
          * Shows or hides the block entry based on the query.
@@ -46,7 +48,11 @@
         function toggleBlockEntry(index, label) {
           const $label = $(label);
           const $row = $label.parent().parent();
-          const textMatch = $label.text().toLowerCase().includes(query);
+          const textMatch =
+            $label
+              .text()
+              .toLowerCase()
+              .indexOf(query) !== -1;
           $row.toggle(textMatch);
         }
 
@@ -61,8 +67,11 @@
             ),
           );
         } else {
-          $filterRows.each(function (index) {
-            $(this).parent().parent().show();
+          $filterRows.each(function(index) {
+            $(this)
+              .parent()
+              .parent()
+              .show();
           });
         }
       }
@@ -86,25 +95,24 @@
     attach(context, settings) {
       // Ensure that the block we are attempting to scroll to actually exists.
       if (settings.blockPlacement && $('.js-block-placed').length) {
-        once(
-          'block-highlight',
-          '[data-drupal-selector="edit-blocks"]',
-          context,
-        ).forEach((container) => {
-          const $container = $(container);
-          // Just scrolling the document.body will not work in Firefox. The html
-          // element is needed as well.
-          $('html, body').animate(
-            {
-              scrollTop:
-                $('.js-block-placed').offset().top -
-                $container.offset().top +
-                $container.scrollTop(),
-            },
-            500,
-          );
-        });
+        $(context)
+          .find('[data-drupal-selector="edit-blocks"]')
+          .once('block-highlight')
+          .each(function() {
+            const $container = $(this);
+            // Just scrolling the document.body will not work in Firefox. The html
+            // element is needed as well.
+            $('html, body').animate(
+              {
+                scrollTop:
+                  $('.js-block-placed').offset().top -
+                  $container.offset().top +
+                  $container.scrollTop(),
+              },
+              500,
+            );
+          });
       }
     },
   };
-})(jQuery, Drupal, Drupal.debounce, once);
+})(jQuery, Drupal, Drupal.debounce);

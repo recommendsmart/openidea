@@ -43,7 +43,7 @@ class TranslateFilterForm extends TranslateFormBase {
         ];
       }
       else {
-        $empty_option = $filter['options'][$filter['default']] ?? '- None -';
+        $empty_option = isset($filter['options'][$filter['default']]) ? $filter['options'][$filter['default']] : '- None -';
         $form['filters']['status'][$key] = [
           '#title' => $filter['title'],
           '#type' => 'select',
@@ -67,7 +67,7 @@ class TranslateFilterForm extends TranslateFormBase {
       '#type' => 'submit',
       '#value' => $this->t('Filter'),
     ];
-    if ($this->getRequest()->getSession()->has('locale_translate_filter')) {
+    if (!empty($_SESSION['locale_translate_filter'])) {
       $form['filters']['actions']['reset'] = [
         '#type' => 'submit',
         '#value' => $this->t('Reset'),
@@ -83,13 +83,11 @@ class TranslateFilterForm extends TranslateFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $filters = $this->translateFilters();
-    $session_filters = $this->getRequest()->getSession()->get('locale_translate_filter', []);
     foreach ($filters as $name => $filter) {
       if ($form_state->hasValue($name)) {
-        $session_filters[$name] = trim($form_state->getValue($name));
+        $_SESSION['locale_translate_filter'][$name] = $form_state->getValue($name);
       }
     }
-    $this->getRequest()->getSession()->set('locale_translate_filter', $session_filters);
     $form_state->setRedirect('locale.translate_page');
   }
 
@@ -97,7 +95,7 @@ class TranslateFilterForm extends TranslateFormBase {
    * Provides a submit handler for the reset button.
    */
   public function resetForm(array &$form, FormStateInterface $form_state) {
-    $this->getRequest()->getSession()->remove('locale_translate_filter');
+    $_SESSION['locale_translate_filter'] = [];
     $form_state->setRedirect('locale.translate_page');
   }
 

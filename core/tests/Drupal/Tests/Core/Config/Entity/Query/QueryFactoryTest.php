@@ -61,7 +61,7 @@ class QueryFactoryTest extends UnitTestCase {
       $this->getConfigObject('test')->set('uuid', 'abc'),
     ];
 
-    // Tests an existent sub key.
+    // Tests a existent sub key.
     $tests[] = [
       ['uuid.blah:abc'],
       'uuid.blah',
@@ -128,7 +128,7 @@ class QueryFactoryTest extends UnitTestCase {
   protected function getConfigObject($name) {
     $config = $this->getMockBuilder('Drupal\Core\Config\Config')
       ->disableOriginalConstructor()
-      ->onlyMethods(['save', 'delete'])
+      ->setMethods(['save', 'delete'])
       ->getMock();
     return $config->setName($name);
   }

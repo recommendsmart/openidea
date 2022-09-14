@@ -16,22 +16,17 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 4%;
+  padding: 0.75rem 1rem;
 }
 
 @media screen and (min-width: 48em) {
   .region-header {
-    padding-top: 0;
+    padding: 0 1rem;
   }
 }
-/* Medium */
-@media screen and (min-width: 48rem) { /* 768px */
-  .region-header {
-    padding-top: 0;
-  }
-}
-/* Extra large + side margins */
-@media screen and (min-width: 80rem) { /* 1200px (large) + 80px (side margins) = 1280px */
+
+/* 77em == the max width of .container + 1em either side */
+@media screen and (min-width: 77em) {
   .region-header {
     padding: 0;
   }

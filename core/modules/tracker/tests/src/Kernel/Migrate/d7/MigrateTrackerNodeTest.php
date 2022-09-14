@@ -15,7 +15,7 @@ class MigrateTrackerNodeTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'menu_ui',
     'node',
     'text',
@@ -25,7 +25,7 @@ class MigrateTrackerNodeTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('node');
@@ -52,16 +52,16 @@ class MigrateTrackerNodeTest extends MigrateDrupal7TestBase {
       ->countQuery()
       ->execute()
       ->fetchField();
-    $this->assertSame('1', $num_rows);
+    $this->assertIdentical('1', $num_rows);
 
     $tracker_nodes = $connection
       ->select('tracker_node', 'tn')
       ->fields('tn', ['nid', 'published', 'changed'])
       ->execute();
     $row = $tracker_nodes->fetchAssoc();
-    $this->assertSame('1', $row['nid']);
-    $this->assertSame('1', $row['published']);
-    $this->assertSame('1421727536', $row['changed']);
+    $this->assertIdentical('1', $row['nid']);
+    $this->assertIdentical('1', $row['published']);
+    $this->assertIdentical('1421727536', $row['changed']);
   }
 
 }

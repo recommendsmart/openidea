@@ -20,7 +20,7 @@ class HtmlTest extends TestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $property = new \ReflectionProperty('Drupal\Component\Utility\Html', 'seenIdsInit');
@@ -127,7 +127,6 @@ class HtmlTest extends TestCase {
    *   Test data.
    */
   public function providerTestHtmlGetUniqueId() {
-    // cSpell:disable
     $id = 'abcdefghijklmnopqrstuvwxyz-0123456789';
     return [
       // Verify that letters, digits, and hyphens are not stripped from the ID.
@@ -141,7 +140,6 @@ class HtmlTest extends TestCase {
       ['test-unique-id--2', 'test-unique-id'],
       ['test-unique-id--3', 'test-unique-id'],
     ];
-    // cSpell:enable
   }
 
   /**
@@ -212,7 +210,6 @@ class HtmlTest extends TestCase {
    *   Test data.
    */
   public function providerTestHtmlGetId() {
-    // cSpell:disable
     $id = 'abcdefghijklmnopqrstuvwxyz-0123456789';
     return [
       // Verify that letters, digits, and hyphens are not stripped from the ID.
@@ -225,7 +222,6 @@ class HtmlTest extends TestCase {
       ['test-unique-id', 'test-unique-id'],
       ['test-unique-id', 'test-unique-id'],
     ];
-    // cSpell:enable
   }
 
   /**

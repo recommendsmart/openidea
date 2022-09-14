@@ -23,31 +23,25 @@ class BlockLanguageTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['language', 'block', 'content_translation'];
+  public static $modules = ['language', 'block', 'content_translation'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
-    $this->adminUser = $this->drupalCreateUser([
-      'administer blocks',
-      'administer languages',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['administer blocks', 'administer languages']);
     $this->drupalLogin($this->adminUser);
 
     // Add predefined language.
     $edit = [
       'predefined_langcode' => 'fr',
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
-
-    // Verify that language was added successfully.
-    $this->assertSession()->pageTextContains('French');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add language'));
+    $this->assertText('French', 'Language added successfully.');
   }
 
   /**
@@ -57,10 +51,9 @@ class BlockLanguageTest extends BrowserTestBase {
     // Check if the visibility setting is available.
     $default_theme = $this->config('system.theme')->get('default');
     $this->drupalGet('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme);
-    // Ensure that the language visibility field is visible without a type
-    // setting.
-    $this->assertSession()->fieldExists('visibility[language][langcodes][en]');
-    $this->assertSession()->fieldNotExists('visibility[language][context_mapping][language]');
+
+    $this->assertField('visibility[language][langcodes][en]', 'Language visibility field is visible.');
+    $this->assertNoField('visibility[language][context_mapping][language]', 'Language type field is not visible.');
 
     // Enable a standard block and set the visibility setting for one language.
     $edit = [
@@ -68,23 +61,21 @@ class BlockLanguageTest extends BrowserTestBase {
       'id' => strtolower($this->randomMachineName(8)),
       'region' => 'sidebar_first',
     ];
-    $this->drupalGet('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme);
-    $this->submitForm($edit, 'Save block');
+    $this->drupalPostForm('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme, $edit, t('Save block'));
 
     // Change the default language.
     $edit = [
       'site_default_language' => 'fr',
     ];
-    $this->drupalGet('admin/config/regional/language');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/regional/language', $edit, t('Save configuration'));
 
     // Check that a page has a block.
     $this->drupalGet('en');
-    $this->assertSession()->pageTextContains('Powered by Drupal');
+    $this->assertText('Powered by Drupal', 'The body of the custom block appears on the page.');
 
     // Check that a page doesn't has a block for the current language anymore.
     $this->drupalGet('fr');
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the custom block does not appear on the page.');
   }
 
   /**
@@ -106,23 +97,22 @@ class BlockLanguageTest extends BrowserTestBase {
 
     // Check that we have the language in config after saving the setting.
     $visibility = $block->getVisibility();
-    $this->assertEquals('fr', $visibility['language']['langcodes']['fr'], 'Language is set in the block configuration.');
+    $this->assertEqual('fr', $visibility['language']['langcodes']['fr'], 'Language is set in the block configuration.');
 
     // Delete the language.
-    $this->drupalGet('admin/config/regional/language/delete/fr');
-    $this->submitForm([], 'Delete');
+    $this->drupalPostForm('admin/config/regional/language/delete/fr', [], t('Delete'));
 
     // Check that the language is no longer stored in the configuration after
     // it is deleted.
     $block = Block::load($block->id());
     $visibility = $block->getVisibility();
-    $this->assertArrayNotHasKey('language', $visibility, 'Language is no longer not set in the block configuration after deleting the block.');
+    $this->assertTrue(empty($visibility['language']['langcodes']['fr']), 'Language is no longer not set in the block configuration after deleting the block.');
 
     // Ensure that the block visibility for language is gone from the UI.
     $this->drupalGet('admin/structure/block');
     $this->clickLink('Configure');
     $elements = $this->xpath('//details[@id="edit-visibility-language"]');
-    $this->assertEmpty($elements);
+    $this->assertTrue(empty($elements));
   }
 
   /**
@@ -140,14 +130,13 @@ class BlockLanguageTest extends BrowserTestBase {
       'language_content[enabled][language-url]' => TRUE,
       'language_content[enabled][language-interface]' => FALSE,
     ];
-    $this->drupalGet('admin/config/regional/language/detection');
-    $this->submitForm($edit, 'Save settings');
+    $this->drupalPostForm('admin/config/regional/language/detection', $edit, t('Save settings'));
 
     // Check if the visibility setting is available with a type setting.
     $default_theme = $this->config('system.theme')->get('default');
     $this->drupalGet('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme);
-    $this->assertSession()->fieldExists('visibility[language][langcodes][en]');
-    $this->assertSession()->fieldExists('visibility[language][context_mapping][language]');
+    $this->assertField('visibility[language][langcodes][en]', 'Language visibility field is visible.');
+    $this->assertField('visibility[language][context_mapping][language]', 'Language type field is visible.');
 
     // Enable a standard block and set visibility to French only.
     $block_id = strtolower($this->randomMachineName(8));
@@ -157,14 +146,13 @@ class BlockLanguageTest extends BrowserTestBase {
       'id' => $block_id,
       'region' => 'sidebar_first',
     ];
-    $this->drupalGet('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme);
-    $this->submitForm($edit, 'Save block');
+    $this->drupalPostForm('admin/structure/block/add/system_powered_by_block' . '/' . $default_theme, $edit, t('Save block'));
 
     // Interface negotiation depends on request arguments.
     $this->drupalGet('node', ['query' => ['language' => 'en']]);
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the block does not appear on the page.');
     $this->drupalGet('node', ['query' => ['language' => 'fr']]);
-    $this->assertSession()->pageTextContains('Powered by Drupal');
+    $this->assertText('Powered by Drupal', 'The body of the block appears on the page.');
 
     // Log in again in order to clear the interface language stored in the
     // session.
@@ -174,29 +162,28 @@ class BlockLanguageTest extends BrowserTestBase {
     // Content language does not depend on session/request arguments.
     // It will fall back on English (site default) and not display the block.
     $this->drupalGet('en');
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the block does not appear on the page.');
     $this->drupalGet('fr');
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the block does not appear on the page.');
 
     // Change visibility to now depend on content language for this block.
     $edit = [
       'visibility[language][context_mapping][language]' => '@language.current_language_context:language_content',
     ];
-    $this->drupalGet('admin/structure/block/manage/' . $block_id);
-    $this->submitForm($edit, 'Save block');
+    $this->drupalPostForm('admin/structure/block/manage/' . $block_id, $edit, t('Save block'));
 
     // Content language negotiation does not depend on request arguments.
     // It will fall back on English (site default) and not display the block.
     $this->drupalGet('node', ['query' => ['language' => 'en']]);
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the block does not appear on the page.');
     $this->drupalGet('node', ['query' => ['language' => 'fr']]);
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the block does not appear on the page.');
 
     // Content language negotiation depends on path prefix.
     $this->drupalGet('en');
-    $this->assertSession()->pageTextNotContains('Powered by Drupal');
+    $this->assertNoText('Powered by Drupal', 'The body of the block does not appear on the page.');
     $this->drupalGet('fr');
-    $this->assertSession()->pageTextContains('Powered by Drupal');
+    $this->assertText('Powered by Drupal', 'The body of the block appears on the page.');
   }
 
 }

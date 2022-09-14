@@ -13,14 +13,15 @@ class InsertDefaultsTest extends DatabaseTestBase {
 
   /**
    * Tests that we can run a query that uses default values for everything.
-   *
-   * @see \database_test_schema()
    */
   public function testDefaultInsert() {
     $query = $this->connection->insert('test')->useDefaults(['job']);
     $id = $query->execute();
-    $job = $this->connection->query('SELECT [job] FROM {test} WHERE [id] = :id', [':id' => $id])->fetchField();
-    $this->assertSame('Undefined', $job, 'Default field value is set.');
+
+    $schema = drupal_get_module_schema('database_test', 'test');
+
+    $job = $this->connection->query('SELECT job FROM {test} WHERE id = :id', [':id' => $id])->fetchField();
+    $this->assertEqual($job, $schema['fields']['job']['default'], 'Default field value is set.');
   }
 
   /**
@@ -35,7 +36,7 @@ class InsertDefaultsTest extends DatabaseTestBase {
       $this->fail('Expected exception NoFieldsException has not been thrown.');
     }
     catch (NoFieldsException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('Expected exception NoFieldsException has been thrown.');
     }
 
     $num_records_after = (int) $this->connection->query('SELECT COUNT(*) FROM {test}')->fetchField();
@@ -44,16 +45,17 @@ class InsertDefaultsTest extends DatabaseTestBase {
 
   /**
    * Tests that we can insert fields with values and defaults in the same query.
-   *
-   * @see \database_test_schema()
    */
   public function testDefaultInsertWithFields() {
     $query = $this->connection->insert('test')
       ->fields(['name' => 'Bob'])
       ->useDefaults(['job']);
     $id = $query->execute();
-    $job = $this->connection->query('SELECT [job] FROM {test} WHERE [id] = :id', [':id' => $id])->fetchField();
-    $this->assertSame('Undefined', $job, 'Default field value is set.');
+
+    $schema = drupal_get_module_schema('database_test', 'test');
+
+    $job = $this->connection->query('SELECT job FROM {test} WHERE id = :id', [':id' => $id])->fetchField();
+    $this->assertEqual($job, $schema['fields']['job']['default'], 'Default field value is set.');
   }
 
 }

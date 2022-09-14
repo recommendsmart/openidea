@@ -26,7 +26,7 @@ class LinkFieldTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->plugin = new LinkField([], 'link', []);
 
     $migration = $this->prophesize(MigrationInterface::class);
@@ -47,11 +47,11 @@ class LinkFieldTest extends UnitTestCase {
    * @covers ::defineValueProcessPipeline
    */
   public function testDefineValueProcessPipeline($method = 'defineValueProcessPipeline') {
-    $this->plugin->$method($this->migration, 'field_name', []);
+    $this->plugin->$method($this->migration, 'somefieldname', []);
 
     $expected = [
       'plugin' => 'field_link',
-      'source' => 'field_name',
+      'source' => 'somefieldname',
     ];
     $this->assertSame($expected, $this->migration->getProcess());
   }

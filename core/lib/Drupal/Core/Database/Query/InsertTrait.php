@@ -179,7 +179,6 @@ trait InsertTrait {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function count() {
     return count($this->insertValues);
   }

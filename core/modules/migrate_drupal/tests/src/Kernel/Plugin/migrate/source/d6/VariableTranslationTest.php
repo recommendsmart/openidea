@@ -4,8 +4,6 @@ namespace Drupal\Tests\migrate_drupal\Kernel\Plugin\migrate\source\d6;
 
 use Drupal\Tests\migrate\Kernel\MigrateSqlSourceTestBase;
 
-// cspell:ignore whakamataku génial
-
 /**
  * Tests the variable source plugin.
  *
@@ -18,7 +16,7 @@ class VariableTranslationTest extends MigrateSqlSourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate_drupal'];
+  public static $modules = ['migrate_drupal'];
 
   /**
    * {@inheritdoc}

@@ -4,10 +4,6 @@ namespace Drupal\Tests\Core\EventSubscriber;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\EventSubscriber\PsrResponseSubscriber;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\ViewEvent;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * @coversDefaultClass \Drupal\Core\EventSubscriber\PsrResponseSubscriber
@@ -32,7 +28,7 @@ class PsrResponseSubscriberTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $factory = $this->getMockBuilder('Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface')
       ->disableOriginalConstructor()
       ->getMock();
@@ -52,9 +48,12 @@ class PsrResponseSubscriberTest extends UnitTestCase {
    * @covers ::onKernelView
    */
   public function testConvertsControllerResult() {
-    $event = $this->createEvent($this->createMock('Psr\Http\Message\ResponseInterface'));
+    $event = $this->createEventMock($this->createMock('Psr\Http\Message\ResponseInterface'));
+    $event
+      ->expects($this->once())
+      ->method('setResponse')
+      ->with($this->isInstanceOf('Symfony\Component\HttpFoundation\Response'));
     $this->psrResponseSubscriber->onKernelView($event);
-    $this->assertInstanceOf(Response::class, $event->getResponse());
   }
 
   /**
@@ -63,31 +62,36 @@ class PsrResponseSubscriberTest extends UnitTestCase {
    * @covers ::onKernelView
    */
   public function testDoesNotConvertControllerResult() {
-    $event = $this->createEvent([]);
+    $event = $this->createEventMock([]);
+    $event
+      ->expects($this->never())
+      ->method('setResponse');
     $this->psrResponseSubscriber->onKernelView($event);
-    $this->assertNull($event->getResponse());
-
-    $event = $this->createEvent(NULL);
+    $event = $this->createEventMock(NULL);
+    $event
+      ->expects($this->never())
+      ->method('setResponse');
     $this->psrResponseSubscriber->onKernelView($event);
-    $this->assertNull($event->getResponse());
   }
 
   /**
-   * Sets up an event that returns $controllerResult.
+   * Sets up an alias event that return $controllerResult.
    *
    * @param mixed $controller_result
    *   The return Object.
    *
-   * @return \Symfony\Component\HttpKernel\Event\ViewEvent
-   *   A ViewEvent object to test.
+   * @return \Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent|\PHPUnit\Framework\MockObject\MockObject
+   *   A mock object to test.
    */
-  protected function createEvent($controller_result) {
-    return new ViewEvent(
-      $this->createMock(HttpKernelInterface::class),
-      $this->createMock(Request::class),
-      HttpKernelInterface::MASTER_REQUEST,
-      $controller_result
-    );
+  protected function createEventMock($controller_result) {
+    $event = $this->getMockBuilder('Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $event
+      ->expects($this->once())
+      ->method('getControllerResult')
+      ->willReturn($controller_result);
+    return $event;
   }
 
 }

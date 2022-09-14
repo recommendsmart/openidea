@@ -1,5 +1,5 @@
-langcode: en
 id: changed
-label: 'Changed test menu'
+label: Changed test menu
 description: 'The changed menu for menu_test tests.'
+langcode: en
 locked: true

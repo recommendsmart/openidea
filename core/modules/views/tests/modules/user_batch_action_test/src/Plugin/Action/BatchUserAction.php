@@ -25,7 +25,7 @@ class BatchUserAction extends ActionBase {
 
     foreach ($entities as $entity) {
       $operations[] = [
-        [static::class, 'processBatch'],
+        [get_class($this), 'processBatch'],
         [
           [
             'entity_type' => $entity->getEntityTypeId(),
@@ -38,7 +38,7 @@ class BatchUserAction extends ActionBase {
     if ($operations) {
       $batch = [
         'operations' => $operations,
-        'finished' => [static::class, 'finishBatch'],
+        'finished' => [get_class($this), 'finishBatch'],
       ];
       batch_set($batch);
     }

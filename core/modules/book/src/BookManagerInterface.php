@@ -31,7 +31,7 @@ interface BookManagerInterface {
    *   $link, in which case $max_depth should be greater than $link['depth'].
    *
    * @return array
-   *   A tree of menu links in an array, in the order they should be rendered.
+   *   An tree of menu links in an array, in the order they should be rendered.
    */
   public function bookTreeAllData($bid, $link = NULL, $max_depth = NULL);
 

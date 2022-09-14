@@ -18,7 +18,7 @@ class ResourceTypeRepositoryTest extends JsonapiKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'field',
     'node',
     'serialization',
@@ -37,7 +37,7 @@ class ResourceTypeRepositoryTest extends JsonapiKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // Add the entity schemas.
     $this->installEntitySchema('node');
@@ -117,8 +117,8 @@ class ResourceTypeRepositoryTest extends JsonapiKernelTestBase {
    * Ensures that a naming conflict in the mapping causes an exception to be
    * thrown.
    *
-   * @covers ::getFields
-   * @dataProvider getFieldsProvider
+   * @covers ::getFieldMapping
+   * @dataProvider getFieldMappingProvider
    */
   public function testMappingNameConflictCheck($field_name_list) {
     $entity_type = \Drupal::entityTypeManager()->getDefinition('node');
@@ -133,7 +133,7 @@ class ResourceTypeRepositoryTest extends JsonapiKernelTestBase {
   }
 
   /**
-   * Data provider for testMappingNameConflictCheck.
+   * Data provider for testGetFieldMapping.
    *
    * These field name lists are designed to trigger a naming conflict in the
    * mapping: the special-cased names "type" or "id", and the name
@@ -142,7 +142,7 @@ class ResourceTypeRepositoryTest extends JsonapiKernelTestBase {
    * @returns array
    *   The data for the test method.
    */
-  public function getFieldsProvider() {
+  public function getFieldMappingProvider() {
     return [
       [['type', 'node_type']],
       [['id', 'node_id']],
@@ -205,21 +205,6 @@ class ResourceTypeRepositoryTest extends JsonapiKernelTestBase {
     Cache::invalidateTags(['jsonapi_resource_types']);
     $this->assertFalse($this->resourceTypeRepository->getByTypeName('node--article')->isFieldEnabled('uid'));
     $this->assertTrue($this->resourceTypeRepository->getByTypeName('node--page')->isFieldEnabled('uid'));
-  }
-
-  /**
-   * Tests that resource types can be renamed.
-   */
-  public function testResourceTypeRenaming() {
-    \Drupal::state()->set('jsonapi_test_resource_type_builder.renamed_resource_types', [
-      'node--article' => 'articles',
-      'node--page' => 'pages',
-    ]);
-    Cache::invalidateTags(['jsonapi_resource_types']);
-    $this->assertNull($this->resourceTypeRepository->getByTypeName('node--article'));
-    $this->assertInstanceOf(ResourceType::class, $this->resourceTypeRepository->getByTypeName('articles'));
-    $this->assertNull($this->resourceTypeRepository->getByTypeName('node--page'));
-    $this->assertInstanceOf(ResourceType::class, $this->resourceTypeRepository->getByTypeName('pages'));
   }
 
 }

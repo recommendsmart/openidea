@@ -17,33 +17,24 @@ class ImageTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
 
-  /**
-   * The file URL generator.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected $fileUrlGenerator;
-
-  /**
+  /*
    * The images to test with.
    *
    * @var array
    */
   protected $testImages;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
-    // The code under test uses transformRelative(), which relies on
+    // The code under test uses file_url_transform_relative(), which relies on
     // the Request containing the correct hostname. KernelTestBase doesn't set
     // it, so push another request onto the stack to ensure it's correct.
     $request = Request::create('/', 'GET', [], [], [], $_SERVER);
     $this->container = \Drupal::service('kernel')->getContainer();
     $this->container->get('request_stack')->push($request);
-
-    $this->fileUrlGenerator = $this->container->get('file_url_generator');
 
     $this->testImages = [
       'core/misc/druplicon.png',
@@ -88,9 +79,7 @@ class ImageTest extends KernelTestBase {
     $this->render($image);
 
     // Make sure the src attribute has the correct value.
-    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $this->fileUrlGenerator */
-    $this->fileUrlGenerator = $this->fileUrlGenerator;
-    $this->assertRaw($this->fileUrlGenerator->generateString($image['#uri']), 'Correct output for an image with the src attribute.');
+    $this->assertRaw(file_url_transform_relative(file_create_url($image['#uri'])), 'Correct output for an image with the src attribute.');
   }
 
   /**
@@ -118,7 +107,7 @@ class ImageTest extends KernelTestBase {
     $this->render($image);
 
     // Make sure the srcset attribute has the correct value.
-    $this->assertRaw($this->fileUrlGenerator->transformRelative($this->fileUrlGenerator->generateString($this->testImages[0])) . ' 1x, ' . $this->fileUrlGenerator->transformRelative($this->fileUrlGenerator->generateString($this->testImages[1])) . ' 2x', 'Correct output for image with srcset attribute and multipliers.');
+    $this->assertRaw(file_url_transform_relative(file_create_url($this->testImages[0])) . ' 1x, ' . file_url_transform_relative(file_create_url($this->testImages[1])) . ' 2x', 'Correct output for image with srcset attribute and multipliers.');
   }
 
   /**
@@ -150,7 +139,7 @@ class ImageTest extends KernelTestBase {
     $this->render($image);
 
     // Make sure the srcset attribute has the correct value.
-    $this->assertRaw($this->fileUrlGenerator->generateString($this->testImages[0]) . ' ' . $widths[0] . ', ' . $this->fileUrlGenerator->transformRelative($this->fileUrlGenerator->generateString($this->testImages[1])) . ' ' . $widths[1], 'Correct output for image with srcset attribute and width descriptors.');
+    $this->assertRaw(file_url_transform_relative(file_create_url($this->testImages[0])) . ' ' . $widths[0] . ', ' . file_url_transform_relative(file_create_url($this->testImages[1])) . ' ' . $widths[1], 'Correct output for image with srcset attribute and width descriptors.');
   }
 
 }

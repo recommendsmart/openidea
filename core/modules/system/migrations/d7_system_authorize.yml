@@ -9,11 +9,7 @@ source:
     - authorize_filetransfer_default
   source_module: system
 process:
-  filetransfer_default:
-    plugin: skip_on_empty
-    method: row
-    source: empty
+   filetransfer_default: authorize_filetransfer_default
 destination:
   plugin: config
-  config_name: null
-  destination_module: system
+  config_name: system.authorize

@@ -12,12 +12,12 @@ use Drupal\Tests\migrate_drupal\Kernel\d7\MigrateDrupal7TestBase;
  */
 class MigrateNodeTitleLabelTest extends MigrateDrupal7TestBase {
 
-  protected static $modules = ['node', 'text', 'menu_ui'];
+  public static $modules = ['node', 'text', 'menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->migrateContentTypes();
     $this->executeMigration('d7_node_title_label');
@@ -30,14 +30,12 @@ class MigrateNodeTitleLabelTest extends MigrateDrupal7TestBase {
    *   The override ID.
    * @param string $label
    *   The label's expected (overridden) value.
-   *
-   * @internal
    */
-  protected function assertEntity(string $id, string $label): void {
+  protected function assertEntity($id, $label) {
     $override = BaseFieldOverride::load($id);
-    $this->assertInstanceOf(BaseFieldOverride::class, $override);
+    $this->assertTrue($override instanceof BaseFieldOverride);
     /** @var \Drupal\Core\Field\Entity\BaseFieldOverride $override */
-    $this->assertSame($label, $override->getLabel());
+    $this->assertIdentical($label, $override->getLabel());
   }
 
   /**
@@ -56,7 +54,7 @@ class MigrateNodeTitleLabelTest extends MigrateDrupal7TestBase {
     ];
     foreach ($no_override_node_type as $type) {
       $override = BaseFieldOverride::load("node.$type.title");
-      $this->assertNotInstanceOf(BaseFieldOverride::class, $override);
+      $this->assertFalse($override instanceof BaseFieldOverride);
     }
   }
 

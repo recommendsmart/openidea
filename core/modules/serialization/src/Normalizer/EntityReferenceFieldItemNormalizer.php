@@ -4,7 +4,6 @@ namespace Drupal\serialization\Normalizer;
 
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
-use Drupal\file\FileInterface;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
@@ -28,7 +27,7 @@ class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer {
   protected $entityRepository;
 
   /**
-   * Constructs an EntityReferenceFieldItemNormalizer object.
+   * Constructs a EntityReferenceFieldItemNormalizer object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.
@@ -60,8 +59,8 @@ class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer {
       }
       // @todo Remove in https://www.drupal.org/project/drupal/issues/2925520
       // @see \Drupal\hal\Normalizer\FileEntityNormalizer
-      elseif ($entity instanceof FileInterface) {
-        $values['url'] = $entity->createFileUrl(FALSE);
+      elseif ($entity->getEntityTypeId() === 'file') {
+        $values['url'] = file_create_url($entity->getFileUri());
       }
     }
 
@@ -76,7 +75,7 @@ class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer {
       /** @var \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem $field_item */
       $field_item = $context['target_instance'];
       if (empty($data['target_uuid'])) {
-        throw new InvalidArgumentException(sprintf('If provided "target_uuid" cannot be empty for field "%s".', $field_item->getName()));
+        throw new InvalidArgumentException(sprintf('If provided "target_uuid" cannot be empty for field "%s".', $data['target_type'], $data['target_uuid'], $field_item->getName()));
       }
       $target_type = $field_item->getFieldDefinition()->getSetting('target_type');
       if (!empty($data['target_type']) && $target_type !== $data['target_type']) {

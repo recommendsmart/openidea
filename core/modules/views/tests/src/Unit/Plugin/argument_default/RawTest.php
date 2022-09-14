@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class RawTest extends UnitTestCase {
 
   /**
-   * Tests the getArgument() method.
+   * Test the getArgument() method.
    *
    * @see \Drupal\views\Plugin\views\argument_default\Raw::getArgument()
    */

@@ -17,7 +17,7 @@ class RenderArrayNonHtmlSubscriberTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['render_array_non_html_subscriber_test'];
+  public static $modules = ['render_array_non_html_subscriber_test'];
 
   /**
    * {@inheritdoc}
@@ -33,7 +33,7 @@ class RenderArrayNonHtmlSubscriberTest extends BrowserTestBase {
 
     $this->drupalGet($url);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains("Controller response successfully rendered.");
+    $this->assertRaw(t('Controller response successfully rendered.'));
 
     // Test that correct response code is returned for any non-HTML format.
     foreach (['json', 'hal+json', 'xml', 'foo'] as $format) {
@@ -43,7 +43,7 @@ class RenderArrayNonHtmlSubscriberTest extends BrowserTestBase {
 
       $this->drupalGet($url);
       $this->assertSession()->statusCodeEquals(406);
-      $this->assertSession()->pageTextNotContains("Controller response successfully rendered.");
+      $this->assertNoRaw(t('Controller response successfully rendered.'));
     }
 
     // Test that event subscriber does not interfere with raw string responses.
@@ -53,7 +53,7 @@ class RenderArrayNonHtmlSubscriberTest extends BrowserTestBase {
 
     $this->drupalGet($url);
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->responseContains("Raw controller response.");
+    $this->assertRaw(t('Raw controller response.'));
   }
 
 }

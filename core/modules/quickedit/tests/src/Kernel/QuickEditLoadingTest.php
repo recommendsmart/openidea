@@ -44,7 +44,7 @@ class QuickEditLoadingTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installSchema('system', 'sequences');
@@ -77,12 +77,12 @@ class QuickEditLoadingTest extends KernelTestBase {
     $build = $node->body->view(['label' => 'inline']);
     $this->setRawContent($renderer->renderRoot($build));
     $elements = $this->xpath('//div[@data-quickedit-field-id]');
-    $this->assertEmpty($elements, 'data-quickedit-field-id attribute not added when rendering field using dynamic display options.');
+    $this->assertFalse(!empty($elements), 'data-quickedit-field-id attribute not added when rendering field using dynamic display options.');
 
     $build = $node->body->view('default');
     $this->setRawContent($renderer->renderRoot($build));
     $elements = $this->xpath('//div[@data-quickedit-field-id="node/1/body/en/default"]');
-    $this->assertNotEmpty($elements, 'Body with data-quickedit-field-id attribute found.');
+    $this->assertTrue(!empty($elements), 'Body with data-quickedit-field-id attribute found.');
   }
 
 }

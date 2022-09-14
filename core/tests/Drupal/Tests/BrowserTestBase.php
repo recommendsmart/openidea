@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests;
 
-use Behat\Mink\Driver\BrowserKitDriver;
+use Behat\Mink\Driver\GoutteDriver;
 use Behat\Mink\Element\Element;
 use Behat\Mink\Mink;
 use Behat\Mink\Selector\SelectorsHandler;
@@ -11,20 +11,17 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
 use Drupal\Core\Test\TestSetupTrait;
-use Drupal\Core\Url;
 use Drupal\Core\Utility\Error;
 use Drupal\FunctionalTests\AssertLegacyTrait;
 use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
-use Drupal\Tests\Traits\PhpUnitWarnings;
 use Drupal\Tests\user\Traits\UserCreationTrait;
-use Drupal\TestTools\Comparator\MarkupInterfaceComparator;
-use Drupal\TestTools\TestVarDumper;
 use GuzzleHttp\Cookie\CookieJar;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
-use Symfony\Component\VarDumper\VarDumper;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\CssSelector\CssSelectorConverter;
 
 /**
  * Provides a test case for functional Drupal tests.
@@ -36,11 +33,6 @@ use Symfony\Component\VarDumper\VarDumper;
  * Tests extending this base class should only translate text when testing
  * translation functionality. For example, avoid wrapping test text with t()
  * or TranslatableMarkup().
- *
- * Using Symfony's dump() function in functional test test code will produce
- * output on the command line; using dump() in site code will produce output in
- * the requested web page, which can then be inspected in the HTML output from
- * the test.
  *
  * @ingroup testing
  */
@@ -70,10 +62,7 @@ abstract class BrowserTestBase extends TestCase {
     createUser as drupalCreateUser;
   }
   use XdebugRequestTrait;
-  use PhpUnitWarnings;
-  use PhpUnitCompatibilityTrait;
-  use ExpectDeprecationTrait;
-  use ExtensionListTestTrait;
+  use PhpunitCompatibilityTrait;
 
   /**
    * The database prefix of this test run.
@@ -141,7 +130,7 @@ abstract class BrowserTestBase extends TestCase {
    */
   protected $customTranslations;
 
-  /**
+  /*
    * Mink class for the default driver to use.
    *
    * Should be a fully-qualified class name that implements
@@ -151,9 +140,9 @@ abstract class BrowserTestBase extends TestCase {
    *
    * @var string
    */
-  protected $minkDefaultDriverClass = BrowserKitDriver::class;
+  protected $minkDefaultDriverClass = GoutteDriver::class;
 
-  /**
+  /*
    * Mink default driver params.
    *
    * If it's an array its contents are used as constructor params when default
@@ -162,6 +151,7 @@ abstract class BrowserTestBase extends TestCase {
    * Can be overridden using the environment variable MINK_DRIVER_ARGS. In this
    * case that variable should be a JSON array, for example:
    * '["firefox", null, "http://localhost:4444/wd/hub"]'.
+   *
    *
    * @var array
    */
@@ -223,9 +213,10 @@ abstract class BrowserTestBase extends TestCase {
   /**
    * {@inheritdoc}
    */
-  public static function setUpBeforeClass() {
-    parent::setUpBeforeClass();
-    VarDumper::setHandler(TestVarDumper::class . '::cliHandler');
+  public function __construct($name = NULL, array $data = [], $dataName = '') {
+    parent::__construct($name, $data, $dataName);
+
+    $this->root = dirname(dirname(substr(__DIR__, 0, -strlen(__NAMESPACE__))));
   }
 
   /**
@@ -234,7 +225,7 @@ abstract class BrowserTestBase extends TestCase {
   protected function initMink() {
     $driver = $this->getDefaultDriverInstance();
 
-    if ($driver instanceof BrowserKitDriver) {
+    if ($driver instanceof GoutteDriver) {
       // Turn off curl timeout. Having a timeout is not a problem in a normal
       // test running, but it is a problem when debugging. Also, disable SSL
       // peer verification so that testing under HTTPS always works.
@@ -319,10 +310,7 @@ abstract class BrowserTestBase extends TestCase {
       }
     }
 
-    if ($this->minkDefaultDriverClass === BrowserKitDriver::class) {
-      $driver = new $this->minkDefaultDriverClass(new DrupalTestBrowser());
-    }
-    elseif (is_array($this->minkDefaultDriverArgs)) {
+    if (is_array($this->minkDefaultDriverArgs)) {
       // Use ReflectionClass to instantiate class with received params.
       $reflector = new \ReflectionClass($this->minkDefaultDriverClass);
       $driver = $reflector->newInstanceArgs($this->minkDefaultDriverArgs);
@@ -338,11 +326,52 @@ abstract class BrowserTestBase extends TestCase {
    * be overridden in a derived class so it is possible to use a different
    * value for a subset of tests, e.g. the JavaScript tests.
    *
-   * @return string|false
+   *  @return string|false
    *   The JSON-encoded argument string. False if it is not set.
    */
   protected function getMinkDriverArgs() {
     return getenv('MINK_DRIVER_ARGS');
+  }
+
+  /**
+   * Provides a Guzzle middleware handler to log every response received.
+   *
+   * @return callable
+   *   The callable handler that will do the logging.
+   */
+  protected function getResponseLogHandler() {
+    return function (callable $handler) {
+      return function (RequestInterface $request, array $options) use ($handler) {
+        return $handler($request, $options)
+          ->then(function (ResponseInterface $response) use ($request) {
+            if ($this->htmlOutputEnabled) {
+
+              $caller = $this->getTestMethodCaller();
+              $html_output = 'Called from ' . $caller['function'] . ' line ' . $caller['line'];
+              $html_output .= '<hr />' . $request->getMethod() . ' request to: ' . $request->getUri();
+
+              // Get the response body as a string. Any errors are silenced as
+              // tests should not fail if there is a problem. On PHP 7.4
+              // \Drupal\Tests\migrate\Functional\process\DownloadFunctionalTest
+              // fails without the usage of a silence operator.
+              $body = @(string) $response->getBody();
+              // On redirect responses (status code starting with '3') we need
+              // to remove the meta tag that would do a browser refresh. We
+              // don't want to redirect developers away when they look at the
+              // debug output file in their browser.
+              $status_code = (string) $response->getStatusCode();
+              if ($status_code[0] === '3') {
+                $body = preg_replace('#<meta http-equiv="refresh" content=.+/>#', '', $body, 1);
+              }
+              $html_output .= '<hr />' . $body;
+              $html_output .= $this->formatHtmlOutputHeaders($response->getHeaders());
+
+              $this->htmlOutput($html_output);
+            }
+            return $response;
+          });
+      };
+    };
   }
 
   /**
@@ -366,11 +395,6 @@ abstract class BrowserTestBase extends TestCase {
   protected function setUp() {
     parent::setUp();
 
-    $this->setUpAppRoot();
-
-    // Allow tests to compare MarkupInterface objects via assertEquals().
-    $this->registerComparator(new MarkupInterfaceComparator());
-
     $this->setupBaseUrl();
 
     // Install Drupal test site.
@@ -387,15 +411,6 @@ abstract class BrowserTestBase extends TestCase {
     // PHPUnit 6 tests that only make assertions using $this->assertSession()
     // can be marked as risky.
     $this->addToAssertionCount(1);
-  }
-
-  /**
-   * Sets up the root application path.
-   */
-  protected function setUpAppRoot(): void {
-    if ($this->root === NULL) {
-      $this->root = dirname(substr(__DIR__, 0, -strlen(__NAMESPACE__)), 2);
-    }
   }
 
   /**
@@ -424,9 +439,9 @@ abstract class BrowserTestBase extends TestCase {
   protected function cleanupEnvironment() {
     // Remove all prefixed tables.
     $original_connection_info = Database::getConnectionInfo('simpletest_original_default');
-    $original_prefix = $original_connection_info['default']['prefix'];
+    $original_prefix = $original_connection_info['default']['prefix']['default'];
     $test_connection_info = Database::getConnectionInfo('default');
-    $test_prefix = $test_connection_info['default']['prefix'];
+    $test_prefix = $test_connection_info['default']['prefix']['default'];
     if ($original_prefix != $test_prefix) {
       $tables = Database::getConnection()->schema()->findTables('%');
       foreach ($tables as $table) {
@@ -512,9 +527,9 @@ abstract class BrowserTestBase extends TestCase {
    *   exception.
    */
   protected function getHttpClient() {
-    /** @var \Behat\Mink\Driver\DriverInterface $mink_driver */
+    /* @var $mink_driver \Behat\Mink\Driver\DriverInterface */
     $mink_driver = $this->getSession()->getDriver();
-    if ($this->isTestUsingGuzzleClient()) {
+    if ($mink_driver instanceof GoutteDriver) {
       return $mink_driver->getClient()->getClient();
     }
     throw new \RuntimeException('The Mink client type ' . get_class($mink_driver) . ' does not support getHttpClient().');
@@ -536,7 +551,7 @@ abstract class BrowserTestBase extends TestCase {
       $select = $this->assertSession()->selectExists($select, $container);
     }
     $options = [];
-    /** @var \Behat\Mink\Element\NodeElement $option */
+    /* @var \Behat\Mink\Element\NodeElement $option */
     foreach ($select->findAll('xpath', '//option') as $option) {
       $label = $option->getText();
       $value = $option->getAttribute('value') ?: $label;
@@ -553,24 +568,11 @@ abstract class BrowserTestBase extends TestCase {
     $this->prepareSettings();
     $this->doInstall();
     $this->initSettings();
-    $this->container = $container = $this->initKernel(\Drupal::request());
+    $container = $this->initKernel(\Drupal::request());
     $this->initConfig($container);
     $this->installDefaultThemeFromClassProperty($container);
     $this->installModulesFromClassProperty($container);
-
-    // Clear the static cache so that subsequent cache invalidations will work
-    // as expected.
-    $this->container->get('cache_tags.invalidator')->resetChecksums();
-
-    // Generate a route to prime the url generator with the correct base url.
-    // @todo Remove in https://www.drupal.org/project/drupal/issues/3207896.
-    Url::fromRoute('<front>')->setAbsolute()->toString();
-
-    // Explicitly call register() again on the container registered in \Drupal.
-    // @todo This should already be called through
-    //   DrupalKernel::prepareLegacyRequest() -> DrupalKernel::boot() but that
-    //   appears to be calling a different container.
-    $this->container->get('stream_wrapper_manager')->register();
+    $this->rebuildAll();
   }
 
   /**
@@ -589,6 +591,25 @@ abstract class BrowserTestBase extends TestCase {
    */
   public function __sleep() {
     return [];
+  }
+
+  /**
+   * Translates a CSS expression to its XPath equivalent.
+   *
+   * The search is relative to the root element (HTML tag normally) of the page.
+   *
+   * @param string $selector
+   *   CSS selector to use in the search.
+   * @param bool $html
+   *   (optional) Enables HTML support. Disable it for XML documents.
+   * @param string $prefix
+   *   (optional) The prefix for the XPath expression.
+   *
+   * @return string
+   *   The equivalent XPath of a CSS expression.
+   */
+  protected function cssSelectToXpath($selector, $html = TRUE, $prefix = 'descendant-or-self::') {
+    return (new CssSelectorConverter($html))->toXPath($selector, $prefix);
   }
 
   /**
@@ -625,6 +646,22 @@ abstract class BrowserTestBase extends TestCase {
   }
 
   /**
+   * Returns all response headers.
+   *
+   * @return array
+   *   The HTTP headers values.
+   *
+   * @deprecated in drupal:8.8.0 and is removed from drupal:9.0.0.
+   *   Use $this->getSession()->getResponseHeaders() instead.
+   *
+   * @see https://www.drupal.org/node/3067207
+   */
+  protected function drupalGetHeaders() {
+    @trigger_error('Drupal\Tests\BrowserTestBase::drupalGetHeaders() is deprecated in drupal:8.8.0 and is removed from drupal:9.0.0. Use $this->getSession()->getResponseHeaders() instead. See https://www.drupal.org/node/3067207', E_USER_DEPRECATED);
+    return $this->getSession()->getResponseHeaders();
+  }
+
+  /**
    * Gets the value of an HTTP response header.
    *
    * If multiple requests were required to retrieve the page, only the headers
@@ -636,14 +673,8 @@ abstract class BrowserTestBase extends TestCase {
    *
    * @return string|null
    *   The HTTP header value or NULL if not found.
-   *
-   * @deprecated in drupal:9.2.0 and is removed from drupal:10.0.0. Use
-   *   $this->getSession()->getResponseHeader() instead.
-   *
-   * @see https://www.drupal.org/node/3168383
    */
   protected function drupalGetHeader($name) {
-    @trigger_error('BrowserTestBase::drupalGetHeader() is deprecated in drupal:9.2.0 and is removed from drupal:10.0.0. Use $this->getSession()->getResponseHeader() instead. See https://www.drupal.org/node/3168383', E_USER_DEPRECATED);
     return $this->getSession()->getResponseHeader($name);
   }
 
@@ -689,7 +720,7 @@ abstract class BrowserTestBase extends TestCase {
         break;
       }
 
-      if (isset($caller['class']) && $caller['class'] === static::class) {
+      if (isset($caller['class']) && $caller['class'] === get_class($this)) {
         break;
       }
 
@@ -703,22 +734,22 @@ abstract class BrowserTestBase extends TestCase {
   }
 
   /**
-   * Transforms a nested array into a flat array suitable for submitForm().
+   * Transforms a nested array into a flat array suitable for drupalPostForm().
    *
    * @param array $values
    *   A multi-dimensional form values array to convert.
    *
    * @return array
-   *   The flattened $edit array suitable for BrowserTestBase::submitForm().
+   *   The flattened $edit array suitable for BrowserTestBase::drupalPostForm().
    */
   protected function translatePostValues(array $values) {
     $edit = [];
     // The easiest and most straightforward way to translate values suitable for
-    // BrowserTestBase::submitForm() is to actually build the POST data
+    // BrowserTestBase::drupalPostForm() is to actually build the POST data
     // string and convert the resulting key/value pairs back into a flat array.
     $query = http_build_query($values);
     foreach (explode('&', $query) as $item) {
-      [$key, $value] = explode('=', $item);
+      list($key, $value) = explode('=', $item);
       $edit[urldecode($key)] = urldecode($value);
     }
     return $edit;

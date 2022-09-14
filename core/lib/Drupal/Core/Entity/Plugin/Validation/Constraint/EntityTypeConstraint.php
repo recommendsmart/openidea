@@ -32,14 +32,14 @@ class EntityTypeConstraint extends Constraint {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultOption(): ?string {
+  public function getDefaultOption() {
     return 'type';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRequiredOptions(): array {
+  public function getRequiredOptions() {
     return ['type'];
   }
 

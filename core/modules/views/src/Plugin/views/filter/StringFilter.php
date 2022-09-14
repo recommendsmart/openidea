@@ -3,6 +3,7 @@
 namespace Drupal\views\Plugin\views\filter;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,11 +22,7 @@ class StringFilter extends FilterPluginBase {
    */
   const WORDS_PATTERN = '/ (-?)("[^"]+"|[^" ]+)/i';
 
-  /**
-   * Exposed filter options.
-   *
-   * @var bool
-   */
+  // exposed filter options
   protected $alwaysMultiple = TRUE;
 
   /**
@@ -203,7 +200,7 @@ class StringFilter extends FilterPluginBase {
   }
 
   /**
-   * Build strings from the operators() for 'select' options.
+   * Build strings from the operators() for 'select' options
    */
   public function operatorOptions($which = 'title') {
     $options = [];
@@ -245,7 +242,7 @@ class StringFilter extends FilterPluginBase {
   }
 
   /**
-   * Provide a simple textfield for equality.
+   * Provide a simple textfield for equality
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
     // We have to make some choices when creating this as an exposed
@@ -303,29 +300,8 @@ class StringFilter extends FilterPluginBase {
     }
   }
 
-  /**
-   * Get the query operator.
-   *
-   * @return string
-   *   Returns LIKE or NOT LIKE or the database specific equivalent based on the
-   *   query's operator.
-   */
   public function operator() {
-    return $this->getConditionOperator($this->operator == '=' ? 'LIKE' : 'NOT LIKE');
-  }
-
-  /**
-   * Get specified condition operator mapping value.
-   *
-   * @param string $operator
-   *   Condition operator.
-   *
-   * @return string
-   *   Specified condition operator mapping value.
-   */
-  protected function getConditionOperator($operator) {
-    $mapping = $this->connection->mapConditionOperator($operator);
-    return $mapping['operator'] ?? $operator;
+    return $this->operator == '=' ? 'LIKE' : 'NOT LIKE';
   }
 
   /**
@@ -350,12 +326,11 @@ class StringFilter extends FilterPluginBase {
   }
 
   protected function opContains($field) {
-    $operator = $this->getConditionOperator('LIKE');
-    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value) . '%', $operator);
+    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value) . '%', 'LIKE');
   }
 
   protected function opContainsWord($field) {
-    $where = $this->operator == 'word' ? $this->query->getConnection()->condition('OR') : $this->query->getConnection()->condition('AND');
+    $where = $this->operator == 'word' ? new Condition('OR') : new Condition('AND');
 
     // Don't filter on empty strings.
     if (empty($this->value)) {
@@ -363,7 +338,6 @@ class StringFilter extends FilterPluginBase {
     }
 
     preg_match_all(static::WORDS_PATTERN, ' ' . $this->value, $matches, PREG_SET_ORDER);
-    $operator = $this->getConditionOperator('LIKE');
     foreach ($matches as $match) {
       $phrase = FALSE;
       // Strip off phrase quotes
@@ -374,7 +348,7 @@ class StringFilter extends FilterPluginBase {
       $words = trim($match[2], ',?!();:-');
       $words = $phrase ? [$words] : preg_split('/ /', $words, -1, PREG_SPLIT_NO_EMPTY);
       foreach ($words as $word) {
-        $where->condition($field, '%' . $this->connection->escapeLike(trim($word, " ,!?")) . '%', $operator);
+        $where->condition($field, '%' . $this->connection->escapeLike(trim($word, " ,!?")) . '%', 'LIKE');
       }
     }
 
@@ -388,28 +362,23 @@ class StringFilter extends FilterPluginBase {
   }
 
   protected function opStartsWith($field) {
-    $operator = $this->getConditionOperator('LIKE');
-    $this->query->addWhere($this->options['group'], $field, $this->connection->escapeLike($this->value) . '%', $operator);
+    $this->query->addWhere($this->options['group'], $field, $this->connection->escapeLike($this->value) . '%', 'LIKE');
   }
 
   protected function opNotStartsWith($field) {
-    $operator = $this->getConditionOperator('NOT LIKE');
-    $this->query->addWhere($this->options['group'], $field, $this->connection->escapeLike($this->value) . '%', $operator);
+    $this->query->addWhere($this->options['group'], $field, $this->connection->escapeLike($this->value) . '%', 'NOT LIKE');
   }
 
   protected function opEndsWith($field) {
-    $operator = $this->getConditionOperator('LIKE');
-    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value), $operator);
+    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value), 'LIKE');
   }
 
   protected function opNotEndsWith($field) {
-    $operator = $this->getConditionOperator('NOT LIKE');
-    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value), $operator);
+    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value), 'NOT LIKE');
   }
 
   protected function opNotLike($field) {
-    $operator = $this->getConditionOperator('NOT LIKE');
-    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value) . '%', $operator);
+    $this->query->addWhere($this->options['group'], $field, '%' . $this->connection->escapeLike($this->value) . '%', 'NOT LIKE');
   }
 
   protected function opShorterThan($field) {

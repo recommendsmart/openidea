@@ -2,6 +2,7 @@
 
 namespace Drupal\KernelTests\Core\Config;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Config\ConfigDuplicateUUIDException;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -18,7 +19,7 @@ class ConfigEntityStorageTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['config_test'];
+  public static $modules = ['config_test'];
 
   /**
    * Tests creating configuration entities with changed UUIDs.
@@ -43,12 +44,12 @@ class ConfigEntityStorageTest extends KernelTestBase {
       $this->fail('Exception thrown when attempting to save a configuration entity with a UUID that does not match the existing UUID.');
     }
     catch (ConfigDuplicateUUIDException $e) {
-      // Expected exception; just continue testing.
+      $this->pass(new FormattableMarkup('Exception thrown when attempting to save a configuration entity with a UUID that does not match existing data: %e.', ['%e' => $e]));
     }
 
     // Ensure that the config entity was not corrupted.
     $entity = $storage->loadUnchanged($entity->id());
-    $this->assertSame($original_properties, $entity->toArray());
+    $this->assertIdentical($entity->toArray(), $original_properties);
   }
 
   /**

@@ -112,7 +112,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->id = $this->randomMachineName();
     $values = [
       'id' => $this->id,
@@ -175,8 +175,8 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     // dependencies.
     $this->entity->set('dependencies', ['module' => ['node'], 'enforced' => ['module' => 'views']]);
     $dependencies = $this->entity->calculateDependencies()->getDependencies();
-    $this->assertStringContainsString('views', $dependencies['module']);
-    $this->assertStringNotContainsString('node', $dependencies['module']);
+    $this->assertContains('views', $dependencies['module']);
+    $this->assertNotContains('node', $dependencies['module']);
   }
 
   /**
@@ -255,7 +255,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $values = [];
     $this->entity = $this->getMockBuilder('\Drupal\Tests\Core\Config\Entity\Fixtures\ConfigEntityBaseWithPluginCollections')
       ->setConstructorArgs([$values, $this->entityTypeId])
-      ->onlyMethods(['getPluginCollections'])
+      ->setMethods(['getPluginCollections'])
       ->getMock();
 
     // Create a configurable plugin that would add a dependency.
@@ -265,7 +265,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     // Create a plugin collection to contain the instance.
     $pluginCollection = $this->getMockBuilder('\Drupal\Core\Plugin\DefaultLazyPluginCollection')
       ->disableOriginalConstructor()
-      ->onlyMethods(['get'])
+      ->setMethods(['get'])
       ->getMock();
     $pluginCollection->expects($this->atLeastOnce())
       ->method('get')
@@ -476,17 +476,20 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
    * @covers ::createDuplicate
    */
   public function testCreateDuplicate() {
-    $this->entityType->expects($this->exactly(2))
+    $this->entityType->expects($this->at(0))
       ->method('getKey')
-      ->willReturnMap([
-        ['id', 'id'],
-        ['uuid', 'uuid'],
-      ]);
+      ->with('id')
+      ->will($this->returnValue('id'));
 
-    $this->entityType->expects($this->once())
+    $this->entityType->expects($this->at(1))
       ->method('hasKey')
       ->with('uuid')
       ->will($this->returnValue(TRUE));
+
+    $this->entityType->expects($this->at(2))
+      ->method('getKey')
+      ->with('uuid')
+      ->will($this->returnValue('uuid'));
 
     $new_uuid = '8607ef21-42bc-4913-978f-8c06207b0395';
     $this->uuid->expects($this->once())
@@ -561,7 +564,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
       ->method('getPropertiesToExport')
       ->willReturn(['id' => 'configId', 'dependencies' => 'dependencies']);
     $properties = $this->entity->toArray();
-    $this->assertIsArray($properties);
+    $this->assertInternalType('array', $properties);
     $this->assertEquals(['configId' => $this->entity->id(), 'dependencies' => []], $properties);
   }
 
@@ -587,7 +590,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
       ->with('id')
       ->willReturn('id');
     $properties = $entity->toArray();
-    $this->assertIsArray($properties);
+    $this->assertInternalType('array', $properties);
     $this->assertEquals(['configId' => $entity->id(), 'dependencies' => []], $properties);
   }
 
@@ -632,11 +635,8 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $this->entityType->expects($this->any())
       ->method('getPropertiesToExport')
       ->willReturn(NULL);
-    $this->entityType->expects($this->any())
-      ->method('getClass')
-      ->willReturn("FooConfigEntity");
     $this->expectException(SchemaIncompleteException::class);
-    $this->expectExceptionMessage("Entity type 'FooConfigEntity' is missing 'config_export' definition in its annotation");
+    $this->expectExceptionMessage('Incomplete or missing schema for test_provider.');
     $this->entity->toArray();
   }
 

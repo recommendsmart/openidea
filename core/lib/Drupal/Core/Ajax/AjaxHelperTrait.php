@@ -18,17 +18,19 @@ trait AjaxHelperTrait {
    *   TRUE if the current request is via AJAX, FALSE otherwise.
    */
   protected function isAjax() {
-    $wrapper_format = $this->getRequestWrapperFormat() ?? '';
-    return str_contains($wrapper_format, 'drupal_ajax') ||
-      str_contains($wrapper_format, 'drupal_modal') ||
-      str_contains($wrapper_format, 'drupal_dialog');
+    foreach (['drupal_ajax', 'drupal_modal', 'drupal_dialog'] as $wrapper) {
+      if (strpos($this->getRequestWrapperFormat(), $wrapper) !== FALSE) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**
    * Gets the wrapper format of the current request.
    *
-   * @return string|null
-   *   The wrapper format. NULL if the wrapper format is not set.
+   * @string
+   *   The wrapper format.
    */
   protected function getRequestWrapperFormat() {
     return \Drupal::request()->get(MainContentViewSubscriber::WRAPPER_FORMAT);

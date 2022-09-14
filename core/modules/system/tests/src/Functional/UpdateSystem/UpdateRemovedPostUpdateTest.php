@@ -23,12 +23,20 @@ class UpdateRemovedPostUpdateTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $connection = Database::getConnection();
 
     // Set the schema version.
-    \Drupal::service('update.update_hook_registry')->setInstalledVersion('update_test_postupdate', 8000);
+    $connection->merge('key_value')
+      ->condition('collection', 'system.schema')
+      ->condition('name', 'update_test_postupdate')
+      ->fields([
+        'collection' => 'system.schema',
+        'name' => 'update_test_postupdate',
+        'value' => 'i:8000;',
+      ])
+      ->execute();
 
     // Update core.extension.
     $extensions = $connection->select('config')
@@ -48,16 +56,14 @@ class UpdateRemovedPostUpdateTest extends BrowserTestBase {
       ->execute();
 
     $this->updateUrl = Url::fromRoute('system.db_update');
-    $this->updateUser = $this->drupalCreateUser([
-      'administer software updates',
-    ]);
+    $this->updateUser = $this->drupalCreateUser(['administer software updates']);
   }
 
   /**
    * Tests hook_post_update_NAME().
    */
   public function testRemovedPostUpdate() {
-    // Mimic the behavior of ModuleInstaller::install().
+    // Mimic the behaviour of ModuleInstaller::install().
     $key_value = \Drupal::service('keyvalue');
     $existing_updates = $key_value->get('post_update')->get('existing_updates', []);
 

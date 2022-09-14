@@ -2,6 +2,12 @@ name: CKEditor
 type: module
 description: "WYSIWYG editing for rich text fields using CKEditor."
 package: Core
-version: VERSION
+core: 8.x
+# version: VERSION
 dependencies:
   - drupal:editor
+
+# Information added by Drupal.org packaging script on 2020-11-26
+version: '8.8.12'
+project: 'drupal'
+datestamp: 1606360921

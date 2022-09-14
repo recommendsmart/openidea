@@ -2,8 +2,14 @@ name: Quick Edit
 type: module
 description: 'In-place content editing.'
 package: Core
-version: VERSION
+core: 8.x
+# version: VERSION
 dependencies:
   - drupal:contextual
   - drupal:field
   - drupal:filter
+
+# Information added by Drupal.org packaging script on 2020-11-26
+version: '8.8.12'
+project: 'drupal'
+datestamp: 1606360921

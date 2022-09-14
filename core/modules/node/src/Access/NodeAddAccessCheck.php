@@ -3,6 +3,7 @@
 namespace Drupal\node\Access;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -12,13 +13,14 @@ use Drupal\node\NodeTypeInterface;
  * Determines access to for node add pages.
  *
  * @ingroup node_access
- *
- * @deprecated in drupal:9.3.0 and is removed from drupal:10.0.0. Use
- *   _entity_create_access or _entity_create_any_access access checks instead.
- *
- * @see https://www.drupal.org/node/2836069
  */
 class NodeAddAccessCheck implements AccessInterface {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The entity type manager.
@@ -28,7 +30,7 @@ class NodeAddAccessCheck implements AccessInterface {
   protected $entityTypeManager;
 
   /**
-   * Constructs an EntityCreateAccessCheck object.
+   * Constructs a EntityCreateAccessCheck object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.

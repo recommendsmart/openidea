@@ -17,12 +17,11 @@
  * hierarchical arrays that include the data to be rendered into HTML (or XML or
  * another output format), and options that affect the markup. Render arrays
  * are ultimately rendered into HTML or other output formats by recursive calls
- * to \Drupal\Core\Render\RendererInterface::render(), traversing the depth of
- * the render array hierarchy. At each level, the theme system is invoked to do
- * the actual rendering. See the documentation of
- * \Drupal\Core\Render\RendererInterface::render() and the @link theme_render
- * Theme system and Render API topic @endlink for more information about render
- * arrays and rendering.
+ * to drupal_render(), traversing the depth of the render array hierarchy. At
+ * each level, the theme system is invoked to do the actual rendering. See the
+ * documentation of drupal_render() and the
+ * @link theme_render Theme system and Render API topic @endlink for more
+ * information about render arrays and rendering.
  *
  * @section sec_twig_theme Twig Templating Engine
  * Drupal 8 uses the templating engine Twig. Twig offers developers a fast,
@@ -187,7 +186,7 @@
  *   @code
  *   function THEME_page_attachments_alter(array &$page) {
  *     if ($some_condition) {
- *       $page['#attached']['library'][] = 'my_theme/something';
+ *       $page['#attached']['library'][] = 'mytheme/something';
  *     }
  *   }
  *   @endcode
@@ -200,15 +199,6 @@
  *     $variables['#attached']['library'][] = 'core/modernizr';
  *   }
  *   @endcode
- *
- * @section front_matter Front Matter
- * Twig has been extended in Drupal to provide an easy way to parse front
- * matter from template files. See \Drupal\Component\FrontMatter\FrontMatter
- * for more information:
- * @code
- * $metadata = \Drupal::service('twig')->getTemplateMetadata('/path/to/template.html.twig');
- * @endcode
- * Note: all front matter is stripped from templates prior to rendering.
  *
  * @see hooks
  * @see callbacks
@@ -242,16 +232,13 @@
  * hierarchical associative array containing data to be rendered and properties
  * describing how the data should be rendered. A render array that is returned
  * by a function to specify markup to be sent to the web browser or other
- * services will eventually be rendered by a call to
- * \Drupal\Core\Render\RendererInterface::render(), which will recurse through
- * the render array hierarchy if appropriate, making calls into the theme system
- * to do the actual rendering. If a function or method actually needs to return
- * rendered output rather than a render array, the best practice would be to
- * create a render array, render it by calling
- * \Drupal\Core\Render\RendererInterface::render(), and return that result,
- * rather than writing the markup directly. See the documentation of
- * \Drupal\Core\Render\RendererInterface::render() for more details of the
- * rendering process.
+ * services will eventually be rendered by a call to drupal_render(), which will
+ * recurse through the render array hierarchy if appropriate, making calls into
+ * the theme system to do the actual rendering. If a function or method actually
+ * needs to return rendered output rather than a render array, the best practice
+ * would be to create a render array, render it by calling drupal_render(), and
+ * return that result, rather than writing the markup directly. See the
+ * documentation of drupal_render() for more details of the rendering process.
  *
  * Each level in the hierarchy of a render array (including the outermost array)
  * has one or more array elements. Array elements whose names start with '#' are
@@ -287,9 +274,9 @@
  *   vectors while allowing a permissive list of HTML tags that are not XSS
  *   vectors. (For example, <script> and <style> are not allowed.) See
  *   \Drupal\Component\Utility\Xss::$adminTags for the list of allowed tags. If
- *   your markup needs any of the tags not in this list, then you can implement
- *   a theme hook and/or an asset library. Alternatively, you can use the key
- *   #allowed_tags to alter which tags are filtered.
+ *   your markup needs any of the tags not in this whitelist, then you can
+ *   implement a theme hook and/or an asset library. Alternatively, you can use
+ *   the key #allowed_tags to alter which tags are filtered.
  * - #plain_text: Specifies that the array provides text that needs to be
  *   escaped. This value takes precedence over #markup.
  * - #allowed_tags: If #markup is supplied, this can be used to change which
@@ -427,16 +414,13 @@
  * render array contained:
  * @code
  * $build['my_element'] = [
- *   '#markup' => 'Something about @foo',
- *   '#attached' => [
- *     'placeholders' => [
- *       '@foo' => ['#markup' => 'replacement'],
- *     ],
+ *   '#attached' => ['placeholders' => ['@foo' => 'replacement']],
+ *   '#markup' => ['Something about @foo'],
  * ];
  * @endcode
  * then #markup would end up containing 'Something about replacement'.
  *
- * Note that each placeholder value *must* itself be a render array. It will be
+ * Note that each placeholder value can itself be a render array, which will be
  * rendered, and any cache tags generated during rendering will be added to the
  * cache tags for the markup.
  *
@@ -449,7 +433,7 @@
  *
  * There are in fact multiple render pipelines:
  * - Drupal always uses the Symfony render pipeline. See
- *   https://symfony.com/doc/3.4/components/http_kernel.html
+ *   http://symfony.com/doc/2.7/components/http_kernel/introduction.html
  * - Within the Symfony render pipeline, there is a Drupal render pipeline,
  *   which handles controllers that return render arrays. (Symfony's render
  *   pipeline only knows how to deal with Response objects; this pipeline
@@ -858,7 +842,7 @@ function hook_element_plugin_alter(array &$definitions) {
  */
 function hook_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets) {
   // Swap out jQuery to use an updated version of the library.
-  $javascript['core/assets/vendor/jquery/jquery.min.js']['data'] = \Drupal::service('extension.list.module')->getPath('jquery_update') . '/jquery.js';
+  $javascript['core/assets/vendor/jquery/jquery.min.js']['data'] = drupal_get_path('module', 'jquery_update') . '/jquery.js';
 }
 
 /**
@@ -1004,7 +988,7 @@ function hook_library_info_alter(&$libraries, $extension) {
       // Since the replaced library files are no longer located in a directory
       // relative to the original extension, specify an absolute path (relative
       // to DRUPAL_ROOT / base_path()) to the new location.
-      $new_path = '/' . \Drupal::service('extension.list.module')->getPath('farbtastic_update') . '/js';
+      $new_path = '/' . drupal_get_path('module', 'farbtastic_update') . '/js';
       $new_js = [];
       $replacements = [
         $old_path . '/farbtastic.js' => $new_path . '/farbtastic-2.0.js',
@@ -1034,8 +1018,7 @@ function hook_library_info_alter(&$libraries, $extension) {
  */
 function hook_css_alter(&$css, \Drupal\Core\Asset\AttachedAssetsInterface $assets) {
   // Remove defaults.css file.
-  $file_path = \Drupal::service('extension.list.module')->getPath('system') . '/defaults.css';
-  unset($css[$file_path]);
+  unset($css[drupal_get_path('module', 'system') . '/defaults.css']);
 }
 
 /**
@@ -1131,7 +1114,7 @@ function hook_page_bottom(array &$page_bottom) {
  *   - 'base_theme': A base theme is being checked for theme implementations.
  *   - 'theme': The actual theme in use is being checked.
  * @param $theme
- *   The actual name of theme, module, etc. that is being processed.
+ *   The actual name of theme, module, etc. that is being being processed.
  * @param $path
  *   The directory path of the theme or module, so that it doesn't need to be
  *   looked up.

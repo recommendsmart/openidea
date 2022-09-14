@@ -48,13 +48,13 @@ class RendererTest extends RendererTestBase {
     }
 
     if (isset($build['#markup'])) {
-      $this->assertNotInstanceOf(MarkupInterface::class, $build['#markup']);
+      $this->assertNotInstanceOf(MarkupInterface::class, $build['#markup'], 'The #markup value is not marked safe before rendering.');
     }
     $render_output = $this->renderer->renderRoot($build);
     $this->assertSame($expected, (string) $render_output);
     if ($render_output !== '') {
-      $this->assertInstanceOf(MarkupInterface::class, $render_output);
-      $this->assertInstanceOf(MarkupInterface::class, $build['#markup']);
+      $this->assertInstanceOf(MarkupInterface::class, $render_output, 'Output of render is marked safe.');
+      $this->assertInstanceOf(MarkupInterface::class, $build['#markup'], 'The #markup value is marked safe after rendering.');
     }
   }
 
@@ -264,13 +264,11 @@ class RendererTest extends RendererTestBase {
       '#attributes' => ['class' => ['baz']],
     ];
     $setup_code_type_link = function () {
-      $this->themeManager->expects($this->exactly(2))
+      $this->setupThemeContainer();
+      $this->themeManager->expects($this->at(0))
         ->method('render')
-        ->with($this->logicalOr('common_test_foo', 'container'))
+        ->with('common_test_foo', $this->anything())
         ->willReturnCallback(function ($theme, $vars) {
-          if ($theme == 'container') {
-            return '<div' . (string) (new Attribute($vars['#attributes'])) . '>' . $vars['#children'] . "</div>\n";
-          }
           return $vars['#foo'] . $vars['#bar'];
         });
     };
@@ -291,14 +289,12 @@ class RendererTest extends RendererTestBase {
       '#title' => 'bar',
     ];
     $setup_code_type_link = function () {
-      $this->themeManager->expects($this->exactly(2))
+      $this->setupThemeContainer();
+      $this->themeManager->expects($this->at(0))
         ->method('render')
-        ->with($this->logicalOr('link', 'container'))
+        ->with('link', $this->anything())
         ->willReturnCallback(function ($theme, $vars) {
-          if ($theme == 'container') {
-            return '<div' . (string) (new Attribute($vars['#attributes'])) . '>' . $vars['#children'] . "</div>\n";
-          }
-          $attributes = new Attribute(['href' => $vars['#url']] + ($vars['#attributes'] ?? []));
+          $attributes = new Attribute(['href' => $vars['#url']] + (isset($vars['#attributes']) ? $vars['#attributes'] : []));
           return '<a' . (string) $attributes . '>' . $vars['#title'] . '</a>';
         });
     };
@@ -330,12 +326,7 @@ class RendererTest extends RendererTestBase {
       ],
     ];
     $setup_code = function () {
-      $this->themeManager->expects($this->exactly(2))
-        ->method('render')
-        ->with('container')
-        ->willReturnCallback(function ($theme, $vars) {
-          return '<div' . (string) (new Attribute($vars['#attributes'])) . '>' . $vars['#children'] . "</div>\n";
-        });
+      $this->setupThemeContainer($this->any());
     };
     $data[] = [$build, '<div class="foo"><div class="bar"></div>' . "\n" . '</div>' . "\n", $setup_code];
 
@@ -345,12 +336,7 @@ class RendererTest extends RendererTestBase {
       '#attributes' => ['class' => ['foo']],
     ];
     $setup_code = function () {
-      $this->themeManager->expects($this->once())
-        ->method('render')
-        ->with(['container'])
-        ->willReturnCallback(function ($theme, $vars) {
-          return '<div' . (string) (new Attribute($vars['#attributes'])) . '>' . $vars['#children'] . "</div>\n";
-        });
+      $this->setupThemeContainerMultiSuggestion($this->any());
     };
     $data[] = [$build, '<div class="foo"></div>' . "\n", $setup_code];
 
@@ -501,18 +487,17 @@ class RendererTest extends RendererTestBase {
     $output = $this->renderer->renderRoot($elements);
 
     // The lowest weight element should appear last in $output.
-    $this->assertGreaterThan(strpos($output, $first), strpos($output, $second));
+    $this->assertTrue(strpos($output, $second) > strpos($output, $first), 'Elements were sorted correctly by weight.');
 
     // Confirm that the $elements array has '#sorted' set to TRUE.
     $this->assertTrue($elements['#sorted'], "'#sorted' => TRUE was added to the array");
 
     // Pass $elements through \Drupal\Core\Render\Element::children() and
-    // ensure it remains sorted in the correct order.
-    // \Drupal::service('renderer')->render() will return an empty string if
-    // used on the same array in the same request.
+    // ensure it remains sorted in the correct order. drupal_render() will
+    // return an empty string if used on the same array in the same request.
     $children = Element::children($elements);
-    $this->assertSame('first', array_shift($children), 'Child found in the correct order.');
-    $this->assertSame('second', array_shift($children), 'Child found in the correct order.');
+    $this->assertTrue(array_shift($children) == 'first', 'Child found in the correct order.');
+    $this->assertTrue(array_shift($children) == 'second', 'Child found in the correct order.');
   }
 
   /**
@@ -537,7 +522,7 @@ class RendererTest extends RendererTestBase {
     $output = $this->renderer->renderRoot($elements);
 
     // The elements should appear in output in the same order as the array.
-    $this->assertLessThan(strpos($output, $first), strpos($output, $second));
+    $this->assertTrue(strpos($output, $second) < strpos($output, $first), 'Elements were not sorted.');
   }
 
   /**
@@ -633,7 +618,7 @@ class RendererTest extends RendererTestBase {
 
     $this->renderer->renderPlain($build);
 
-    $this->assertEqualsCanonicalizing(['languages:language_interface', 'theme', 'user'], $build['#cache']['contexts']);
+    $this->assertEquals(['languages:language_interface', 'theme', 'user'], $build['#cache']['contexts']);
   }
 
   /**
@@ -731,12 +716,10 @@ class RendererTest extends RendererTestBase {
    *
    * @param array $build
    *   A render array with either #access or #access_callback.
-   * @param \Drupal\Core\Access\AccessResultInterface|bool $access
+   * @param bool $access
    *   Whether the render array is accessible or not.
-   *
-   * @internal
    */
-  protected function assertAccess(array $build, $access): void {
+  protected function assertAccess($build, $access) {
     $sensitive_content = $this->randomContextValue();
     $build['#markup'] = $sensitive_content;
     if (($access instanceof AccessResultInterface && $access->isAllowed()) || $access === TRUE) {
@@ -745,6 +728,24 @@ class RendererTest extends RendererTestBase {
     else {
       $this->assertSame('', (string) $this->renderer->renderRoot($build));
     }
+  }
+
+  protected function setupThemeContainer($matcher = NULL) {
+    $this->themeManager->expects($matcher ?: $this->at(1))
+      ->method('render')
+      ->with('container', $this->anything())
+      ->willReturnCallback(function ($theme, $vars) {
+        return '<div' . (string) (new Attribute($vars['#attributes'])) . '>' . $vars['#children'] . "</div>\n";
+      });
+  }
+
+  protected function setupThemeContainerMultiSuggestion($matcher = NULL) {
+    $this->themeManager->expects($matcher ?: $this->at(1))
+      ->method('render')
+      ->with(['container'], $this->anything())
+      ->willReturnCallback(function ($theme, $vars) {
+        return '<div' . (string) (new Attribute($vars['#attributes'])) . '>' . $vars['#children'] . "</div>\n";
+      });
   }
 
   /**
@@ -762,7 +763,7 @@ class RendererTest extends RendererTestBase {
       ->willReturn('foobar');
 
     // Test that defaults work.
-    $this->assertEquals('foobar', $this->renderer->renderRoot($element), 'Defaults work');
+    $this->assertEquals($this->renderer->renderRoot($element), 'foobar', 'Defaults work');
   }
 
   /**
@@ -932,7 +933,7 @@ class RendererTest extends RendererTestBase {
     // #custom_property_array can not be a safe_cache_property.
     $safe_cache_properties = array_diff(Element::properties(array_filter($expected_results)), ['#custom_property_array']);
     foreach ($safe_cache_properties as $cache_property) {
-      $this->assertInstanceOf(MarkupInterface::class, $data[$cache_property]);
+      $this->assertInstanceOf(MarkupInterface::class, $data[$cache_property], "$cache_property is marked as a safe string");
     }
   }
 

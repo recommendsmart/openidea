@@ -33,7 +33,7 @@ class YamlDiscoveryDecoratorTest extends UnitTestCase {
     'decorated_2' => 'decorated_test_2',
   ];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $base_path = __DIR__ . '/Fixtures';
@@ -70,7 +70,7 @@ class YamlDiscoveryDecoratorTest extends UnitTestCase {
   public function testGetDefinitions() {
     $definitions = $this->discoveryDecorator->getDefinitions();
 
-    $this->assertIsArray($definitions);
+    $this->assertInternalType('array', $definitions);
     $this->assertCount(6, $definitions);
 
     foreach ($this->expectedKeys as $expected_key) {

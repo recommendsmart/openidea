@@ -3,7 +3,7 @@
  * Views listing behaviors.
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   /**
    * Filters the view listing tables by a text input search string.
    *
@@ -18,22 +18,25 @@
    */
   Drupal.behaviors.viewTableFilterByText = {
     attach(context, settings) {
-      const [input] = once('views-filter-text', 'input.views-filter-text');
-      if (!input) {
-        return;
-      }
-      const $table = $(input.getAttribute('data-table'));
+      const $input = $('input.views-filter-text').once('views-filter-text');
+      const $table = $($input.attr('data-table'));
       let $rows;
 
       function filterViewList(e) {
-        const query = $(e.target).val().toLowerCase();
+        const query = $(e.target)
+          .val()
+          .toLowerCase();
 
         function showViewRow(index, row) {
           const $row = $(row);
           const $sources = $row.find(
             '[data-drupal-selector="views-table-filter-text-source"]',
           );
-          const textMatch = $sources.text().toLowerCase().indexOf(query) !== -1;
+          const textMatch =
+            $sources
+              .text()
+              .toLowerCase()
+              .indexOf(query) !== -1;
           $row.closest('tr').toggle(textMatch);
         }
 
@@ -47,7 +50,7 @@
 
       if ($table.length) {
         $rows = $table.find('tbody tr');
-        $(input).on('keyup', filterViewList);
+        $input.on('keyup', filterViewList);
       }
     },
   };

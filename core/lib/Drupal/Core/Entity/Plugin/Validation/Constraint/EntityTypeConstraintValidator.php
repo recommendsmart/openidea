@@ -18,7 +18,7 @@ class EntityTypeConstraintValidator extends ConstraintValidator {
       return;
     }
 
-    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    /** @var $entity \Drupal\Core\Entity\EntityInterface */
     if ($entity->getEntityTypeId() != $constraint->type) {
       $this->context->addViolation($constraint->message, ['%type' => $constraint->type]);
     }

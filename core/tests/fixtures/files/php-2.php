@@ -1,3 +1,3 @@
 <?php
-// phpcs:ignoreFile
+// @codingStandardsIgnoreFile
 print 'SimpleTest PHP was executed!';

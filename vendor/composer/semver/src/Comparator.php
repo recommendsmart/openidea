@@ -101,13 +101,11 @@ class Comparator
      * @param string $version2
      *
      * @return bool
-     *
-     * @phpstan-param Constraint::STR_OP_*  $operator
      */
     public static function compare($version1, $operator, $version2)
     {
         $constraint = new Constraint($operator, $version2);
 
-        return $constraint->matchSpecific(new Constraint('==', $version1), true);
+        return $constraint->matches(new Constraint('==', $version1));
     }
 }

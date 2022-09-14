@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
 use Drupal\Core\Field\Plugin\Field\FieldType\EmailItem;
 use Drupal\Core\Password\PasswordInterface;
-use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Plugin\migrate\destination\EntityContentBase;
 use Drupal\migrate\Row;
@@ -36,7 +35,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   data_rows:
  *     -
  *       user_id: 1
- *       name: JohnSmith
+ *       name: johnsmith
  *       mail: johnsmith@example.com
  *       hash: '5f4dcc3b5aa765d61d8327deb882cf99'
  *   ids:
@@ -76,7 +75,7 @@ class EntityUser extends EntityContentBase {
   protected $password;
 
   /**
-   * Builds a user entity destination.
+   * Builds an user entity destination.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -96,11 +95,9 @@ class EntityUser extends EntityContentBase {
    *   The field type plugin manager service.
    * @param \Drupal\Core\Password\PasswordInterface $password
    *   The password service.
-   * @param \Drupal\Core\Session\AccountSwitcherInterface|null $account_switcher
-   *   The account switcher service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, PasswordInterface $password, AccountSwitcherInterface $account_switcher = NULL) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles, $entity_field_manager, $field_type_manager, $account_switcher);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, PasswordInterface $password) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles, $entity_field_manager, $field_type_manager);
     $this->password = $password;
   }
 
@@ -118,8 +115,7 @@ class EntityUser extends EntityContentBase {
       array_keys($container->get('entity_type.bundle.info')->getBundleInfo($entity_type)),
       $container->get('entity_field.manager'),
       $container->get('plugin.manager.field.field_type'),
-      $container->get('password'),
-      $container->get('account_switcher')
+      $container->get('password')
     );
   }
 

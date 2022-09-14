@@ -35,7 +35,7 @@ class LlamaContextual extends Llama implements CKEditorPluginContextualInterface
    * {@inheritdoc}
    */
   public function getFile() {
-    return $this->moduleList->getPath('ckeditor_test') . '/js/llama_contextual.js';
+    return drupal_get_path('module', 'ckeditor_test') . '/js/llama_contextual.js';
   }
 
 }

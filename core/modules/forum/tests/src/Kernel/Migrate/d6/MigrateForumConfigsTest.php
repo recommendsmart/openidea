@@ -17,12 +17,12 @@ class MigrateForumConfigsTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'forum', 'taxonomy'];
+  public static $modules = ['comment', 'forum', 'taxonomy'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('d6_taxonomy_vocabulary');
     $this->executeMigration('d6_forum_settings');
@@ -33,10 +33,10 @@ class MigrateForumConfigsTest extends MigrateDrupal6TestBase {
    */
   public function testForumSettings() {
     $config = $this->config('forum.settings');
-    $this->assertSame(15, $config->get('topics.hot_threshold'));
-    $this->assertSame(25, $config->get('topics.page_limit'));
-    $this->assertSame(1, $config->get('topics.order'));
-    $this->assertSame('forums', $config->get('vocabulary'));
+    $this->assertIdentical(15, $config->get('topics.hot_threshold'));
+    $this->assertIdentical(25, $config->get('topics.page_limit'));
+    $this->assertIdentical(1, $config->get('topics.order'));
+    $this->assertIdentical('forums', $config->get('vocabulary'));
     // This is 'forum_block_num_0' in D6, but block:active:limit' in D8.
     $this->assertSame(3, $config->get('block.active.limit'));
     // This is 'forum_block_num_1' in D6, but 'block:new:limit' in D8.

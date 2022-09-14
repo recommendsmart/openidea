@@ -16,7 +16,7 @@ class OptionsFormattersTest extends OptionsFieldUnitTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
   }
 
@@ -30,12 +30,12 @@ class OptionsFormattersTest extends OptionsFieldUnitTestBase {
     $items = $entity->get($this->fieldName);
 
     $build = $items->view();
-    $this->assertEquals('list_default', $build['#formatter'], 'Ensure to fall back to the default formatter.');
-    $this->assertEquals('One', $build[0]['#markup']);
+    $this->assertEqual($build['#formatter'], 'list_default', 'Ensure to fall back to the default formatter.');
+    $this->assertEqual($build[0]['#markup'], 'One');
 
     $build = $items->view(['type' => 'list_key']);
-    $this->assertEquals('list_key', $build['#formatter'], 'The chosen formatter is used.');
-    $this->assertEquals(1, (string) $build[0]['#markup']);
+    $this->assertEqual($build['#formatter'], 'list_key', 'The chosen formatter is used.');
+    $this->assertEqual((string) $build[0]['#markup'], 1);
   }
 
 }

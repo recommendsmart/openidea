@@ -3,7 +3,7 @@
  * Renders BigPipe placeholders using Drupal's Ajax system.
  */
 
-(function (Drupal, drupalSettings) {
+(function($, Drupal, drupalSettings) {
   /**
    * Maps textContent of <script type="application/vnd.drupal-ajax"> to an AJAX response.
    *
@@ -30,14 +30,16 @@
    *
    * These Ajax commands replace placeholders with HTML and load missing CSS/JS.
    *
+   * @param {number} index
+   *   Current index.
    * @param {HTMLScriptElement} placeholderReplacement
    *   Script tag created by BigPipe.
    */
-  function bigPipeProcessPlaceholderReplacement(placeholderReplacement) {
+  function bigPipeProcessPlaceholderReplacement(index, placeholderReplacement) {
     const placeholderId = placeholderReplacement.getAttribute(
       'data-big-pipe-replacement-for-placeholder-with-id',
     );
-    const content = placeholderReplacement.textContent.trim();
+    const content = this.textContent.trim();
     // Ignore any placeholders that are not in the known placeholder list. Used
     // to avoid someone trying to XSS the site via the placeholdering mechanism.
     if (
@@ -51,7 +53,7 @@
          * Mark as unprocessed so this will be retried later.
          * @see bigPipeProcessDocument()
          */
-        once.remove('big-pipe', placeholderReplacement);
+        $(this).removeOnce('big-pipe');
       } else {
         // Create a Drupal.Ajax object without associating an element, a
         // progress indicator or a URL.
@@ -93,11 +95,10 @@
       return false;
     }
 
-    once(
-      'big-pipe',
-      'script[data-big-pipe-replacement-for-placeholder-with-id]',
-      context,
-    ).forEach(bigPipeProcessPlaceholderReplacement);
+    $(context)
+      .find('script[data-big-pipe-replacement-for-placeholder-with-id]')
+      .once('big-pipe')
+      .each(bigPipeProcessPlaceholderReplacement);
 
     // If we see the stop signal, clear the timeout: all placeholder
     // replacements are guaranteed to be received and processed.
@@ -123,10 +124,10 @@
 
   // If something goes wrong, make sure everything is cleaned up and has had a
   // chance to be processed with everything loaded.
-  window.addEventListener('load', () => {
+  $(window).on('load', () => {
     if (timeoutID) {
       clearTimeout(timeoutID);
     }
     bigPipeProcessDocument(document);
   });
-})(Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings);

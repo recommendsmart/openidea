@@ -126,7 +126,7 @@ class FieldFormatterSettingsDefaults extends ProcessPluginBase {
       ],
     ];
 
-    return $map[$type][$format] ?? [];
+    return isset($map[$type][$format]) ? $map[$type][$format] : [];
   }
 
 }

@@ -38,7 +38,7 @@ class AggregatorPluginSettingsBaseTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->configFactory = $this->getConfigFactoryStub(
       [
         'aggregator.settings' => [
@@ -71,7 +71,7 @@ class AggregatorPluginSettingsBaseTest extends UnitTestCase {
   }
 
   /**
-   * Tests for AggregatorPluginSettingsBase.
+   * Test for AggregatorPluginSettingsBase.
    *
    * Ensure that the settings form calls build, validate and submit methods on
    * plugins that extend AggregatorPluginSettingsBase.
@@ -84,17 +84,17 @@ class AggregatorPluginSettingsBaseTest extends UnitTestCase {
     ]);
 
     $test_processor = $this->getMockBuilder('Drupal\aggregator_test\Plugin\aggregator\processor\TestProcessor')
-      ->onlyMethods(['buildConfigurationForm', 'validateConfigurationForm', 'submitConfigurationForm'])
+      ->setMethods(['buildConfigurationForm', 'validateConfigurationForm', 'submitConfigurationForm'])
       ->setConstructorArgs([[], 'aggregator_test', ['description' => ''], $this->configFactory])
       ->getMock();
-    $test_processor->expects($this->once())
+    $test_processor->expects($this->at(0))
       ->method('buildConfigurationForm')
       ->with($this->anything(), $form_state)
       ->will($this->returnArgument(0));
-    $test_processor->expects($this->once())
+    $test_processor->expects($this->at(1))
       ->method('validateConfigurationForm')
       ->with($this->anything(), $form_state);
-    $test_processor->expects($this->once())
+    $test_processor->expects($this->at(2))
       ->method('submitConfigurationForm')
       ->with($this->anything(), $form_state);
 

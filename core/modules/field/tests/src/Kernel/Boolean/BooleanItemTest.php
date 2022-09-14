@@ -19,7 +19,7 @@ class BooleanItemTest extends FieldKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a boolean field and storage for validation.
@@ -57,20 +57,20 @@ class BooleanItemTest extends FieldKernelTestBase {
     // Verify entity has been created properly.
     $id = $entity->id();
     $entity = EntityTest::load($id);
-    $this->assertInstanceOf(FieldItemListInterface::class, $entity->field_boolean);
-    $this->assertInstanceOf(FieldItemInterface::class, $entity->field_boolean[0]);
-    $this->assertEquals($value, $entity->field_boolean->value);
-    $this->assertEquals($value, $entity->field_boolean[0]->value);
+    $this->assertTrue($entity->field_boolean instanceof FieldItemListInterface, 'Field implements interface.');
+    $this->assertTrue($entity->field_boolean[0] instanceof FieldItemInterface, 'Field item implements interface.');
+    $this->assertEqual($entity->field_boolean->value, $value);
+    $this->assertEqual($entity->field_boolean[0]->value, $value);
 
     // Verify changing the boolean value.
     $new_value = 0;
     $entity->field_boolean->value = $new_value;
-    $this->assertEquals($new_value, $entity->field_boolean->value);
+    $this->assertEqual($entity->field_boolean->value, $new_value);
 
     // Read changed entity and assert changed values.
     $entity->save();
     $entity = EntityTest::load($id);
-    $this->assertEquals($new_value, $entity->field_boolean->value);
+    $this->assertEqual($entity->field_boolean->value, $new_value);
 
     // Test sample item generation.
     $entity = EntityTest::create();

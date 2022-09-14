@@ -9,8 +9,6 @@ namespace Drupal\Tests\migrate_drupal\Unit\source\d6;
 
 use Drupal\Tests\migrate\Unit\MigrateTestCase;
 
-// cspell:ignore throttleable
-
 /**
  * Tests the D6 SQL base class.
  *
@@ -68,7 +66,7 @@ class Drupal6SqlBaseTest extends MigrateTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $plugin = 'placeholder_id';
     /** @var \Drupal\Core\State\StateInterface $state */
     $state = $this->createMock('Drupal\Core\State\StateInterface');
@@ -84,8 +82,8 @@ class Drupal6SqlBaseTest extends MigrateTestCase {
   public function testGetSystemData() {
     $system_data = $this->base->getSystemData();
     // Should be 1 theme and 2 modules.
-    $this->assertCount(1, $system_data['theme']);
-    $this->assertCount(2, $system_data['module']);
+    $this->assertEquals(1, count($system_data['theme']));
+    $this->assertEquals(2, count($system_data['module']));
 
     // Calling again should be identical.
     $this->assertSame($system_data, $this->base->getSystemData());
@@ -125,7 +123,7 @@ class Drupal6SqlBaseTest extends MigrateTestCase {
     $this->assertEquals('my_default', $this->base->variableGetWrapper('non_existent_variable', 'my_default'));
 
     // Test non-default.
-    $this->assertTrue($this->base->variableGetWrapper('my_variable', FALSE));
+    $this->assertSame(TRUE, $this->base->variableGetWrapper('my_variable', FALSE));
   }
 
 }
@@ -146,16 +144,16 @@ class TestDrupal6SqlBase extends DrupalSqlBase {
    */
   public function fields() {
     return [
-      'filename' => $this->t('The path of the primary file for this item.'),
-      'name' => $this->t('The name of the item; e.g. node.'),
-      'type' => $this->t('The type of the item, either module, theme, or theme_engine.'),
-      'owner' => $this->t("A theme's 'parent'. Can be either a theme or an engine."),
-      'status' => $this->t('Boolean indicating whether or not this item is enabled.'),
-      'throttle' => $this->t('Boolean indicating whether this item is disabled when the throttle.module disables throttleable items.'),
-      'bootstrap' => $this->t("Boolean indicating whether this module is loaded during Drupal's early bootstrapping phase (e.g. even before the page cache is consulted)."),
-      'schema_version' => $this->t("The module's database schema version number."),
-      'weight' => $this->t("The order in which this module's hooks should be invoked."),
-      'info' => $this->t("A serialized array containing information from the module's .info file."),
+      'filename' => t('The path of the primary file for this item.'),
+      'name' => t('The name of the item; e.g. node.'),
+      'type' => t('The type of the item, either module, theme, or theme_engine.'),
+      'owner' => t("A theme's 'parent'. Can be either a theme or an engine."),
+      'status' => t('Boolean indicating whether or not this item is enabled.'),
+      'throttle' => t('Boolean indicating whether this item is disabled when the throttle.module disables throttleable items.'),
+      'bootstrap' => t("Boolean indicating whether this module is loaded during Drupal's early bootstrapping phase (e.g. even before the page cache is consulted)."),
+      'schema_version' => t("The module's database schema version number."),
+      'weight' => t("The order in which this module's hooks should be invoked."),
+      'info' => t("A serialized array containing information from the module's .info file."),
     ];
   }
 

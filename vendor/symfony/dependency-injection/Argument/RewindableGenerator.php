@@ -28,14 +28,14 @@ class RewindableGenerator implements \IteratorAggregate, \Countable
         $this->count = $count;
     }
 
-    public function getIterator(): \Traversable
+    public function getIterator()
     {
         $g = $this->generator;
 
         return $g();
     }
 
-    public function count(): int
+    public function count()
     {
         if (\is_callable($count = $this->count)) {
             $this->count = $count();

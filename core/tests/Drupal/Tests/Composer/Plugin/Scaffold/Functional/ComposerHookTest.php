@@ -3,10 +3,10 @@
 namespace Drupal\Tests\Composer\Plugin\Scaffold\Functional;
 
 use Composer\Util\Filesystem;
-use Drupal\BuildTests\Framework\BuildTestBase;
 use Drupal\Tests\Composer\Plugin\Scaffold\AssertUtilsTrait;
 use Drupal\Tests\Composer\Plugin\Scaffold\ExecTrait;
 use Drupal\Tests\Composer\Plugin\Scaffold\Fixtures;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests Composer Hooks that run scaffold operations.
@@ -22,10 +22,19 @@ use Drupal\Tests\Composer\Plugin\Scaffold\Fixtures;
  *
  * @group Scaffold
  */
-class ComposerHookTest extends BuildTestBase {
-
+class ComposerHookTest extends TestCase {
   use ExecTrait;
   use AssertUtilsTrait;
+
+  /**
+   * The root of this project.
+   *
+   * Used to substitute this project's base directory into composer.json files
+   * so Composer can find it.
+   *
+   * @var string
+   */
+  protected $projectRoot;
 
   /**
    * Directory to perform the tests in.
@@ -51,27 +60,28 @@ class ComposerHookTest extends BuildTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->fileSystem = new Filesystem();
     $this->fixtures = new Fixtures();
     $this->fixtures->createIsolatedComposerCacheDir();
-    $this->fixturesDir = $this->fixtures->tmpDir($this->getName());
-    $replacements = ['SYMLINK' => 'false', 'PROJECT_ROOT' => $this->fixtures->projectRoot()];
-    $this->fixtures->cloneFixtureProjects($this->fixturesDir, $replacements);
+    $this->projectRoot = $this->fixtures->projectRoot();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function tearDown(): void {
+  protected function tearDown() {
     // Remove any temporary directories et. al. that were created.
     $this->fixtures->tearDown();
   }
 
   /**
-   * Tests to see if scaffold operation runs at the correct times.
+   * Test to see if scaffold operation runs at the correct times.
    */
   public function testComposerHooks() {
+    $this->fixturesDir = $this->fixtures->tmpDir($this->getName());
+    $replacements = ['SYMLINK' => 'false', 'PROJECT_ROOT' => $this->projectRoot];
+    $this->fixtures->cloneFixtureProjects($this->fixturesDir, $replacements);
     $topLevelProjectDir = 'composer-hooks-fixture';
     $sut = $this->fixturesDir . '/' . $topLevelProjectDir;
     // First test: run composer install. This is the same as composer update
@@ -82,28 +92,28 @@ class ComposerHookTest extends BuildTestBase {
     // project is "allowed" in our main fixture project, but not required.
     // We expect that requiring this library should re-scaffold, resulting
     // in a changed default.settings.php file.
-    $stdout = $this->mustExec("composer require --no-ansi --no-interaction fixtures/drupal-assets-fixture:dev-main fixtures/scaffold-override-fixture:dev-main", $sut);
+    $stdout = $this->mustExec("composer require --no-ansi --no-interaction fixtures/scaffold-override-fixture:dev-master", $sut);
     $this->assertScaffoldedFile($sut . '/sites/default/default.settings.php', FALSE, 'scaffolded from the scaffold-override-fixture');
     // Make sure that the appropriate notice informing us that scaffolding
     // is allowed was printed.
-    $this->assertStringContainsString('Package fixtures/scaffold-override-fixture has scaffold operations, and is already allowed in the root-level composer.json file.', $stdout);
+    $this->assertContains('Package fixtures/scaffold-override-fixture has scaffold operations, and is already allowed in the root-level composer.json file.', $stdout);
     // Delete one scaffold file, just for test purposes, then run
     // 'composer update' and see if the scaffold file is replaced.
     @unlink($sut . '/sites/default/default.settings.php');
-    $this->assertFileDoesNotExist($sut . '/sites/default/default.settings.php');
+    $this->assertFileNotExists($sut . '/sites/default/default.settings.php');
     $this->mustExec("composer update --no-ansi", $sut);
     $this->assertScaffoldedFile($sut . '/sites/default/default.settings.php', FALSE, 'scaffolded from the scaffold-override-fixture');
     // Delete the same test scaffold file again, then run
     // 'composer drupal:scaffold' and see if the scaffold file is
     // re-scaffolded.
     @unlink($sut . '/sites/default/default.settings.php');
-    $this->assertFileDoesNotExist($sut . '/sites/default/default.settings.php');
+    $this->assertFileNotExists($sut . '/sites/default/default.settings.php');
     $this->mustExec("composer install --no-ansi", $sut);
     $this->assertScaffoldedFile($sut . '/sites/default/default.settings.php', FALSE, 'scaffolded from the scaffold-override-fixture');
     // Delete the same test scaffold file yet again, then run
     // 'composer install' and see if the scaffold file is re-scaffolded.
     @unlink($sut . '/sites/default/default.settings.php');
-    $this->assertFileDoesNotExist($sut . '/sites/default/default.settings.php');
+    $this->assertFileNotExists($sut . '/sites/default/default.settings.php');
     $this->mustExec("composer drupal:scaffold --no-ansi", $sut);
     $this->assertScaffoldedFile($sut . '/sites/default/default.settings.php', FALSE, 'scaffolded from the scaffold-override-fixture');
     // Run 'composer create-project' to create a new test project called
@@ -113,33 +123,17 @@ class ComposerHookTest extends BuildTestBase {
     $filesystem->remove($sut);
     $stdout = $this->mustExec("composer create-project --repository=packages.json fixtures/drupal-drupal {$sut}", $this->fixturesDir, ['COMPOSER_MIRROR_PATH_REPOS' => 1]);
     $this->assertDirectoryExists($sut);
-    $this->assertStringContainsString('Scaffolding files for fixtures/drupal-drupal', $stdout);
+    $this->assertContains('Scaffolding files for fixtures/drupal-drupal', $stdout);
     $this->assertScaffoldedFile($sut . '/index.php', FALSE, 'Test version of index.php from drupal/core');
-  }
-
-  /**
-   * Tests to see if scaffold messages are omitted when running scaffold twice.
-   */
-  public function testScaffoldMessagesDoNotPrintTwice() {
-    $topLevelProjectDir = 'drupal-drupal';
+    $topLevelProjectDir = 'composer-hooks-nothing-allowed-fixture';
     $sut = $this->fixturesDir . '/' . $topLevelProjectDir;
-    // First test: run composer install. This is the same as composer update
-    // since there is no lock file. Ensure that scaffold operation ran.
-    $stdout = $this->mustExec("composer install --no-ansi", $sut);
-
-    $this->assertStringContainsString('- Copy [web-root]/index.php from assets/index.php', $stdout);
-    $this->assertStringContainsString('- Copy [web-root]/update.php from assets/update.php', $stdout);
-
-    // Run scaffold operation again. It should not print anything.
-    $stdout = $this->mustExec("composer scaffold --no-ansi", $sut);
-
-    $this->assertEquals('', $stdout);
-
-    // Delete a file and run it again. It should re-scaffold the removed file.
-    unlink("$sut/index.php");
-    $stdout = $this->mustExec("composer scaffold --no-ansi", $sut);
-    $this->assertStringContainsString('- Copy [web-root]/index.php from assets/index.php', $stdout);
-    $this->assertStringNotContainsString('- Copy [web-root]/update.php from assets/update.php', $stdout);
+    // Run composer install on an empty project.
+    $this->mustExec("composer install --no-ansi", $sut);
+    // Require a project that is not allowed to scaffold and confirm that we
+    // get a warning, and it does not scaffold.
+    $stdout = $this->mustExec("composer require --no-ansi --no-interaction fixtures/scaffold-override-fixture:dev-master", $sut);
+    $this->assertFileNotExists($sut . '/sites/default/default.settings.php');
+    $this->assertContains("Not scaffolding files for fixtures/scaffold-override-fixture, because it is not listed in the element 'extra.drupal-scaffold.allowed-packages' in the root-level composer.json file.", $stdout);
   }
 
 }

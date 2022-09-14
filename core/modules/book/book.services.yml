@@ -1,18 +1,18 @@
 services:
   book.breadcrumb:
     class: Drupal\book\BookBreadcrumbBuilder
-    arguments: ['@entity_type.manager', '@current_user', '@entity.repository', '@language_manager']
+    arguments: ['@entity_type.manager', '@current_user']
     tags:
       - { name: breadcrumb_builder, priority: 701 }
   book.manager:
     class: Drupal\book\BookManager
-    arguments: ['@entity_type.manager', '@string_translation', '@config.factory', '@book.outline_storage', '@renderer', '@language_manager', '@entity.repository', '@book.backend_chained_cache', '@book.memory_cache']
+    arguments: ['@entity_type.manager', '@string_translation', '@config.factory', '@book.outline_storage', '@renderer']
   book.outline:
     class: Drupal\book\BookOutline
     arguments: ['@book.manager']
   book.export:
     class: Drupal\book\BookExport
-    arguments: ['@entity_type.manager', '@book.manager', '@entity.repository']
+    arguments: ['@entity_type.manager', '@book.manager']
   book.outline_storage:
     class: Drupal\book\BookOutlineStorage
     arguments: ['@database']
@@ -25,7 +25,7 @@ services:
       - { name: access_check, applies_to: _access_book_removable }
   cache_context.route.book_navigation:
     class: Drupal\book\Cache\BookNavigationCacheContext
-    arguments: ['@current_route_match']
+    arguments: ['@request_stack']
     calls:
       - [setContainer, ['@service_container']]
     tags:
@@ -37,14 +37,3 @@ services:
       - { name: module_install.uninstall_validator }
     arguments: ['@book.outline_storage', '@entity_type.manager', '@string_translation']
     lazy: true
-  book.memory_cache:
-    class: Drupal\Core\Cache\MemoryCache\MemoryCache
-  book.backend_chained_cache:
-    class: Drupal\Core\Cache\BackendChain
-    calls:
-      - [appendBackend, ['@book.memory_cache']]
-      - [appendBackend, ['@cache.data']]
-    tags:
-      # This tag ensures that Drupal's cache_tags.invalidator service
-      # invalidates also this cache data.
-      - { name: cache.bin }

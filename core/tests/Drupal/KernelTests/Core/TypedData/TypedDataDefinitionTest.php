@@ -26,8 +26,8 @@ class TypedDataDefinitionTest extends KernelTestBase {
    */
   protected $typedDataManager;
 
-  protected function setUp(): void {
-    parent::setUp();
+  protected function setUp() {
+    parent::setup();
     $this->typedDataManager = $this->container->get('typed_data_manager');
   }
 
@@ -36,22 +36,22 @@ class TypedDataDefinitionTest extends KernelTestBase {
    */
   public function testLists() {
     $list_definition = ListDataDefinition::create('string');
-    $this->assertInstanceOf(ListDataDefinitionInterface::class, $list_definition);
+    $this->assertTrue($list_definition instanceof ListDataDefinitionInterface);
     $item_definition = $list_definition->getItemDefinition();
-    $this->assertInstanceOf(DataDefinitionInterface::class, $item_definition);
-    $this->assertEquals('string', $item_definition->getDataType());
+    $this->assertTrue($item_definition instanceof DataDefinitionInterface);
+    $this->assertEqual($item_definition->getDataType(), 'string');
 
     // Test using the definition factory.
     $list_definition2 = $this->typedDataManager->createListDataDefinition('string');
-    $this->assertInstanceOf(ListDataDefinitionInterface::class, $list_definition2);
-    $this->assertEquals($list_definition, $list_definition2);
+    $this->assertTrue($list_definition2 instanceof ListDataDefinitionInterface);
+    $this->assertEqual($list_definition, $list_definition2);
 
     // Test creating the definition of data with type 'list', which is the same
     // as creating a definition of a list of items of type 'any'.
     $list_definition = $this->typedDataManager->createDataDefinition('list');
-    $this->assertInstanceOf(ListDataDefinitionInterface::class, $list_definition);
-    $this->assertEquals('list', $list_definition->getDataType());
-    $this->assertEquals('any', $list_definition->getItemDefinition()->getDataType());
+    $this->assertTrue($list_definition instanceof ListDataDefinitionInterface);
+    $this->assertEqual($list_definition->getDataType(), 'list');
+    $this->assertEqual($list_definition->getItemDefinition()->getDataType(), 'any');
   }
 
   /**
@@ -63,21 +63,21 @@ class TypedDataDefinitionTest extends KernelTestBase {
       ->setPropertyDefinition('two', DataDefinition::create('string'))
       ->setPropertyDefinition('three', DataDefinition::create('string'));
 
-    $this->assertInstanceOf(ComplexDataDefinitionInterface::class, $map_definition);
+    $this->assertTrue($map_definition instanceof ComplexDataDefinitionInterface);
 
     // Test retrieving metadata about contained properties.
-    $this->assertEquals(['one', 'two', 'three'], array_keys($map_definition->getPropertyDefinitions()));
-    $this->assertEquals('string', $map_definition->getPropertyDefinition('one')->getDataType());
+    $this->assertEqual(array_keys($map_definition->getPropertyDefinitions()), ['one', 'two', 'three']);
+    $this->assertEqual($map_definition->getPropertyDefinition('one')->getDataType(), 'string');
     $this->assertNull($map_definition->getMainPropertyName());
     $this->assertNull($map_definition->getPropertyDefinition('invalid'));
 
     // Test using the definition factory.
     $map_definition2 = $this->typedDataManager->createDataDefinition('map');
-    $this->assertInstanceOf(ComplexDataDefinitionInterface::class, $map_definition2);
+    $this->assertTrue($map_definition2 instanceof ComplexDataDefinitionInterface);
     $map_definition2->setPropertyDefinition('one', DataDefinition::create('string'))
       ->setPropertyDefinition('two', DataDefinition::create('string'))
       ->setPropertyDefinition('three', DataDefinition::create('string'));
-    $this->assertEquals(serialize($map_definition2), serialize($map_definition));
+    $this->assertEqual(serialize($map_definition), serialize($map_definition2));
   }
 
   /**
@@ -85,15 +85,15 @@ class TypedDataDefinitionTest extends KernelTestBase {
    */
   public function testDataReferences() {
     $language_reference_definition = DataReferenceDefinition::create('language');
-    $this->assertInstanceOf(DataReferenceDefinitionInterface::class, $language_reference_definition);
+    $this->assertTrue($language_reference_definition instanceof DataReferenceDefinitionInterface);
 
     // Test retrieving metadata about the referenced data.
-    $this->assertEquals('language', $language_reference_definition->getTargetDefinition()->getDataType());
+    $this->assertEqual($language_reference_definition->getTargetDefinition()->getDataType(), 'language');
 
     // Test using the definition factory.
     $language_reference_definition2 = $this->typedDataManager->createDataDefinition('language_reference');
-    $this->assertInstanceOf(DataReferenceDefinitionInterface::class, $language_reference_definition2);
-    $this->assertEquals(serialize($language_reference_definition2), serialize($language_reference_definition));
+    $this->assertTrue($language_reference_definition2 instanceof DataReferenceDefinitionInterface);
+    $this->assertEqual(serialize($language_reference_definition), serialize($language_reference_definition2));
   }
 
 }

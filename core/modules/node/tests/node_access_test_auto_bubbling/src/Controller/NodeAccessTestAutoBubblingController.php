@@ -19,7 +19,6 @@ class NodeAccessTestAutoBubblingController extends ControllerBase implements Con
    */
   public function latest() {
     $nids = $this->entityTypeManager()->getStorage('node')->getQuery()
-      ->accessCheck(TRUE)
       ->condition('status', NodeInterface::PUBLISHED)
       ->sort('created', 'DESC')
       ->range(0, 3)

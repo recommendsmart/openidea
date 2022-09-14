@@ -73,7 +73,7 @@ class InstallerRedirectTraitTest extends KernelTestBase {
     catch (\Exception $e) {
       // Mock the trait.
       $trait = $this->getMockBuilder(InstallerRedirectTrait::class)
-        ->onlyMethods(['isCli'])
+        ->setMethods(['isCli'])
         ->getMockForTrait();
 
       // Make sure that the method thinks we are not using the cli.
@@ -95,14 +95,14 @@ class InstallerRedirectTraitTest extends KernelTestBase {
         // Mock the database connection.
         $connection = $this->getMockBuilder(Connection::class)
           ->disableOriginalConstructor()
-          ->onlyMethods(['schema'])
+          ->setMethods(['schema'])
           ->getMockForAbstractClass();
 
         if ($connection_info) {
           // Mock the database schema class.
           $schema = $this->getMockBuilder(Schema::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['tableExists'])
+            ->setMethods(['tableExists'])
             ->getMockForAbstractClass();
 
           $schema->expects($this->any())

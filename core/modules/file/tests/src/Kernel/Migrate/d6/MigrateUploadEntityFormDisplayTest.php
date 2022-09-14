@@ -15,12 +15,12 @@ class MigrateUploadEntityFormDisplayTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['menu_ui'];
+  public static $modules = ['menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->migrateFields();
   }
@@ -33,18 +33,18 @@ class MigrateUploadEntityFormDisplayTest extends MigrateDrupal6TestBase {
 
     $display = EntityFormDisplay::load('node.page.default');
     $component = $display->getComponent('upload');
-    $this->assertSame('file_generic', $component['type']);
+    $this->assertIdentical('file_generic', $component['type']);
 
     $display = EntityFormDisplay::load('node.story.default');
     $component = $display->getComponent('upload');
-    $this->assertSame('file_generic', $component['type']);
+    $this->assertIdentical('file_generic', $component['type']);
 
     // Assure this doesn't exist.
     $display = EntityFormDisplay::load('node.article.default');
     $component = $display->getComponent('upload');
-    $this->assertNull($component);
+    $this->assertTrue(is_null($component));
 
-    $this->assertSame([['node', 'page', 'default', 'upload']], $this->getMigration('d6_upload_entity_form_display')->getIdMap()->lookupDestinationIds(['page']));
+    $this->assertIdentical([['node', 'page', 'default', 'upload']], $this->getMigration('d6_upload_entity_form_display')->getIdMap()->lookupDestinationIds(['page']));
   }
 
   /**

@@ -16,7 +16,7 @@ class ColorTest extends MigrateSqlSourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['color', 'migrate_drupal'];
+  public static $modules = ['color', 'migrate_drupal'];
 
   /**
    * {@inheritdoc}
@@ -61,7 +61,6 @@ class ColorTest extends MigrateSqlSourceTestBase {
       ],
       [
         'name' => 'color_custom_stylesheets',
-        // cspell:ignore beadedff
         'value' => ['public:://color/custom-beadedff/colors.css'],
       ],
     ];

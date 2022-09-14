@@ -48,7 +48,7 @@ trait EntityFieldDefinitionTrait {
   protected static function getEntityTypeId($plugin_id) {
     $entity_type_id = NULL;
     if (strpos($plugin_id, static::DERIVATIVE_SEPARATOR)) {
-      [, $entity_type_id] = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 2);
+      list(, $entity_type_id) = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 2);
     }
     return $entity_type_id;
   }

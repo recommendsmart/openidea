@@ -74,8 +74,6 @@ class ResolvedLibraryDefinitionsFilesMatchTest extends KernelTestBase {
   protected $librariesToSkip = [
     // Locale has a "dummy" library that does not actually exist.
     'locale/translations',
-    // Core has a "dummy" library that does not actually exist.
-    'core/ckeditor5.translations',
   ];
 
   /**
@@ -88,12 +86,12 @@ class ResolvedLibraryDefinitionsFilesMatchTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'user', 'path_alias'];
+  public static $modules = ['system', 'user', 'path_alias'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Install all core themes.
@@ -127,10 +125,6 @@ class ResolvedLibraryDefinitionsFilesMatchTest extends KernelTestBase {
     $this->allModules[] = 'system';
     $this->allModules[] = 'user';
     $this->allModules[] = 'path_alias';
-    $database_module = \Drupal::database()->getProvider();
-    if ($database_module !== 'core') {
-      $this->allModules[] = $database_module;
-    }
     sort($this->allModules);
     $this->container->get('module_installer')->install($this->allModules);
 
@@ -179,7 +173,7 @@ class ResolvedLibraryDefinitionsFilesMatchTest extends KernelTestBase {
             $path = $this->root . '/' . $file;
             // Only check and assert each file path once.
             if (!isset($this->pathsChecked[$path])) {
-              $this->assertFileExists($path, "$file file referenced from the $extension/$library_name library does not exist.");
+              $this->assertTrue(is_file($path), "$file file referenced from the $extension/$library_name library exists.");
               $this->pathsChecked[$path] = TRUE;
             }
           }
@@ -198,13 +192,13 @@ class ResolvedLibraryDefinitionsFilesMatchTest extends KernelTestBase {
     $extensions = $modules;
     $module_list = array_keys($modules);
     sort($module_list);
-    $this->assertEquals($this->allModules, $module_list, 'All core modules are installed.');
+    $this->assertEqual($this->allModules, $module_list, 'All core modules are installed.');
 
     $themes = $this->themeHandler->listInfo();
     $extensions += $themes;
     $theme_list = array_keys($themes);
     sort($theme_list);
-    $this->assertEquals($this->allThemes, $theme_list, 'All core themes are installed.');
+    $this->assertEqual($this->allThemes, $theme_list, 'All core themes are installed.');
 
     $libraries['core'] = $this->libraryDiscovery->getLibrariesByExtension('core');
 

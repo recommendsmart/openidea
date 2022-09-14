@@ -16,7 +16,7 @@ class HandleMultiplesTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate'];
+  public static $modules = ['migrate'];
 
   /**
    * Provides the test migration definition.
@@ -85,9 +85,7 @@ class HandleMultiplesTest extends KernelTestBase {
    * @dataProvider scalarAndMultipleValuesProviderSource
    *
    * @param array $source_data
-   *   The source data.
    * @param array $expected_data
-   *   The expected results.
    */
   public function testScalarAndMultipleValues(array $source_data, array $expected_data) {
     $definition = $this->getDefinition();

@@ -18,14 +18,9 @@ class Link implements RenderableInterface {
   protected $linkGenerator;
 
   /**
-   * The link text for the anchor tag as a translated string or render array.
+   * The text of the link.
    *
-   * Strings will be sanitized automatically. If you need to output HTML in
-   * the link text, use a render array or an already sanitized string such as
-   * the output of \Drupal\Component\Utility\Xss::filter() or
-   * \Drupal\Component\Render\FormattableMarkup.
-   *
-   * @var string|array|\Drupal\Component\Render\MarkupInterface
+   * @var string
    */
   protected $text;
 
@@ -39,12 +34,8 @@ class Link implements RenderableInterface {
   /**
    * Constructs a new Link object.
    *
-   * @param string|array|\Drupal\Component\Render\MarkupInterface $text
-   *   The link text for the anchor tag as a translated string or render array.
-   *   Strings will be sanitized automatically. If you need to output HTML in
-   *   the link text, use a render array or an already sanitized string such as
-   *   the output of \Drupal\Component\Utility\Xss::filter() or
-   *   \Drupal\Component\Render\FormattableMarkup.
+   * @param string $text
+   *   The text of the link.
    * @param \Drupal\Core\Url $url
    *   The url object.
    */
@@ -56,12 +47,8 @@ class Link implements RenderableInterface {
   /**
    * Creates a Link object from a given route name and parameters.
    *
-   * @param string|array|\Drupal\Component\Render\MarkupInterface $text
-   *   The link text for the anchor tag as a translated string or render array.
-   *   Strings will be sanitized automatically. If you need to output HTML in
-   *   the link text, use a render array or an already sanitized string such as
-   *   the output of \Drupal\Component\Utility\Xss::filter() or
-   *   \Drupal\Component\Render\FormattableMarkup.
+   * @param string $text
+   *   The text of the link.
    * @param string $route_name
    *   The name of the route
    * @param array $route_parameters
@@ -79,12 +66,8 @@ class Link implements RenderableInterface {
   /**
    * Creates a Link object from a given Url object.
    *
-   * @param string|array|\Drupal\Component\Render\MarkupInterface $text
-   *   The link text for the anchor tag as a translated string or render array.
-   *   Strings will be sanitized automatically. If you need to output HTML in
-   *   the link text, use a render array or an already sanitized string such as
-   *   the output of \Drupal\Component\Utility\Xss::filter() or
-   *   \Drupal\Component\Render\FormattableMarkup.
+   * @param string $text
+   *   The text of the link.
    * @param \Drupal\Core\Url $url
    *   The Url to create the link for.
    *
@@ -97,12 +80,7 @@ class Link implements RenderableInterface {
   /**
    * Returns the text of the link.
    *
-   * @return string|array|\Drupal\Component\Render\MarkupInterface
-   *   The link text for the anchor tag as a translated string or render array.
-   *   Strings will be sanitized automatically. If you need to output HTML in
-   *   the link text, use a render array or an already sanitized string such as
-   *   the output of \Drupal\Component\Utility\Xss::filter() or
-   *   \Drupal\Component\Render\FormattableMarkup.
+   * @return string
    */
   public function getText() {
     return $this->text;
@@ -111,12 +89,8 @@ class Link implements RenderableInterface {
   /**
    * Sets the new text of the link.
    *
-   * @param string|array|\Drupal\Component\Render\MarkupInterface $text
-   *   The link text for the anchor tag as a translated string or render array.
-   *   Strings will be sanitized automatically. If you need to output HTML in
-   *   the link text, use a render array or an already sanitized string such as
-   *   the output of \Drupal\Component\Utility\Xss::filter() or
-   *   \Drupal\Component\Render\FormattableMarkup.
+   * @param string $text
+   *   The new text.
    *
    * @return $this
    */

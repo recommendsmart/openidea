@@ -5,7 +5,8 @@ namespace Drupal\Tests\Core\EventSubscriber;
 use Drupal\Core\EventSubscriber\SpecialAttributesRouteSubscriber;
 use Drupal\Core\Routing\RouteBuildEvent;
 use Drupal\Tests\UnitTestCase;
-use Drupal\Core\Routing\RouteObjectInterface;
+use PHPUnit\Framework\Error\Warning;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -98,8 +99,8 @@ class SpecialAttributesRouteSubscriberTest extends UnitTestCase {
 
     $event = new RouteBuildEvent($route_collection, 'test');
     $subscriber = new SpecialAttributesRouteSubscriber();
-    $this->expectWarning();
-    $this->expectWarningMessage('uses reserved variable names');
+    $this->expectException(Warning::class);
+    $this->expectExceptionMessage('uses reserved variable names');
     $subscriber->onAlterRoutes($event);
   }
 

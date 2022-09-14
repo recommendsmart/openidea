@@ -60,7 +60,7 @@ abstract class ConfigFormTestBase extends KernelTestBase {
     $this->assertTrue($valid_form, new FormattableMarkup('Input values: %values<br/>Validation handler errors: %errors', $args));
 
     foreach ($this->values as $data) {
-      $this->assertEquals($this->config($data['#config_name'])->get($data['#config_key']), $data['#value']);
+      $this->assertEqual($data['#value'], $this->config($data['#config_name'])->get($data['#config_key']));
     }
   }
 

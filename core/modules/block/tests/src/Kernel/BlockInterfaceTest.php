@@ -13,10 +13,10 @@ use Drupal\KernelTests\KernelTestBase;
  */
 class BlockInterfaceTest extends KernelTestBase {
 
-  protected static $modules = ['system', 'block', 'block_test', 'user'];
+  public static $modules = ['system', 'block', 'block_test', 'user'];
 
   /**
-   * Tests configuration and subsequent form() and build() method calls.
+   * Test configuration and subsequent form() and build() method calls.
    *
    * This test is attempting to test the existing block plugin api and all
    * functionality that is expected to remain consistent. The arrays that are
@@ -37,19 +37,19 @@ class BlockInterfaceTest extends KernelTestBase {
     $expected_configuration = [
       'id' => 'test_block_instantiation',
       'label' => 'Custom Display Message',
-      'label_display' => BlockPluginInterface::BLOCK_LABEL_VISIBLE,
       'provider' => 'block_test',
+      'label_display' => BlockPluginInterface::BLOCK_LABEL_VISIBLE,
       'display_message' => 'no message set',
     ];
     // Initial configuration of the block at construction time.
-    /** @var \Drupal\Core\Block\BlockPluginInterface $display_block */
+    /** @var $display_block \Drupal\Core\Block\BlockPluginInterface */
     $display_block = $manager->createInstance('test_block_instantiation', $configuration);
-    $this->assertSame($expected_configuration, $display_block->getConfiguration(), 'The block was configured correctly.');
+    $this->assertIdentical($display_block->getConfiguration(), $expected_configuration, 'The block was configured correctly.');
 
     // Updating an element of the configuration.
     $display_block->setConfigurationValue('display_message', 'My custom display message.');
     $expected_configuration['display_message'] = 'My custom display message.';
-    $this->assertSame($expected_configuration, $display_block->getConfiguration(), 'The block configuration was updated correctly.');
+    $this->assertIdentical($display_block->getConfiguration(), $expected_configuration, 'The block configuration was updated correctly.');
     $definition = $display_block->getPluginDefinition();
 
     $expected_form = [
@@ -59,7 +59,7 @@ class BlockInterfaceTest extends KernelTestBase {
       ],
       'admin_label' => [
         '#type' => 'item',
-        '#title' => 'Block description',
+        '#title' => t('Block description'),
         '#plain_text' => $definition['admin_label'],
       ],
       'label' => [
@@ -78,7 +78,7 @@ class BlockInterfaceTest extends KernelTestBase {
       'context_mapping' => [],
       'display_message' => [
         '#type' => 'textfield',
-        '#title' => 'Display message',
+        '#title' => t('Display message'),
         '#default_value' => 'My custom display message.',
       ],
     ];
@@ -87,17 +87,17 @@ class BlockInterfaceTest extends KernelTestBase {
     $actual_form = $display_block->buildConfigurationForm([], $form_state);
     // Remove the visibility sections, as that just tests condition plugins.
     unset($actual_form['visibility'], $actual_form['visibility_tabs']);
-    $this->assertEquals($expected_form, $actual_form, 'Only the expected form elements were present.');
+    $this->assertIdentical($this->castSafeStrings($actual_form), $this->castSafeStrings($expected_form), 'Only the expected form elements were present.');
 
     $expected_build = [
       '#children' => 'My custom display message.',
     ];
     // Ensure the build array is proper.
-    $this->assertSame($expected_build, $display_block->build(), 'The plugin returned the appropriate build array.');
+    $this->assertIdentical($display_block->build(), $expected_build, 'The plugin returned the appropriate build array.');
 
     // Ensure the machine name suggestion is correct. In truth, this is actually
     // testing BlockBase's implementation, not the interface itself.
-    $this->assertSame('displaymessage', $display_block->getMachineNameSuggestion(), 'The plugin returned the expected machine name suggestion.');
+    $this->assertIdentical($display_block->getMachineNameSuggestion(), 'displaymessage', 'The plugin returned the expected machine name suggestion.');
   }
 
 }

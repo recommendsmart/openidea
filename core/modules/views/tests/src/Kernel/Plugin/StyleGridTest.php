@@ -50,10 +50,8 @@ class StyleGridTest extends PluginKernelTestBase {
    *   The alignment of the grid to test.
    * @param int $columns
    *   The number of columns in the grid to test.
-   *
-   * @internal
    */
-  protected function assertGrid(ViewExecutable $view, string $alignment, int $columns): void {
+  protected function assertGrid(ViewExecutable $view, $alignment, $columns) {
     $view->setDisplay('default');
     $view->initStyle();
     $view->initHandlers();
@@ -73,16 +71,12 @@ class StyleGridTest extends PluginKernelTestBase {
     switch ($columns) {
       case 5: $width = '20';
         break;
-
       case 4: $width = '25';
         break;
-
       case 3: $width = '33.3333';
         break;
-
       case 2: $width = '50';
         break;
-
       case 1: $width = '100';
         break;
     }

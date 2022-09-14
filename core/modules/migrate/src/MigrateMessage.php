@@ -23,7 +23,7 @@ class MigrateMessage implements MigrateMessageInterface {
    * {@inheritdoc}
    */
   public function display($message, $type = 'status') {
-    $type = $this->map[$type] ?? RfcLogLevel::NOTICE;
+    $type = isset($this->map[$type]) ? $this->map[$type] : RfcLogLevel::NOTICE;
     \Drupal::logger('migrate')->log($type, $message);
   }
 

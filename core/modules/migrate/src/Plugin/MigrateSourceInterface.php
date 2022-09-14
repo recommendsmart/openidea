@@ -18,11 +18,6 @@ use Drupal\migrate\Row;
 interface MigrateSourceInterface extends \Countable, \Iterator, PluginInspectionInterface {
 
   /**
-   * Indicates that the source is not countable.
-   */
-  const NOT_COUNTABLE = -1;
-
-  /**
    * Returns available fields on the source.
    *
    * @return array

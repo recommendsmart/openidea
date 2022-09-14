@@ -2,7 +2,6 @@
 
 namespace Drupal\KernelTests\Core\Theme;
 
-use Drupal\Core\Extension\ExtensionLifecycle;
 use Drupal\Core\Theme\Registry;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -16,7 +15,7 @@ class StableTemplateOverrideTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'user'];
+  public static $modules = ['system', 'user'];
 
   /**
    * An array of template names to skip, without the extension.
@@ -44,7 +43,7 @@ class StableTemplateOverrideTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->themeHandler = $this->container->get('theme_handler');
 
@@ -62,7 +61,7 @@ class StableTemplateOverrideTest extends KernelTestBase {
     $all_modules = array_filter($all_modules, function ($module) {
       // Filter contrib, hidden, experimental, already enabled modules, and
       // modules in the Testing package.
-      if ($module->origin !== 'core' || !empty($module->info['hidden']) || $module->status == TRUE || $module->info['package'] == 'Testing' || $module->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER] === ExtensionLifecycle::EXPERIMENTAL) {
+      if ($module->origin !== 'core' || !empty($module->info['hidden']) || $module->status == TRUE || $module->info['package'] == 'Testing' || $module->info['package'] == 'Core (Experimental)') {
         return FALSE;
       }
       return TRUE;
@@ -80,7 +79,7 @@ class StableTemplateOverrideTest extends KernelTestBase {
    * Ensures that Stable overrides all relevant core templates.
    */
   public function testStableTemplateOverrides() {
-    $registry = new Registry($this->root, \Drupal::cache(), \Drupal::lock(), \Drupal::moduleHandler(), $this->themeHandler, \Drupal::service('theme.initialization'), 'stable', NULL, \Drupal::service('extension.list.module'));
+    $registry = new Registry($this->root, \Drupal::cache(), \Drupal::lock(), \Drupal::moduleHandler(), $this->themeHandler, \Drupal::service('theme.initialization'), 'stable');
     $registry->setThemeManager(\Drupal::theme());
 
     $registry_full = $registry->get();

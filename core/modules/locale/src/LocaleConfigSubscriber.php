@@ -48,13 +48,6 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
   protected $localeConfigManager;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a LocaleConfigSubscriber.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -122,7 +115,7 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
    *   override. This allows us to update locale keys for data not in the
    *   override but still in the active configuration.
    */
-  public function updateLocaleStorage(StorableConfigBase $config, $langcode, array $reference_config = []) {
+  protected function updateLocaleStorage(StorableConfigBase $config, $langcode, array $reference_config = []) {
     $name = $config->getName();
     if ($this->localeConfigManager->isSupported($name) && locale_is_translatable($langcode)) {
       $translatables = $this->localeConfigManager->getTranslatableDefaultConfig($name);
@@ -156,7 +149,7 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
         continue;
       }
       if (is_array($item)) {
-        $reference_config_item = $reference_config[$key] ?? [];
+        $reference_config_item = isset($reference_config[$key]) ? $reference_config[$key] : [];
         $this->processTranslatableData($name, $config[$key], $item, $langcode, $reference_config_item);
       }
       else {
@@ -216,11 +209,6 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
   protected function saveCustomizedTranslation($name, $source, $context, $new_translation, $langcode) {
     $locale_translation = $this->localeConfigManager->getStringTranslation($name, $langcode, $source, $context);
     if (!empty($locale_translation)) {
-      // If this code is triggered during installation never set the translation
-      // to the source string.
-      if (InstallerKernel::installationAttempted() && $source === $new_translation) {
-        return;
-      }
       // Save this translation as custom if it was a new translation and not the
       // same as the source. (The interface prefills translation values with the
       // source). Or if there was an existing (non-empty) translation and the

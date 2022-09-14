@@ -14,7 +14,7 @@ class UserFieldsAccessChangeTest extends UserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['user_access_test'];
+  public static $modules = ['user_access_test'];
 
   /**
    * {@inheritdoc}
@@ -35,13 +35,13 @@ class UserFieldsAccessChangeTest extends UserTestBase {
     $this->drupalGet('test_user_fields_access');
 
     // User has access to name and created date by default.
-    $this->assertSession()->pageTextContains('Name');
-    $this->assertSession()->pageTextContains('Created');
+    $this->assertText(t('Name'));
+    $this->assertText(t('Created'));
 
     // User does not by default have access to init, mail and status.
-    $this->assertSession()->pageTextNotContains('Init');
-    $this->assertSession()->pageTextNotContains('Email');
-    $this->assertSession()->pageTextNotContains('Status');
+    $this->assertNoText(t('Init'));
+    $this->assertNoText(t('Email'));
+    $this->assertNoText(t('Status'));
 
     // Assign sub-admin role to grant extra access.
     $user = $this->drupalCreateUser(['sub-admin']);
@@ -49,9 +49,9 @@ class UserFieldsAccessChangeTest extends UserTestBase {
     $this->drupalGet('test_user_fields_access');
 
     // Access for init, mail and status is added in hook_entity_field_access().
-    $this->assertSession()->pageTextContains('Init');
-    $this->assertSession()->pageTextContains('Email');
-    $this->assertSession()->pageTextContains('Status');
+    $this->assertText(t('Init'));
+    $this->assertText(t('Email'));
+    $this->assertText(t('Status'));
   }
 
   /**
@@ -70,16 +70,16 @@ class UserFieldsAccessChangeTest extends UserTestBase {
 
     // No access, so no link.
     $this->drupalGet('test_user_fields_access');
-    $this->assertSession()->pageTextContains($test_user->getAccountName());
+    $this->assertText($test_user->getAccountName(), 'Found user in view');
     $result = $this->xpath($xpath);
-    $this->assertCount(0, $result, 'User is not a link');
+    $this->assertEqual(0, count($result), 'User is not a link');
 
     // Assign sub-admin role to grant extra access.
     $user = $this->drupalCreateUser(['sub-admin']);
     $this->drupalLogin($user);
     $this->drupalGet('test_user_fields_access');
     $result = $this->xpath($xpath);
-    $this->assertCount(1, $result, 'User is a link');
+    $this->assertEqual(1, count($result), 'User is a link');
   }
 
 }

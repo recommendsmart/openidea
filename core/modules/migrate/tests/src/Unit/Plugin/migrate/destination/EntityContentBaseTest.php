@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\Tests\migrate\Unit\Plugin\migrate\destination\EntityContentBaseTest.
+ * Contains \Drupal\Tests\migrate\Unit\Plugin\migrate\destination\EntityContentBaseTest
  */
 
 namespace Drupal\Tests\migrate\Unit\Plugin\migrate\destination;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
-use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\Plugin\migrate\destination\EntityContentBase;
 use Drupal\migrate\Plugin\MigrateIdMapInterface;
@@ -24,7 +23,7 @@ use Drupal\migrate\Row;
 class EntityContentBaseTest extends EntityTestBase {
 
   /**
-   * Tests basic entity save.
+   * Test basic entity save.
    *
    * @covers ::import
    */
@@ -35,9 +34,7 @@ class EntityContentBaseTest extends EntityTestBase {
       $this->storage->reveal(),
       $bundles,
       $this->entityFieldManager->reveal(),
-      $this->prophesize(FieldTypePluginManagerInterface::class)->reveal(),
-      $this->prophesize(AccountSwitcherInterface::class)->reveal()
-    );
+      $this->prophesize(FieldTypePluginManagerInterface::class)->reveal());
     $entity = $this->prophesize(ContentEntityInterface::class);
     $entity->isValidationRequired()
       ->shouldBeCalledTimes(1);
@@ -55,7 +52,7 @@ class EntityContentBaseTest extends EntityTestBase {
   }
 
   /**
-   * Tests row skipping when we can't get an entity to save.
+   * Test row skipping when we can't get an entity to save.
    *
    * @covers ::import
    */
@@ -66,9 +63,7 @@ class EntityContentBaseTest extends EntityTestBase {
       $this->storage->reveal(),
       $bundles,
       $this->entityFieldManager->reveal(),
-      $this->prophesize(FieldTypePluginManagerInterface::class)->reveal(),
-      $this->prophesize(AccountSwitcherInterface::class)->reveal()
-    );
+      $this->prophesize(FieldTypePluginManagerInterface::class)->reveal());
     $destination->setEntity(FALSE);
     $this->expectException(MigrateException::class);
     $this->expectExceptionMessage('Unable to get entity');
@@ -76,7 +71,7 @@ class EntityContentBaseTest extends EntityTestBase {
   }
 
   /**
-   * Tests that translation destination fails for untranslatable entities.
+   * Test that translation destination fails for untranslatable entities.
    */
   public function testUntranslatable() {
     // An entity type without a language.
@@ -93,8 +88,7 @@ class EntityContentBaseTest extends EntityTestBase {
       $this->storage->reveal(),
       [],
       $this->entityFieldManager->reveal(),
-      $this->prophesize(FieldTypePluginManagerInterface::class)->reveal(),
-      $this->prophesize(AccountSwitcherInterface::class)->reveal()
+      $this->prophesize(FieldTypePluginManagerInterface::class)->reveal()
     );
     $this->expectException(MigrateException::class);
     $this->expectExceptionMessage('The "foo" entity type does not support translations.');

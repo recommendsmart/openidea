@@ -44,7 +44,7 @@ class RdfMappingConfigEntityUnitTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityTypeId = $this->randomMachineName();
 
     $this->entityType = $this->createMock('\Drupal\Core\Entity\EntityTypeInterface');
@@ -81,13 +81,18 @@ class RdfMappingConfigEntityUnitTest extends UnitTestCase {
       ->method('getBundleConfigDependency')
       ->will($this->returnValue(['type' => 'module', 'name' => 'test_module']));
 
-    $this->entityTypeManager->expects($this->any())
+    $this->entityTypeManager->expects($this->at(0))
       ->method('getDefinition')
-      ->willReturnMap([
-        [$target_entity_type_id, TRUE, $target_entity_type],
-        [$this->entityTypeId, TRUE, $this->entityType],
-      ]);
-
+      ->with($target_entity_type_id)
+      ->will($this->returnValue($target_entity_type));
+    $this->entityTypeManager->expects($this->at(1))
+      ->method('getDefinition')
+      ->with($this->entityTypeId)
+      ->will($this->returnValue($this->entityType));
+    $this->entityTypeManager->expects($this->at(2))
+      ->method('getDefinition')
+      ->with($this->entityTypeId)
+      ->will($this->returnValue($this->entityType));
     $entity = new RdfMapping($values, $this->entityTypeId);
     $dependencies = $entity->calculateDependencies()->getDependencies();
     $this->assertArrayNotHasKey('config', $dependencies);
@@ -110,12 +115,14 @@ class RdfMappingConfigEntityUnitTest extends UnitTestCase {
       ->method('getBundleConfigDependency')
       ->will($this->returnValue(['type' => 'config', 'name' => 'test_module.type.' . $bundle_id]));
 
-    $this->entityTypeManager->expects($this->any())
+    $this->entityTypeManager->expects($this->at(0))
       ->method('getDefinition')
-      ->willReturnMap([
-        [$target_entity_type_id, TRUE, $target_entity_type],
-        [$this->entityTypeId, TRUE, $this->entityType],
-      ]);
+      ->with($target_entity_type_id)
+      ->will($this->returnValue($target_entity_type));
+    $this->entityTypeManager->expects($this->at(1))
+      ->method('getDefinition')
+      ->with($this->entityTypeId)
+      ->will($this->returnValue($this->entityType));
 
     $entity = new RdfMapping($values, $this->entityTypeId);
     $dependencies = $entity->calculateDependencies()->getDependencies();

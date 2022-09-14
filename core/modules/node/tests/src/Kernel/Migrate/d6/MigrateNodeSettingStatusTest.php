@@ -10,12 +10,12 @@ use Drupal\Tests\migrate_drupal\Kernel\d6\MigrateDrupal6TestBase;
  */
 class MigrateNodeSettingStatusTest extends MigrateDrupal6TestBase {
 
-  protected static $modules = ['node', 'text', 'menu_ui'];
+  public static $modules = ['node', 'text', 'menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['node']);
     $this->executeMigration('d6_node_type');
@@ -26,7 +26,7 @@ class MigrateNodeSettingStatusTest extends MigrateDrupal6TestBase {
    * Tests migration of the publishing status checkbox's settings.
    */
   public function testMigration() {
-    $this->assertSame('Publishing status', BaseFieldOverride::load('node.article.status')->label());
+    $this->assertIdentical('Publishing status', BaseFieldOverride::load('node.article.status')->label());
   }
 
 }

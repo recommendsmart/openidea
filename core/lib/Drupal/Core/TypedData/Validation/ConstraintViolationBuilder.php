@@ -2,9 +2,6 @@
 
 namespace Drupal\Core\TypedData\Validation;
 
-// phpcs:ignoreFile Portions of this file are a direct copy of
-// \Symfony\Component\Validator\Violation\ConstraintViolationBuilder.
-
 use Drupal\Core\Validation\TranslatorInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -17,6 +14,7 @@ use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
  *
  * We do not use the builder provided by Symfony as it is marked internal.
  *
+ * @codingStandardsIgnoreStart
  */
 class ConstraintViolationBuilder implements ConstraintViolationBuilderInterface {
 

@@ -2,7 +2,7 @@
 
 namespace Drupal\Core\Routing;
 
-use Drupal\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Routing\RouteCollection;
 
 /**

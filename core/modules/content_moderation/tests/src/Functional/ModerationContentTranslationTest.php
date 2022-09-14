@@ -26,7 +26,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'locale',
     'content_translation',
@@ -40,7 +40,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->drupalLogin($this->rootUser);
     // Create an Article content type.
@@ -48,8 +48,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
     $edit = [
       'predefined_langcode' => 'fr',
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, 'Add language');
     // Enable content translation on articles.
     $this->drupalGet('admin/config/regional/content-language');
     $edit = [
@@ -57,7 +56,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
       'settings[node][article][translatable]' => TRUE,
       'settings[node][article][settings][language][language_alterable]' => TRUE,
     ];
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm(NULL, $edit, 'Save configuration');
     // Adding languages requires a container rebuild in the test running
     // environment so that multilingual services are used.
     $this->rebuildContainer();
@@ -72,8 +71,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
       'title[0][value]' => 'Published English node',
       'langcode[0][value]' => 'en',
     ];
-    $this->drupalGet('node/add/article');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('node/add/article', $edit, 'Save');
     $this->assertSession()->pageTextContains('Article Published English node has been created.');
     $english_node = $this->drupalGetNodeByTitle('Published English node');
 
@@ -83,7 +81,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
     $edit = [
       'title[0][value]' => 'Published French node',
     ];
-    $this->submitForm($edit, 'Save (this translation)');
+    $this->drupalPostForm(NULL, $edit, 'Save (this translation)');
     $this->assertSession()->pageTextContains('Article Published French node has been updated.');
 
     // Install content moderation and enable moderation on Article node type.
@@ -99,7 +97,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
     $edit = [
       'title[0][value]' => 'Published English new node',
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, 'Save');
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('Article Published English new node has been updated.');
     // Edit the French translation.
@@ -108,7 +106,7 @@ class ModerationContentTranslationTest extends BrowserTestBase {
     $edit = [
       'title[0][value]' => 'Published French new node',
     ];
-    $this->submitForm($edit, 'Save (this translation)');
+    $this->drupalPostForm(NULL, $edit, 'Save (this translation)');
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('Article Published French new node has been updated.');
   }

@@ -127,8 +127,9 @@ class LanguageNegotiationSession extends LanguageNegotiationMethodBase implement
     $links = [];
     $config = $this->config->get('language.negotiation')->get('session');
     $param = $config['parameter'];
-    $language_query = $_SESSION[$param] ?? $this->languageManager->getCurrentLanguage($type)->getId();
-    $query = $request->query->all();
+    $language_query = isset($_SESSION[$param]) ? $_SESSION[$param] : $this->languageManager->getCurrentLanguage($type)->getId();
+    $query = [];
+    parse_str($request->getQueryString(), $query);
 
     foreach ($this->languageManager->getNativeLanguages() as $language) {
       $langcode = $language->getId();

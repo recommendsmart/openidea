@@ -33,7 +33,7 @@ abstract class JsonApiFunctionalTestBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'jsonapi',
     'serialization',
     'node',
@@ -191,7 +191,7 @@ abstract class JsonApiFunctionalTestBase extends BrowserTestBase {
       'administer taxonomy',
     ]);
 
-    \Drupal::service('router.builder')->rebuild();
+    drupal_flush_all_caches();
   }
 
   /**
@@ -286,7 +286,7 @@ abstract class JsonApiFunctionalTestBase extends BrowserTestBase {
       }
       if ($article_has_image) {
         $file = File::create([
-          'uri' => 'public://' . $random->name() . '.png',
+          'uri' => 'vfs://' . $random->name() . '.png',
         ]);
         $file->setPermanent();
         $file->save();

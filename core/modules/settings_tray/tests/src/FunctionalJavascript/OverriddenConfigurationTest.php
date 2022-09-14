@@ -16,7 +16,7 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'settings_tray_override_test',
     'menu_ui',
     'menu_link_content',
@@ -30,7 +30,7 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $user = $this->createUser([
@@ -42,7 +42,7 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
   }
 
   /**
-   * Tests blocks with overridden related configuration removed when overridden.
+   * Test  blocks with overridden related configuration removed when overridden.
    */
   public function testOverriddenConfigurationRemoved() {
     $web_assert = $this->assertSession();
@@ -156,10 +156,8 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
    *   The overridden block.
    * @param string $override_text
    *   The override text that should appear in the block.
-   *
-   * @internal
    */
-  protected function assertOverriddenBlockDisabled(Block $overridden_block, string $override_text): void {
+  protected function assertOverriddenBlockDisabled(Block $overridden_block, $override_text) {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
     $block_selector = $this->getBlockSelector($overridden_block);
@@ -168,7 +166,7 @@ class OverriddenConfigurationTest extends SettingsTrayTestBase {
     $contextual_links = $page->findAll('css', "$block_selector .contextual-links li a");
     $this->assertNotEmpty($contextual_links);
     foreach ($contextual_links as $link) {
-      $this->assertStringNotContainsString("/admin/structure/block/manage/$block_id/off-canvas", $link->getAttribute('href'));
+      $this->assertNotContains("/admin/structure/block/manage/$block_id/off-canvas", $link->getAttribute('href'));
     }
     // Confirm the block is not marked as Settings Tray editable.
     $this->assertFalse($page->find('css', $block_selector)

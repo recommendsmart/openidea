@@ -30,7 +30,7 @@ class ContentTranslationManageAccessCheckTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->cacheContextsManager = $this->getMockBuilder('Drupal\Core\Cache\Context\CacheContextsManager')
@@ -67,15 +67,21 @@ class ContentTranslationManageAccessCheckTest extends UnitTestCase {
 
     // Set the mock language manager.
     $language_manager = $this->createMock('Drupal\Core\Language\LanguageManagerInterface');
-    $language_manager->expects($this->once())
-      ->method('getLanguages')
-      ->willReturn([$source => [], $target => []]);
-    $language_manager->expects($this->any())
+    $language_manager->expects($this->at(0))
       ->method('getLanguage')
-      ->willReturnMap([
-        [$source, new Language(['id' => $source])],
-        [$target, new Language(['id' => $target])],
-      ]);
+      ->with($this->equalTo($source))
+      ->will($this->returnValue(new Language(['id' => 'en'])));
+    $language_manager->expects($this->at(1))
+      ->method('getLanguages')
+      ->will($this->returnValue(['en' => [], 'it' => []]));
+    $language_manager->expects($this->at(2))
+      ->method('getLanguage')
+      ->with($this->equalTo($source))
+      ->will($this->returnValue(new Language(['id' => 'en'])));
+    $language_manager->expects($this->at(3))
+      ->method('getLanguage')
+      ->with($this->equalTo($target))
+      ->will($this->returnValue(new Language(['id' => 'it'])));
 
     // Set the mock entity. We need to use ContentEntityBase for mocking due to
     // issues with phpunit and multiple interfaces.

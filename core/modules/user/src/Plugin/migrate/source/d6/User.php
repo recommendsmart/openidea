@@ -8,11 +8,6 @@ use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 /**
  * Drupal 6 user source from database.
  *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
- *
  * @MigrateSource(
  *   id = "d6_user",
  *   source_module = "user"
@@ -69,10 +64,7 @@ class User extends DrupalSqlBase {
     }
 
     // Unserialize Data.
-    $data = $row->getSourceProperty('data');
-    if ($data !== NULL) {
-      $row->setSourceProperty('data', unserialize($row->getSourceProperty('data')));
-    }
+    $row->setSourceProperty('data', unserialize($row->getSourceProperty('data')));
 
     return parent::prepareRow($row);
   }

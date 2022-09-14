@@ -14,7 +14,7 @@ class EntityBundleFieldTest extends EntityKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['entity_schema_test', 'entity_test_update'];
+  public static $modules = ['entity_schema_test', 'entity_test_update'];
 
   /**
    * The module handler.
@@ -33,7 +33,7 @@ class EntityBundleFieldTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installSchema('user', ['users_data']);
     $this->installEntitySchema('entity_test_update');
@@ -64,19 +64,19 @@ class EntityBundleFieldTest extends EntityKernelTestBase {
 
     // Ensure that the field exists in the field map.
     $field_map = \Drupal::service('entity_field.manager')->getFieldMap();
-    $this->assertEquals(['type' => 'string', 'bundles' => ['custom' => 'custom']], $field_map['entity_test_update']['custom_bundle_field']);
+    $this->assertEqual($field_map['entity_test_update']['custom_bundle_field'], ['type' => 'string', 'bundles' => ['custom' => 'custom']]);
 
     $entity->custom_bundle_field->value = 'swanky';
     $entity->save();
     $storage->resetCache();
     $entity = $storage->load($entity->id());
-    $this->assertEquals('swanky', $entity->custom_bundle_field->value, 'Entity was saved correctly');
+    $this->assertEqual($entity->custom_bundle_field->value, 'swanky', 'Entity was saved correctly');
 
     $entity->custom_bundle_field->value = 'cozy';
     $entity->save();
     $storage->resetCache();
     $entity = $storage->load($entity->id());
-    $this->assertEquals('cozy', $entity->custom_bundle_field->value, 'Entity was updated correctly.');
+    $this->assertEqual($entity->custom_bundle_field->value, 'cozy', 'Entity was updated correctly.');
 
     $entity->delete();
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
@@ -100,7 +100,7 @@ class EntityBundleFieldTest extends EntityKernelTestBase {
       ->condition('deleted', 1)
       ->countQuery()
       ->execute();
-    $this->assertEquals(1, $result->fetchField(), 'Field data has been deleted');
+    $this->assertEqual(1, $result->fetchField(), 'Field data has been deleted');
 
     // Ensure that the field no longer exists in the field map.
     $field_map = \Drupal::service('entity_field.manager')->getFieldMap();

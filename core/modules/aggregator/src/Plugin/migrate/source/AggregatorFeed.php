@@ -5,12 +5,7 @@ namespace Drupal\aggregator\Plugin\migrate\source;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 
 /**
- * Drupal 6/7 feed source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Drupal feed source from database.
  *
  * @MigrateSource(
  *   id = "aggregator_feed",

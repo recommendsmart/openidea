@@ -5,12 +5,7 @@ namespace Drupal\taxonomy\Plugin\migrate\source\d6;
 use Drupal\migrate\Row;
 
 /**
- * Drupal 6 vocabularies with associated node types source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Gets all the vocabularies based on the node types that have Taxonomy enabled.
  *
  * @MigrateSource(
  *   id = "d6_taxonomy_vocabulary_per_type",
@@ -24,7 +19,7 @@ class VocabularyPerType extends Vocabulary {
    */
   public function query() {
     $query = parent::query();
-    $query->join('vocabulary_node_types', 'nt', '[v].[vid] = [nt].[vid]');
+    $query->join('vocabulary_node_types', 'nt', 'v.vid = nt.vid');
     $query->fields('nt', ['type']);
     return $query;
   }

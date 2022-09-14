@@ -2,8 +2,6 @@
 
 namespace Drupal\KernelTests\Core\Database;
 
-use Drupal\Core\Database\Query\SelectExtender;
-
 /**
  * Tests the tagging capabilities of the Select builder.
  *
@@ -62,7 +60,7 @@ class TaggingTest extends DatabaseTestBase {
    */
   public function testExtenderHasTag() {
     $query = $this->connection->select('test')
-      ->extend(SelectExtender::class);
+      ->extend('Drupal\Core\Database\Query\SelectExtender');
     $query->addField('test', 'name');
     $query->addField('test', 'age', 'age');
 
@@ -77,7 +75,7 @@ class TaggingTest extends DatabaseTestBase {
    */
   public function testExtenderHasAllTags() {
     $query = $this->connection->select('test')
-      ->extend(SelectExtender::class);
+      ->extend('Drupal\Core\Database\Query\SelectExtender');
     $query->addField('test', 'name');
     $query->addField('test', 'age', 'age');
 
@@ -89,11 +87,11 @@ class TaggingTest extends DatabaseTestBase {
   }
 
   /**
-   * Tests extended query tagging for "has at least one of these tags".
+   * Tests extended query tagging "has at least one of these tags" functionality.
    */
   public function testExtenderHasAnyTag() {
     $query = $this->connection->select('test')
-      ->extend(SelectExtender::class);
+      ->extend('Drupal\Core\Database\Query\SelectExtender');
     $query->addField('test', 'name');
     $query->addField('test', 'age', 'age');
 
@@ -121,7 +119,7 @@ class TaggingTest extends DatabaseTestBase {
     $query->addMetaData('test', $data);
 
     $return = $query->getMetaData('test');
-    $this->assertEquals($data, $return, 'Correct metadata returned.');
+    $this->assertEqual($data, $return, 'Correct metadata returned.');
 
     $return = $query->getMetaData('nothere');
     $this->assertNull($return, 'Non-existent key returned NULL.');

@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 
 /**
- * Adds services tagged 'entity_resolver' to the Serializer.
+ * Adds services tagged 'normalizer' and 'encoder' to the Serializer.
  */
 class RegisterEntityResolversCompilerPass implements CompilerPassInterface {
 
@@ -23,7 +23,7 @@ class RegisterEntityResolversCompilerPass implements CompilerPassInterface {
 
     // Retrieve registered Normalizers and Encoders from the container.
     foreach ($container->findTaggedServiceIds('entity_resolver') as $id => $attributes) {
-      $priority = $attributes[0]['priority'] ?? 0;
+      $priority = isset($attributes[0]['priority']) ? $attributes[0]['priority'] : 0;
       $resolvers[$priority][] = new Reference($id);
     }
 

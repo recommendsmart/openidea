@@ -27,14 +27,14 @@ class FilterTest extends ViewTestBase {
    *
    * @var array
    */
-  protected static $modules = ['views_ui', 'node'];
+  public static $modules = ['views_ui', 'node'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     $this->enableViewsTestModule();
@@ -56,12 +56,12 @@ class FilterTest extends ViewTestBase {
   }
 
   /**
-   * Tests query of the row plugin.
+   * Test query of the row plugin.
    */
   public function testFilterQuery() {
     // Check that we can find the test filter plugin.
     $plugin = $this->container->get('plugin.manager.views.filter')->createInstance('test_filter');
-    $this->assertInstanceOf(FilterPlugin::class, $plugin);
+    $this->assertTrue($plugin instanceof FilterPlugin, 'Test filter plugin found.');
 
     $view = Views::getView('test_filter');
     $view->initDisplay();
@@ -81,23 +81,23 @@ class FilterTest extends ViewTestBase {
     $this->executeView($view);
 
     // Make sure the query have where data.
-    $this->assertNotEmpty($view->query->where);
+    $this->assertTrue(!empty($view->query->where));
 
     // Check the data added.
     $where = $view->query->where;
-    $this->assertSame('views_test_data.name', $where[0]['conditions'][0]['field'], 'Where condition field matches');
-    $this->assertSame('John', $where[0]['conditions'][0]['value'], 'Where condition value matches');
-    $this->assertSame('=', $where[0]['conditions'][0]['operator'], 'Where condition operator matches');
+    $this->assertIdentical($where[0]['conditions'][0]['field'], 'views_test_data.name', 'Where condition field matches');
+    $this->assertIdentical($where[0]['conditions'][0]['value'], 'John', 'Where condition value matches');
+    $this->assertIdentical($where[0]['conditions'][0]['operator'], '=', 'Where condition operator matches');
 
     $this->executeView($view);
 
     // Check that our operator and value match on the filter.
-    $this->assertSame('=', $view->filter['test_filter']->operator);
-    $this->assertSame('John', $view->filter['test_filter']->value);
+    $this->assertIdentical($view->filter['test_filter']->operator, '=');
+    $this->assertIdentical($view->filter['test_filter']->value, 'John');
 
     // Check that we have a single element, as a result of applying the '= John'
     // filter.
-    $this->assertCount(1, $view->result, new FormattableMarkup('Results were returned. @count results.', ['@count' => count($view->result)]));
+    $this->assertEqual(count($view->result), 1, new FormattableMarkup('Results were returned. @count results.', ['@count' => count($view->result)]));
 
     $view->destroy();
 
@@ -118,12 +118,12 @@ class FilterTest extends ViewTestBase {
     $this->executeView($view);
 
     // Check that our operator and value match on the filter.
-    $this->assertSame('<>', $view->filter['test_filter']->operator);
-    $this->assertSame('John', $view->filter['test_filter']->value);
+    $this->assertIdentical($view->filter['test_filter']->operator, '<>');
+    $this->assertIdentical($view->filter['test_filter']->value, 'John');
 
     // Check if we have the other elements in the dataset, as a result of
     // applying the '<> John' filter.
-    $this->assertCount(4, $view->result, new FormattableMarkup('Results were returned. @count results.', ['@count' => count($view->result)]));
+    $this->assertEqual(count($view->result), 4, new FormattableMarkup('Results were returned. @count results.', ['@count' => count($view->result)]));
 
     $view->destroy();
     $view->initDisplay();
@@ -147,31 +147,27 @@ class FilterTest extends ViewTestBase {
     $this->executeView($view);
 
     // Check if we have all 5 results.
-    $this->assertCount(5, $view->result, new FormattableMarkup('All @count results returned', ['@count' => count($view->displayHandlers)]));
+    $this->assertEqual(count($view->result), 5, new FormattableMarkup('All @count results returned', ['@count' => count($view->displayHandlers)]));
   }
 
   /**
-   * Tests no error message is displayed when all options are selected in an
+   * Test no error message is displayed when all options are selected in an
    * exposed filter.
    */
   public function testInOperatorSelectAllOptions() {
+    $view = Views::getView('test_filter_in_operator_ui');
     $row['row[type]'] = 'fields';
-    $this->drupalGet('admin/structure/views/nojs/display/test_filter_in_operator_ui/default/row');
-    $this->submitForm($row, 'Apply');
+    $this->drupalPostForm('admin/structure/views/nojs/display/test_filter_in_operator_ui/default/row', $row, t('Apply'));
     $field['name[node_field_data.nid]'] = TRUE;
-    $this->drupalGet('admin/structure/views/nojs/add-handler/test_filter_in_operator_ui/default/field');
-    $this->submitForm($field, 'Add and configure fields');
-    $this->drupalGet('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/field/nid');
-    $this->submitForm([], 'Apply');
+    $this->drupalPostForm('admin/structure/views/nojs/add-handler/test_filter_in_operator_ui/default/field', $field, t('Add and configure fields'));
+    $this->drupalPostForm('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/field/nid', [], t('Apply'));
     $edit['options[value][all]'] = TRUE;
     $edit['options[value][article]'] = TRUE;
     $edit['options[value][page]'] = TRUE;
-    $this->drupalGet('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/filter/type');
-    $this->submitForm($edit, 'Apply');
-    $this->drupalGet('admin/structure/views/view/test_filter_in_operator_ui/edit/default');
-    $this->submitForm([], 'Save');
-    $this->submitForm([], 'Update preview');
-    $this->assertSession()->pageTextNotContains('An illegal choice has been detected.');
+    $this->drupalPostForm('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/filter/type', $edit, t('Apply'));
+    $this->drupalPostForm('admin/structure/views/view/test_filter_in_operator_ui/edit/default', [], t('Save'));
+    $this->drupalPostForm(NULL, [], t('Update preview'));
+    $this->assertNoText('An illegal choice has been detected.');
   }
 
   /**
@@ -180,46 +176,43 @@ class FilterTest extends ViewTestBase {
   public function testLimitExposedOperators() {
 
     $this->drupalGet('test_filter_in_operator_ui');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->optionExists('edit-nid-op', '<');
-    $this->assertSession()->optionExists('edit-nid-op', '<=');
-    $this->assertSession()->optionExists('edit-nid-op', '=');
-    $this->assertSession()->optionNotExists('edit-nid-op', '>');
-    $this->assertSession()->optionNotExists('edit-nid-op', '>=');
+    $this->assertResponse(200);
+    $this->assertOption('edit-nid-op', '<');
+    $this->assertOption('edit-nid-op', '<=');
+    $this->assertOption('edit-nid-op', '=');
+    $this->assertNoOption('edit-nid-op', '>');
+    $this->assertNoOption('edit-nid-op', '>=');
 
     // Because there are not operators that use the min and max fields, those
     // fields should not be in the exposed form.
-    $this->assertSession()->fieldExists('edit-nid-value');
-    $this->assertSession()->fieldNotExists('edit-nid-min');
-    $this->assertSession()->fieldNotExists('edit-nid-max');
+    $this->assertFieldById('edit-nid-value');
+    $this->assertNoFieldById('edit-nid-min');
+    $this->assertNoFieldById('edit-nid-max');
 
     $edit = [];
     $edit['options[operator]'] = '>';
     $edit['options[expose][operator_list][]'] = ['>', '>=', 'between'];
-    $this->drupalGet('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/filter/nid');
-    $this->submitForm($edit, 'Apply');
-    $this->drupalGet('admin/structure/views/view/test_filter_in_operator_ui/edit/default');
-    $this->submitForm([], 'Save');
+    $this->drupalPostForm('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/filter/nid', $edit, t('Apply'));
+    $this->drupalPostForm('admin/structure/views/view/test_filter_in_operator_ui/edit/default', [], t('Save'));
 
     $this->drupalGet('test_filter_in_operator_ui');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->optionNotExists('edit-nid-op', '<');
-    $this->assertSession()->optionNotExists('edit-nid-op', '<=');
-    $this->assertSession()->optionNotExists('edit-nid-op', '=');
-    $this->assertSession()->optionExists('edit-nid-op', '>');
-    $this->assertSession()->optionExists('edit-nid-op', '>=');
+    $this->assertResponse(200);
+    $this->assertNoOption('edit-nid-op', '<');
+    $this->assertNoOption('edit-nid-op', '<=');
+    $this->assertNoOption('edit-nid-op', '=');
+    $this->assertOption('edit-nid-op', '>');
+    $this->assertOption('edit-nid-op', '>=');
 
-    $this->assertSession()->fieldExists('edit-nid-value');
-    $this->assertSession()->fieldExists('edit-nid-min');
-    $this->assertSession()->fieldExists('edit-nid-max');
+    $this->assertFieldById('edit-nid-value');
+    $this->assertFieldById('edit-nid-min');
+    $this->assertFieldById('edit-nid-max');
 
     // Set the default to an excluded operator.
     $edit = [];
     $edit['options[operator]'] = '=';
     $edit['options[expose][operator_list][]'] = ['<', '>'];
-    $this->drupalGet('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/filter/nid');
-    $this->submitForm($edit, 'Apply');
-    $this->assertSession()->pageTextContains('You selected the "Is equal to" operator as the default value but is not included in the list of limited operators.');
+    $this->drupalPostForm('admin/structure/views/nojs/handler/test_filter_in_operator_ui/default/filter/nid', $edit, t('Apply'));
+    $this->assertText('You selected the "Is equal to" operator as the default value but is not included in the list of limited operators.');
   }
 
 }

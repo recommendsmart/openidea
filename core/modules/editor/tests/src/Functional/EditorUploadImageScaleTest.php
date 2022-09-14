@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\editor\Functional;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\editor\Entity\Editor;
 use Drupal\filter\Entity\FilterFormat;
 use Drupal\Tests\BrowserTestBase;
@@ -21,7 +22,7 @@ class EditorUploadImageScaleTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['editor', 'editor_test'];
+  public static $modules = ['editor', 'editor_test'];
 
   /**
    * {@inheritdoc}
@@ -38,7 +39,7 @@ class EditorUploadImageScaleTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Add text format.
@@ -65,10 +66,7 @@ class EditorUploadImageScaleTest extends BrowserTestBase {
     ])->save();
 
     // Create admin user.
-    $this->adminUser = $this->drupalCreateUser([
-      'administer filters',
-      'use text format basic_html',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['administer filters', 'use text format basic_html']);
     $this->drupalLogin($this->adminUser);
   }
 
@@ -81,77 +79,77 @@ class EditorUploadImageScaleTest extends BrowserTestBase {
 
     // Case 1: no max dimensions set: uploaded image not scaled.
     $test_image = $testing_image_list[0];
-    [$image_file_width, $image_file_height] = $this->getTestImageInfo($test_image->uri);
+    list($image_file_width, $image_file_height) = $this->getTestImageInfo($test_image->uri);
     $max_width = NULL;
     $max_height = NULL;
     $this->setMaxDimensions($max_width, $max_height);
     $this->assertSavedMaxDimensions($max_width, $max_height);
-    [$uploaded_image_file_width, $uploaded_image_file_height] = $this->uploadImage($test_image->uri);
-    $this->assertEquals($image_file_width, $uploaded_image_file_width);
-    $this->assertEquals($image_file_height, $uploaded_image_file_height);
-    $this->assertSession()->pageTextNotContains("The image was resized to fit within the maximum allowed dimensions of {$max_width}x{$max_height} pixels.");
+    list($uploaded_image_file_width, $uploaded_image_file_height) = $this->uploadImage($test_image->uri);
+    $this->assertEqual($uploaded_image_file_width, $image_file_width);
+    $this->assertEqual($uploaded_image_file_height, $image_file_height);
+    $this->assertNoRaw((string) new FormattableMarkup('The image was resized to fit within the maximum allowed dimensions of %dimensions pixels.', ['%dimensions' => $max_width . 'x' . $max_height]));
 
     // Case 2: max width smaller than uploaded image: image scaled down.
     $test_image = $testing_image_list[1];
-    [$image_file_width, $image_file_height] = $this->getTestImageInfo($test_image->uri);
+    list($image_file_width, $image_file_height) = $this->getTestImageInfo($test_image->uri);
     $max_width = $image_file_width - 5;
     $max_height = $image_file_height;
     $this->setMaxDimensions($max_width, $max_height);
     $this->assertSavedMaxDimensions($max_width, $max_height);
-    [$uploaded_image_file_width, $uploaded_image_file_height] = $this->uploadImage($test_image->uri);
-    $this->assertEquals($max_width, $uploaded_image_file_width);
-    $this->assertEquals($uploaded_image_file_height * ($uploaded_image_file_width / $max_width), $uploaded_image_file_height);
-    $this->assertSession()->pageTextContains("The image was resized to fit within the maximum allowed dimensions of {$max_width}x{$max_height} pixels.");
+    list($uploaded_image_file_width, $uploaded_image_file_height) = $this->uploadImage($test_image->uri);
+    $this->assertEqual($uploaded_image_file_width, $max_width);
+    $this->assertEqual($uploaded_image_file_height, $uploaded_image_file_height * ($uploaded_image_file_width / $max_width));
+    $this->assertRaw((string) new FormattableMarkup('The image was resized to fit within the maximum allowed dimensions of %dimensions pixels.', ['%dimensions' => $max_width . 'x' . $max_height]));
 
     // Case 3: max height smaller than uploaded image: image scaled down.
     $test_image = $testing_image_list[2];
-    [$image_file_width, $image_file_height] = $this->getTestImageInfo($test_image->uri);
+    list($image_file_width, $image_file_height) = $this->getTestImageInfo($test_image->uri);
     $max_width = $image_file_width;
     $max_height = $image_file_height - 5;
     $this->setMaxDimensions($max_width, $max_height);
     $this->assertSavedMaxDimensions($max_width, $max_height);
-    [$uploaded_image_file_width, $uploaded_image_file_height] = $this->uploadImage($test_image->uri);
-    $this->assertEquals($uploaded_image_file_width * ($uploaded_image_file_height / $max_height), $uploaded_image_file_width);
-    $this->assertEquals($max_height, $uploaded_image_file_height);
-    $this->assertSession()->pageTextContains("The image was resized to fit within the maximum allowed dimensions of {$max_width}x{$max_height} pixels.");
+    list($uploaded_image_file_width, $uploaded_image_file_height) = $this->uploadImage($test_image->uri);
+    $this->assertEqual($uploaded_image_file_width, $uploaded_image_file_width * ($uploaded_image_file_height / $max_height));
+    $this->assertEqual($uploaded_image_file_height, $max_height);
+    $this->assertRaw((string) new FormattableMarkup('The image was resized to fit within the maximum allowed dimensions of %dimensions pixels.', ['%dimensions' => $max_width . 'x' . $max_height]));
 
     // Case 4: max dimensions greater than uploaded image: image not scaled.
     $test_image = $testing_image_list[3];
-    [$image_file_width, $image_file_height] = $this->getTestImageInfo($test_image->uri);
+    list($image_file_width, $image_file_height) = $this->getTestImageInfo($test_image->uri);
     $max_width = $image_file_width + 5;
     $max_height = $image_file_height + 5;
     $this->setMaxDimensions($max_width, $max_height);
     $this->assertSavedMaxDimensions($max_width, $max_height);
-    [$uploaded_image_file_width, $uploaded_image_file_height] = $this->uploadImage($test_image->uri);
-    $this->assertEquals($image_file_width, $uploaded_image_file_width);
-    $this->assertEquals($image_file_height, $uploaded_image_file_height);
-    $this->assertSession()->pageTextNotContains("The image was resized to fit within the maximum allowed dimensions of {$max_width}x{$max_height} pixels.");
+    list($uploaded_image_file_width, $uploaded_image_file_height) = $this->uploadImage($test_image->uri);
+    $this->assertEqual($uploaded_image_file_width, $image_file_width);
+    $this->assertEqual($uploaded_image_file_height, $image_file_height);
+    $this->assertNoRaw((string) new FormattableMarkup('The image was resized to fit within the maximum allowed dimensions of %dimensions pixels.', ['%dimensions' => $max_width . 'x' . $max_height]));
 
     // Case 5: only max width dimension was provided and it was smaller than
     // uploaded image: image scaled down.
     $test_image = $testing_image_list[4];
-    [$image_file_width, $image_file_height] = $this->getTestImageInfo($test_image->uri);
+    list($image_file_width, $image_file_height) = $this->getTestImageInfo($test_image->uri);
     $max_width = $image_file_width - 5;
     $max_height = NULL;
     $this->setMaxDimensions($max_width, $max_height);
     $this->assertSavedMaxDimensions($max_width, $max_height);
-    [$uploaded_image_file_width, $uploaded_image_file_height] = $this->uploadImage($test_image->uri);
-    $this->assertEquals($max_width, $uploaded_image_file_width);
-    $this->assertEquals($uploaded_image_file_height * ($uploaded_image_file_width / $max_width), $uploaded_image_file_height);
-    $this->assertSession()->pageTextContains("The image was resized to fit within the maximum allowed width of {$max_width} pixels.");
+    list($uploaded_image_file_width, $uploaded_image_file_height) = $this->uploadImage($test_image->uri);
+    $this->assertEqual($uploaded_image_file_width, $max_width);
+    $this->assertEqual($uploaded_image_file_height, $uploaded_image_file_height * ($uploaded_image_file_width / $max_width));
+    $this->assertRaw((string) new FormattableMarkup('The image was resized to fit within the maximum allowed width of %width pixels.', ['%width' => $max_width]));
 
     // Case 6: only max height dimension was provided and it was smaller than
     // uploaded image: image scaled down.
     $test_image = $testing_image_list[5];
-    [$image_file_width, $image_file_height] = $this->getTestImageInfo($test_image->uri);
+    list($image_file_width, $image_file_height) = $this->getTestImageInfo($test_image->uri);
     $max_width = NULL;
     $max_height = $image_file_height - 5;
     $this->setMaxDimensions($max_width, $max_height);
     $this->assertSavedMaxDimensions($max_width, $max_height);
-    [$uploaded_image_file_width, $uploaded_image_file_height] = $this->uploadImage($test_image->uri);
-    $this->assertEquals($uploaded_image_file_width * ($uploaded_image_file_height / $max_height), $uploaded_image_file_width);
-    $this->assertEquals($max_height, $uploaded_image_file_height);
-    $this->assertSession()->pageTextContains("The image was resized to fit within the maximum allowed height of {$max_height} pixels.");
+    list($uploaded_image_file_width, $uploaded_image_file_height) = $this->uploadImage($test_image->uri);
+    $this->assertEqual($uploaded_image_file_width, $uploaded_image_file_width * ($uploaded_image_file_height / $max_height));
+    $this->assertEqual($uploaded_image_file_height, $max_height);
+    $this->assertRaw((string) new FormattableMarkup('The image was resized to fit within the maximum allowed height of %height pixels.', ['%height' => $max_height]));
   }
 
   /**
@@ -202,8 +200,7 @@ class EditorUploadImageScaleTest extends BrowserTestBase {
       'files[fid]' => \Drupal::service('file_system')->realpath($uri),
     ];
     $this->drupalGet('editor/dialog/image/basic_html');
-    $this->drupalGet('editor/dialog/image/basic_html');
-    $this->submitForm($edit, 'Upload');
+    $this->drupalPostForm('editor/dialog/image/basic_html', $edit, t('Upload'));
     $uploaded_image_file = $this->container->get('image.factory')->get('public://inline-images/' . basename($uri));
     return [
       (int) $uploaded_image_file->getWidth(),
@@ -214,21 +211,22 @@ class EditorUploadImageScaleTest extends BrowserTestBase {
   /**
    * Asserts whether the saved maximum dimensions equal the ones provided.
    *
-   * @param int|null $width
+   * @param string $width
    *   The expected width of the uploaded image.
-   * @param int|null $height
+   * @param string $height
    *   The expected height of the uploaded image.
    *
-   * @internal
+   * @return bool
    */
-  protected function assertSavedMaxDimensions(?int $width, ?int $height): void {
+  protected function assertSavedMaxDimensions($width, $height) {
     $image_upload_settings = Editor::load('basic_html')->getImageUploadSettings();
     $expected = [
       'width' => $image_upload_settings['max_dimensions']['width'],
       'height' => $image_upload_settings['max_dimensions']['height'],
     ];
-    $this->assertEquals($expected['width'], $width, 'Actual width of "' . $width . '" equals the expected width of "' . $expected['width'] . '"');
-    $this->assertEquals($expected['height'], $height, 'Actual height of "' . $height . '" equals the expected width of "' . $expected['height'] . '"');
+    $same_width = $this->assertEqual($width, $expected['width'], 'Actual width of "' . $width . '" equals the expected width of "' . $expected['width'] . '"');
+    $same_height = $this->assertEqual($height, $expected['height'], 'Actual height of "' . $height . '" equals the expected width of "' . $expected['height'] . '"');
+    return $same_width && $same_height;
   }
 
 }

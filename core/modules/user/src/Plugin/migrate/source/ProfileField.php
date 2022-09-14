@@ -7,12 +7,7 @@ use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 use Drupal\migrate\Row;
 
 /**
- * Drupal 6/7 profile field source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Profile field source from database.
  *
  * @MigrateSource(
  *   id = "profile_field",

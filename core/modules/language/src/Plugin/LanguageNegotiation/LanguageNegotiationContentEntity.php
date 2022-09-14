@@ -2,6 +2,7 @@
 
 namespace Drupal\language\Plugin\LanguageNegotiation;
 
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\PathProcessor\OutboundPathProcessorInterface;
@@ -10,7 +11,7 @@ use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\Url;
 use Drupal\language\LanguageNegotiationMethodBase;
 use Drupal\language\LanguageSwitcherInterface;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
@@ -23,10 +24,16 @@ use Symfony\Component\Routing\Route;
  *   types = {Drupal\Core\Language\LanguageInterface::TYPE_CONTENT},
  *   weight = -9,
  *   name = @Translation("Content language"),
- *   description = @Translation("Determines the content language from the request parameter named 'language_content_entity'."),
+ *   description = @Translation("Determines the content language from a request parameter."),
  * )
  */
 class LanguageNegotiationContentEntity extends LanguageNegotiationMethodBase implements OutboundPathProcessorInterface, LanguageSwitcherInterface, ContainerFactoryPluginInterface {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The language negotiation method ID.
@@ -188,7 +195,7 @@ class LanguageNegotiationContentEntity extends LanguageNegotiationMethodBase imp
           $max_weight = isset($content_method_weights[LanguageNegotiationUrl::METHOD_ID]) ? max($max_weight, $content_method_weights[LanguageNegotiationUrl::METHOD_ID]) : $max_weight;
         }
         else {
-          $max_weight = $content_method_weights[LanguageNegotiationUrl::METHOD_ID] ?? PHP_INT_MAX;
+          $max_weight = isset($content_method_weights[LanguageNegotiationUrl::METHOD_ID]) ? $content_method_weights[LanguageNegotiationUrl::METHOD_ID] : PHP_INT_MAX;
         }
 
         $this->hasLowerLanguageNegotiationWeightResult = $content_method_weights[static::METHOD_ID] < $max_weight;
@@ -201,7 +208,7 @@ class LanguageNegotiationContentEntity extends LanguageNegotiationMethodBase imp
   /**
    * Determines if content entity route condition is met.
    *
-   * Requirements: currently being on a content entity route and processing
+   * Requirements: currently being on an content entity route and processing
    * outbound url pointing to the same content entity.
    *
    * @param \Symfony\Component\Routing\Route $outbound_route
@@ -214,7 +221,7 @@ class LanguageNegotiationContentEntity extends LanguageNegotiationMethodBase imp
    */
   protected function meetsContentEntityRoutesCondition(Route $outbound_route, Request $request) {
     $outbound_path_pattern = $outbound_route->getPath();
-    $storage = $this->paths[$request] ?? [];
+    $storage = isset($this->paths[$request]) ? $this->paths[$request] : [];
     if (!isset($storage[$outbound_path_pattern])) {
       $storage[$outbound_path_pattern] = FALSE;
 

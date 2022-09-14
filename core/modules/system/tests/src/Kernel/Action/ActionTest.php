@@ -17,7 +17,7 @@ class ActionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'field', 'user', 'action_test'];
+  public static $modules = ['system', 'field', 'user', 'action_test'];
 
   /**
    * The action manager.
@@ -29,7 +29,7 @@ class ActionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->actionManager = $this->container->get('plugin.manager.action');
@@ -43,33 +43,32 @@ class ActionTest extends KernelTestBase {
   public function testOperations() {
     // Test that actions can be discovered.
     $definitions = $this->actionManager->getDefinitions();
-    // Verify that the action definitions are found.
-    $this->assertGreaterThan(1, count($definitions));
-    $this->assertNotEmpty($definitions['action_test_no_type'], 'The test action is among the definitions found.');
+    $this->assertTrue(count($definitions) > 1, 'Action definitions are found.');
+    $this->assertTrue(!empty($definitions['action_test_no_type']), 'The test action is among the definitions found.');
 
     $definition = $this->actionManager->getDefinition('action_test_no_type');
-    $this->assertNotEmpty($definition, 'The test action definition is found.');
+    $this->assertTrue(!empty($definition), 'The test action definition is found.');
 
     $definitions = $this->actionManager->getDefinitionsByType('user');
-    $this->assertArrayNotHasKey('action_test_no_type', $definitions, 'An action with no type is not found.');
+    $this->assertTrue(empty($definitions['action_test_no_type']), 'An action with no type is not found.');
 
     // Create an instance of the 'save entity' action.
     $action = $this->actionManager->createInstance('action_test_save_entity');
-    $this->assertInstanceOf(ActionInterface::class, $action);
+    $this->assertTrue($action instanceof ActionInterface, 'The action implements the correct interface.');
 
     // Create a new unsaved user.
     $name = $this->randomMachineName();
     $user_storage = $this->container->get('entity_type.manager')->getStorage('user');
     $account = $user_storage->create(['name' => $name, 'bundle' => 'user']);
     $loaded_accounts = $user_storage->loadMultiple();
-    $this->assertCount(0, $loaded_accounts);
+    $this->assertEqual(count($loaded_accounts), 0);
 
     // Execute the 'save entity' action.
     $action->execute($account);
     $loaded_accounts = $user_storage->loadMultiple();
-    $this->assertCount(1, $loaded_accounts);
+    $this->assertEqual(count($loaded_accounts), 1);
     $account = reset($loaded_accounts);
-    $this->assertEquals($name, $account->label());
+    $this->assertEqual($name, $account->label());
   }
 
   /**
@@ -80,7 +79,7 @@ class ActionTest extends KernelTestBase {
     $action = Action::create([
       'id' => 'user_add_role_action.' . RoleInterface::ANONYMOUS_ID,
       'type' => 'user',
-      'label' => 'Add the anonymous role to the selected users',
+      'label' => t('Add the anonymous role to the selected users'),
       'configuration' => [
         'rid' => RoleInterface::ANONYMOUS_ID,
       ],
@@ -96,7 +95,7 @@ class ActionTest extends KernelTestBase {
         'user',
       ],
     ];
-    $this->assertSame($expected, $action->calculateDependencies()->getDependencies());
+    $this->assertIdentical($expected, $action->calculateDependencies()->getDependencies());
   }
 
 }

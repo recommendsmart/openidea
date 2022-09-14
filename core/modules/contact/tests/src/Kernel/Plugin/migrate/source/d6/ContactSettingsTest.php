@@ -15,7 +15,7 @@ class ContactSettingsTest extends MigrateSqlSourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['contact', 'migrate_drupal', 'user'];
+  public static $modules = ['contact', 'migrate_drupal', 'user'];
 
   /**
    * {@inheritdoc}
@@ -26,7 +26,7 @@ class ContactSettingsTest extends MigrateSqlSourceTestBase {
     $tests[0]['source_data']['variable'] = [
       [
         'name' => 'site_name',
-        'value' => serialize('foo!'),
+        'value' => serialize('Blorf!'),
       ],
     ];
     $tests[0]['source_data']['contact'] = [
@@ -42,7 +42,7 @@ class ContactSettingsTest extends MigrateSqlSourceTestBase {
     $tests[0]['expected_data'] = [
       [
         'default_category' => '1',
-        'site_name' => 'foo!',
+        'site_name' => 'Blorf!',
       ],
     ];
     $tests[0]['expected_count'] = NULL;

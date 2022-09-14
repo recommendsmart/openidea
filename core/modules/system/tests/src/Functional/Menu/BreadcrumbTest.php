@@ -23,7 +23,7 @@ class BreadcrumbTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['menu_test', 'block'];
+  public static $modules = ['menu_test', 'block'];
 
   /**
    * An administrative user.
@@ -46,7 +46,7 @@ class BreadcrumbTest extends BrowserTestBase {
    */
   protected $profile = 'standard';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $perms = array_keys(\Drupal::service('user.permissions')->getPermissions());
@@ -68,62 +68,62 @@ class BreadcrumbTest extends BrowserTestBase {
   public function testBreadCrumbs() {
     // Prepare common base breadcrumb elements.
     $home = ['' => 'Home'];
-    $admin = $home + ['admin' => 'Administration'];
-    $config = $admin + ['admin/config' => 'Configuration'];
+    $admin = $home + ['admin' => t('Administration')];
+    $config = $admin + ['admin/config' => t('Configuration')];
     $type = 'article';
 
     // Verify Taxonomy administration breadcrumbs.
     $trail = $admin + [
-      'admin/structure' => 'Structure',
+      'admin/structure' => t('Structure'),
     ];
     $this->assertBreadcrumb('admin/structure/taxonomy', $trail);
 
     $trail += [
-      'admin/structure/taxonomy' => 'Taxonomy',
+      'admin/structure/taxonomy' => t('Taxonomy'),
     ];
     $this->assertBreadcrumb('admin/structure/taxonomy/manage/tags', $trail);
     $trail += [
-      'admin/structure/taxonomy/manage/tags' => 'Edit Tags',
+      'admin/structure/taxonomy/manage/tags' => t('Edit Tags'),
     ];
     $this->assertBreadcrumb('admin/structure/taxonomy/manage/tags/overview', $trail);
     $this->assertBreadcrumb('admin/structure/taxonomy/manage/tags/add', $trail);
 
     // Verify Menu administration breadcrumbs.
     $trail = $admin + [
-      'admin/structure' => 'Structure',
+      'admin/structure' => t('Structure'),
     ];
     $this->assertBreadcrumb('admin/structure/menu', $trail);
 
     $trail += [
-      'admin/structure/menu' => 'Menus',
+      'admin/structure/menu' => t('Menus'),
     ];
     $this->assertBreadcrumb('admin/structure/menu/manage/tools', $trail);
 
     $trail += [
-      'admin/structure/menu/manage/tools' => 'Tools',
+      'admin/structure/menu/manage/tools' => t('Tools'),
     ];
     $this->assertBreadcrumb("admin/structure/menu/link/node.add_page/edit", $trail);
     $this->assertBreadcrumb('admin/structure/menu/manage/tools/add', $trail);
 
     // Verify Node administration breadcrumbs.
     $trail = $admin + [
-      'admin/structure' => 'Structure',
-      'admin/structure/types' => 'Content types',
+      'admin/structure' => t('Structure'),
+      'admin/structure/types' => t('Content types'),
     ];
     $this->assertBreadcrumb('admin/structure/types/add', $trail);
     $this->assertBreadcrumb("admin/structure/types/manage/$type", $trail);
     $trail += [
-      "admin/structure/types/manage/$type" => 'Article',
+      "admin/structure/types/manage/$type" => t('Article'),
     ];
     $this->assertBreadcrumb("admin/structure/types/manage/$type/fields", $trail);
     $this->assertBreadcrumb("admin/structure/types/manage/$type/display", $trail);
     $trail_teaser = $trail + [
-      "admin/structure/types/manage/$type/display" => 'Manage display',
+      "admin/structure/types/manage/$type/display" => t('Manage display'),
     ];
     $this->assertBreadcrumb("admin/structure/types/manage/$type/display/teaser", $trail_teaser);
     $this->assertBreadcrumb("admin/structure/types/manage/$type/delete", $trail);
     $trail += [
-      "admin/structure/types/manage/$type/fields" => 'Manage fields',
+      "admin/structure/types/manage/$type/fields" => t('Manage fields'),
     ];
     $this->assertBreadcrumb("admin/structure/types/manage/$type/fields/node.$type.body", $trail);
 
@@ -132,12 +132,12 @@ class BreadcrumbTest extends BrowserTestBase {
     $format = reset($filter_formats);
     $format_id = $format->id();
     $trail = $config + [
-      'admin/config/content' => 'Content authoring',
+      'admin/config/content' => t('Content authoring'),
     ];
     $this->assertBreadcrumb('admin/config/content/formats', $trail);
 
     $trail += [
-      'admin/config/content/formats' => 'Text formats and editors',
+      'admin/config/content/formats' => t('Text formats and editors'),
     ];
     $this->assertBreadcrumb('admin/config/content/formats/add', $trail);
     $this->assertBreadcrumb("admin/config/content/formats/manage/$format_id", $trail);
@@ -154,9 +154,9 @@ class BreadcrumbTest extends BrowserTestBase {
     $trail = $home;
     $this->assertBreadcrumb("node/$nid1", $trail);
     // Also verify that the node does not appear elsewhere (e.g., menu trees).
-    $this->assertSession()->linkNotExists($node1->getTitle());
+    $this->assertNoLink($node1->getTitle());
     // Also verify that the node does not appear elsewhere (e.g., menu trees).
-    $this->assertSession()->linkNotExists($node1->getTitle());
+    $this->assertNoLink($node1->getTitle());
 
     $trail += [
       "node/$nid1" => $node1->getTitle(),
@@ -206,16 +206,14 @@ class BreadcrumbTest extends BrowserTestBase {
       'title[0][value]' => 'Root',
       'link[0][uri]' => '/node',
     ];
-    $this->drupalGet("admin/structure/menu/manage/{$menu}/add");
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm("admin/structure/menu/manage/$menu/add", $edit, t('Save'));
     $menu_links = \Drupal::entityTypeManager()->getStorage('menu_link_content')->loadByProperties(['title' => 'Root']);
     $link = reset($menu_links);
 
     $edit = [
       'menu[menu_parent]' => $link->getMenuName() . ':' . $link->getPluginId(),
     ];
-    $this->drupalGet('node/' . $parent->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('node/' . $parent->id() . '/edit', $edit, t('Save'));
     $expected = [
       "node" => $link->getTitle(),
     ];
@@ -236,8 +234,7 @@ class BreadcrumbTest extends BrowserTestBase {
     $edit = [
       'field_tags[target_id]' => implode(',', array_keys($tags)),
     ];
-    $this->drupalGet('node/' . $parent->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('node/' . $parent->id() . '/edit', $edit, t('Save'));
 
     // Put both terms into a hierarchy Drupal » Breadcrumbs. Required for both
     // the menu links and the terms itself, since taxonomy_term_page() resets
@@ -251,8 +248,7 @@ class BreadcrumbTest extends BrowserTestBase {
         $edit = [
           'parent[]' => [$parent_tid],
         ];
-        $this->drupalGet("taxonomy/term/{$term->id()}/edit");
-        $this->submitForm($edit, 'Save');
+        $this->drupalPostForm("taxonomy/term/{$term->id()}/edit", $edit, t('Save'));
       }
       $parent_tid = $term->id();
     }
@@ -265,8 +261,7 @@ class BreadcrumbTest extends BrowserTestBase {
         'menu_parent' => "$menu:{$parent_mlid}",
         'enabled[value]' => 1,
       ];
-      $this->drupalGet("admin/structure/menu/manage/{$menu}/add");
-      $this->submitForm($edit, 'Save');
+      $this->drupalPostForm("admin/structure/menu/manage/$menu/add", $edit, t('Save'));
       $menu_links = \Drupal::entityTypeManager()->getStorage('menu_link_content')->loadByProperties([
         'title' => $edit['title[0][value]'],
         'link.uri' => 'internal:/taxonomy/term/' . $term->id(),
@@ -291,8 +286,7 @@ class BreadcrumbTest extends BrowserTestBase {
         $link_path => $link->getTitle(),
       ];
       $this->assertBreadcrumb($link_path, $trail, $term->getName(), $tree);
-      // Ensure that the tagged node is found.
-      $this->assertSession()->assertEscaped($parent->getTitle());
+      $this->assertEscaped($parent->getTitle(), 'Tagged node found.');
 
       // Additionally make sure that this link appears only once; i.e., the
       // untranslated menu links automatically generated from menu router items
@@ -302,7 +296,7 @@ class BreadcrumbTest extends BrowserTestBase {
         ':menu' => 'block-bartik-tools',
         ':href' => Url::fromUri('base:' . $link_path)->toString(),
       ]);
-      $this->assertCount(1, $elements, "Link to {$link_path} appears only once.");
+      $this->assertTrue(count($elements) == 1, "Link to {$link_path} appears only once.");
 
       // Next iteration should expect this tag as parent link.
       // Note: Term name, not link name, due to taxonomy_term_page().
@@ -323,7 +317,7 @@ class BreadcrumbTest extends BrowserTestBase {
 
     // Verify breadcrumb on user pages (without menu link) for anonymous user.
     $trail = $home;
-    $this->assertBreadcrumb('user', $trail, 'Log in');
+    $this->assertBreadcrumb('user', $trail, t('Log in'));
     $this->assertBreadcrumb('user/' . $this->adminUser->id(), $trail, $this->adminUser->getAccountName());
 
     // Verify breadcrumb on user pages (without menu link) for registered users.
@@ -370,23 +364,23 @@ class BreadcrumbTest extends BrowserTestBase {
     // page title, and that the breadcrumb is just the Home link (because the
     // user is not able to access "Administer".
     $trail = $home;
-    $this->assertBreadcrumb('admin', $trail, 'Access denied');
+    $this->assertBreadcrumb('admin', $trail, t('Access denied'));
     $this->assertSession()->statusCodeEquals(403);
 
     // Since the 'admin' path is not accessible, we still expect only the Home
     // link.
-    $this->assertBreadcrumb('admin/reports', $trail, 'Reports');
+    $this->assertBreadcrumb('admin/reports', $trail, t('Reports'));
     $this->assertSession()->statusCodeNotEquals(403);
 
     // Since the Reports page is accessible, that will show.
-    $trail += ['admin/reports' => 'Reports'];
-    $this->assertBreadcrumb('admin/reports/dblog', $trail, 'Recent log messages');
+    $trail += ['admin/reports' => t('Reports')];
+    $this->assertBreadcrumb('admin/reports/dblog', $trail, t('Recent log messages'));
     $this->assertSession()->statusCodeNotEquals(403);
 
     // Ensure that the breadcrumb is safe against XSS.
     $this->drupalGet('menu-test/breadcrumb1/breadcrumb2/breadcrumb3');
-    $this->assertSession()->responseContains('<script>alert(12);</script>');
-    $this->assertSession()->assertEscaped('<script>alert(123);</script>');
+    $this->assertRaw('<script>alert(12);</script>');
+    $this->assertEscaped('<script>alert(123);</script>');
   }
 
   /**
@@ -395,7 +389,7 @@ class BreadcrumbTest extends BrowserTestBase {
   public function testAssertBreadcrumbTrait() {
     // Ensure the test trait works as expected using menu_test routes.
     $home = ['' => 'Home'];
-    $trail = $home + ['menu-test' => 'Menu test root'];
+    $trail = $home + ['menu-test' => t('Menu test root')];
 
     // Test a passing assertion.
     $this->assertBreadcrumb('menu-test/breadcrumb1', $trail);

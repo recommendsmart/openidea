@@ -24,11 +24,11 @@ class DateTimeFieldRdfaTest extends FieldRdfaTestBase {
   protected $testValue = '2014-01-28T06:01:01';
 
   /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['datetime'];
+  * {@inheritdoc}
+  */
+  public static $modules = ['datetime'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->createTestField();

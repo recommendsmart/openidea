@@ -39,7 +39,7 @@ display:
       use_more_text: 'custom more text'
       link_display: page_1
     display_plugin: default
-    display_title: Default
+    display_title: Master
     id: default
     position: 0
   page_1:

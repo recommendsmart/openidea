@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\taxonomy\Functional;
 
+use Drupal\Core\Database\Database;
 use Drupal\Tests\content_translation\Functional\ContentTranslationUITestBase;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\taxonomy\Entity\Vocabulary;
@@ -21,29 +22,18 @@ class TermTranslationUITest extends ContentTranslationUITestBase {
   protected $vocabulary;
 
   /**
-   * {@inheritdoc}
-   */
-  protected $defaultCacheContexts = [
-    'languages:language_interface',
-    'theme',
-    'url.query_args:_wrapper_format',
-    'user.permissions',
-    'url.site',
-  ];
-
-  /**
    * Modules to enable.
    *
    * @var array
    */
-  protected static $modules = ['language', 'content_translation', 'taxonomy'];
+  public static $modules = ['language', 'content_translation', 'taxonomy'];
 
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityTypeId = 'taxonomy_term';
     $this->bundle = 'tags';
     parent::setUp();
@@ -107,15 +97,9 @@ class TermTranslationUITest extends ContentTranslationUITestBase {
 
     // Make sure that no row was inserted for taxonomy vocabularies which do
     // not have translations enabled.
-    $tids = \Drupal::entityQueryAggregate('taxonomy_term')
-      ->accessCheck(FALSE)
-      ->aggregate('tid', 'COUNT')
-      ->condition('vid', $this->bundle, '<>')
-      ->groupBy('tid')
-      ->execute();
-
-    foreach ($tids as $tid) {
-      $this->assertTrue($tid['tid_count'] < 2, 'Term does have translations.');
+    $rows = Database::getConnection()->query('SELECT tid, count(tid) AS count FROM {taxonomy_term_field_data} WHERE vid <> :vid GROUP BY tid', [':vid' => $this->bundle])->fetchAll();
+    foreach ($rows as $row) {
+      $this->assertTrue($row->count < 2, 'Term does not have translations.');
     }
   }
 
@@ -147,14 +131,14 @@ class TermTranslationUITest extends ContentTranslationUITestBase {
 
     // Verify translation links.
     $this->drupalGet('admin/structure/taxonomy/manage/' . $this->vocabulary->id() . '/overview');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkByHrefExists('term/' . $translatable_tid . '/translations', 0, 'The translations link exists for a translatable vocabulary.');
-    $this->assertSession()->linkByHrefExists('term/' . $translatable_tid . '/edit', 0, 'The edit link exists for a translatable vocabulary.');
+    $this->assertResponse(200, 'The translatable vocabulary page was found.');
+    $this->assertLinkByHref('term/' . $translatable_tid . '/translations', 0, 'The translations link exists for a translatable vocabulary.');
+    $this->assertLinkByHref('term/' . $translatable_tid . '/edit', 0, 'The edit link exists for a translatable vocabulary.');
 
     $this->drupalGet('admin/structure/taxonomy/manage/' . $untranslatable_vocabulary->id() . '/overview');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkByHrefExists('term/' . $untranslatable_tid . '/edit');
-    $this->assertSession()->linkByHrefNotExists('term/' . $untranslatable_tid . '/translations');
+    $this->assertResponse(200);
+    $this->assertLinkByHref('term/' . $untranslatable_tid . '/edit');
+    $this->assertNoLinkByHref('term/' . $untranslatable_tid . '/translations');
   }
 
   /**
@@ -173,7 +157,12 @@ class TermTranslationUITest extends ContentTranslationUITestBase {
         $options = ['language' => $languages[$langcode]];
         $url = $entity->toUrl('edit-form', $options);
         $this->drupalGet($url);
-        $this->assertSession()->pageTextContains("{$entity->getTranslation($langcode)->label()} [{$languages[$langcode]->getName()} translation]");
+
+        $title = t('@title [%language translation]', [
+          '@title' => $entity->getTranslation($langcode)->label(),
+          '%language' => $languages[$langcode]->getName(),
+        ]);
+        $this->assertRaw($title);
       }
     }
   }
@@ -199,8 +188,7 @@ class TermTranslationUITest extends ContentTranslationUITestBase {
       foreach ($this->langcodes as $langcode) {
         $options = ['language' => $languages[$langcode]];
         $url = $entity->toUrl('edit-form', $options);
-        $this->drupalGet($url, $options);
-        $this->submitForm(['status[value]' => $value], 'Save');
+        $this->drupalPostForm($url, ['status[value]' => $value], t('Save'), $options);
       }
       $storage->resetCache([$this->entityId]);
       $entity = $storage->load($this->entityId);

@@ -37,6 +37,7 @@ class User extends ArgumentDefaultPluginBase implements CacheableDependencyInter
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
+   *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match.
    */

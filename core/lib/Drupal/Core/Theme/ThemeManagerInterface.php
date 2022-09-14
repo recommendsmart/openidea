@@ -2,8 +2,6 @@
 
 namespace Drupal\Core\Theme;
 
-use Drupal\Core\Routing\RouteMatchInterface;
-
 /**
  * Provides a high level access to the active theme and methods to use it.
  *
@@ -31,12 +29,9 @@ interface ThemeManagerInterface {
   /**
    * Returns the active theme object.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface|null $route_match
-   *   The route match.
-   *
    * @return \Drupal\Core\Theme\ActiveTheme
    */
-  public function getActiveTheme(RouteMatchInterface $route_match = NULL);
+  public function getActiveTheme();
 
   /**
    * Determines whether there is an active theme.
@@ -63,7 +58,6 @@ interface ThemeManagerInterface {
    *
    * @param \Drupal\Core\Theme\ActiveTheme $active_theme
    *   The new active theme.
-   *
    * @return $this
    */
   public function setActiveTheme(ActiveTheme $active_theme);

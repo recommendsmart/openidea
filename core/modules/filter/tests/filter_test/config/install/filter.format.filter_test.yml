@@ -1,11 +1,11 @@
-langcode: en
-status: true
-name: 'Test format'
 format: filter_test
+name: 'Test format'
 weight: 2
 roles:
   - anonymous
   - authenticated
+status: true
+langcode: en
 filters:
   filter_html_escape:
     id: filter_html_escape

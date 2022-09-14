@@ -17,7 +17,7 @@ class PlaceholderMessageTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['render_placeholder_message_test'];
+  public static $modules = ['render_placeholder_message_test'];
 
   /**
    * {@inheritdoc}
@@ -25,7 +25,7 @@ class PlaceholderMessageTest extends BrowserTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * Tests rendering of message placeholder.
+   * Test rendering of message placeholder.
    */
   public function testMessagePlaceholder() {
     $messages_markup = '<div role="contentinfo" aria-label="Status message"';

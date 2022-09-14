@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Tests the rendered markup of core render element types.
+ * Tests the markup of core render element types passed to drupal_render().
  *
  * @group Common
  */
@@ -18,11 +18,12 @@ class RenderElementTypesTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'router_test'];
+  public static $modules = ['system', 'router_test'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['system']);
+    \Drupal::service('router.builder')->rebuild();
   }
 
   /**
@@ -34,12 +35,17 @@ class RenderElementTypesTest extends KernelTestBase {
    *   The expected markup.
    * @param string $message
    *   Assertion message.
-   *
-   * @internal
    */
-  protected function assertElements(array $elements, string $expected_html, string $message): void {
+  protected function assertElements(array $elements, $expected_html, $message) {
     $actual_html = (string) \Drupal::service('renderer')->renderRoot($elements);
-    $this->assertSame($expected_html, $actual_html, Html::escape($message));
+
+    $out = '<table><tr>';
+    $out .= '<td valign="top"><pre>' . Html::escape($expected_html) . '</pre></td>';
+    $out .= '<td valign="top"><pre>' . Html::escape($actual_html) . '</pre></td>';
+    $out .= '</tr></table>';
+    $this->verbose($out);
+
+    $this->assertIdentical($actual_html, $expected_html, Html::escape($message));
   }
 
   /**
@@ -184,7 +190,7 @@ class RenderElementTypesTest extends KernelTestBase {
     foreach ($elements as $element) {
       $xml = new \SimpleXMLElement(\Drupal::service('renderer')->renderRoot($element['value']));
       $result = $xml->xpath($element['expected']);
-      $this->assertNotEmpty($result, '"' . $element['name'] . '" input rendered correctly.');
+      $this->assertNotEmpty($result, '"' . $element['name'] . '" input rendered correctly by drupal_render().');
     }
   }
 
@@ -215,7 +221,7 @@ class RenderElementTypesTest extends KernelTestBase {
     foreach ($elements as $element) {
       $xml = new \SimpleXMLElement(\Drupal::service('renderer')->renderRoot($element['value']));
       $result = $xml->xpath($element['expected']);
-      $this->assertNotEmpty($result, '"' . $element['name'] . '" is rendered correctly.');
+      $this->assertNotEmpty($result, '"' . $element['name'] . '" is rendered correctly by drupal_render().');
     }
 
     // Set admin compact mode on for additional tests.
@@ -231,7 +237,7 @@ class RenderElementTypesTest extends KernelTestBase {
 
     $xml = new \SimpleXMLElement(\Drupal::service('renderer')->renderRoot($element['value']));
     $result = $xml->xpath($element['expected']);
-    $this->assertNotEmpty($result, '"' . $element['name'] . '" is rendered correctly.');
+    $this->assertNotEmpty($result, '"' . $element['name'] . '" is rendered correctly by drupal_render().');
   }
 
 }

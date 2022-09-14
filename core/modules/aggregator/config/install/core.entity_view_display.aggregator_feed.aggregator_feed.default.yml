@@ -10,11 +10,11 @@ mode: default
 content:
   checked:
     type: timestamp_ago
-    label: inline
-    settings: {  }
-    third_party_settings: {  }
     weight: 1
     region: content
+    settings: {  }
+    third_party_settings: {  }
+    label: inline
   description:
     weight: 3
     region: content
@@ -29,10 +29,10 @@ content:
     region: content
   link:
     type: uri_link
-    label: inline
-    settings: {  }
-    third_party_settings: {  }
     weight: 4
     region: content
+    settings: {  }
+    third_party_settings: {  }
+    label: inline
 hidden:
   more_link: true

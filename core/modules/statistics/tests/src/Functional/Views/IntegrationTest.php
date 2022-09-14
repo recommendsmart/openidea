@@ -19,7 +19,7 @@ class IntegrationTest extends ViewTestBase {
    *
    * @var array
    */
-  protected static $modules = ['statistics', 'statistics_test_views', 'node'];
+  public static $modules = ['statistics', 'statistics_test_views', 'node'];
 
   /**
    * {@inheritdoc}
@@ -47,16 +47,13 @@ class IntegrationTest extends ViewTestBase {
    */
   public static $testViews = ['test_statistics_integration'];
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
-    ViewTestData::createTestViews(static::class, ['statistics_test_views']);
+    ViewTestData::createTestViews(get_class($this), ['statistics_test_views']);
 
     // Create a new user for viewing nodes and statistics.
-    $this->webUser = $this->drupalCreateUser([
-      'access content',
-      'view post access counter',
-    ]);
+    $this->webUser = $this->drupalCreateUser(['access content', 'view post access counter']);
 
     // Create a new user for viewing nodes only.
     $this->deniedUser = $this->drupalCreateUser(['access content']);
@@ -81,7 +78,7 @@ class IntegrationTest extends ViewTestBase {
     // Manually calling statistics.php, simulating ajax behavior.
     // @see \Drupal\statistics\Tests\StatisticsLoggingTest::testLogging().
     global $base_url;
-    $stats_path = $base_url . '/' . $this->getModulePath('statistics') . '/statistics.php';
+    $stats_path = $base_url . '/' . drupal_get_path('module', 'statistics') . '/statistics.php';
     $client = $this->getHttpClient();
     $client->post($stats_path, ['form_params' => ['nid' => $this->node->id()]]);
     $this->drupalGet('test_statistics_integration');
@@ -95,7 +92,7 @@ class IntegrationTest extends ViewTestBase {
     $this->drupalLogout();
     $this->drupalLogin($this->deniedUser);
     $this->drupalGet('test_statistics_integration');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     $this->assertSession()->pageTextNotContains('Total views:');
     $this->assertSession()->pageTextNotContains('Views today:');

@@ -80,16 +80,14 @@ class ImageStyleFlushTest extends ImageFieldTestBase {
       'name' => $style_name,
       'label' => $style_label,
     ];
-    $this->drupalGet('admin/config/media/image-styles/add');
-    $this->submitForm($edit, 'Create new style');
+    $this->drupalPostForm('admin/config/media/image-styles/add', $edit, t('Create new style'));
 
     // Add each sample effect to the style.
     foreach ($effect_edits as $effect => $edit) {
       // Add the effect.
-      $this->drupalGet($style_path);
-      $this->submitForm(['new' => $effect], 'Add');
+      $this->drupalPostForm($style_path, ['new' => $effect], t('Add'));
       if (!empty($edit)) {
-        $this->submitForm($edit, 'Add effect');
+        $this->drupalPostForm(NULL, $edit, t('Add effect'));
       }
     }
 
@@ -100,11 +98,11 @@ class ImageStyleFlushTest extends ImageFieldTestBase {
     $image_path = $this->createSampleImage($style, 'public');
     // Expecting to find 2 images, one is the sample.png image shown in
     // image style preview.
-    $this->assertEquals(2, $this->getImageCount($style, 'public'), new FormattableMarkup('Image style %style image %file successfully generated.', ['%style' => $style->label(), '%file' => $image_path]));
+    $this->assertEqual($this->getImageCount($style, 'public'), 2, new FormattableMarkup('Image style %style image %file successfully generated.', ['%style' => $style->label(), '%file' => $image_path]));
 
     // Create an image for the 'private' wrapper.
     $image_path = $this->createSampleImage($style, 'private');
-    $this->assertEquals(1, $this->getImageCount($style, 'private'), new FormattableMarkup('Image style %style image %file successfully generated.', ['%style' => $style->label(), '%file' => $image_path]));
+    $this->assertEqual($this->getImageCount($style, 'private'), 1, new FormattableMarkup('Image style %style image %file successfully generated.', ['%style' => $style->label(), '%file' => $image_path]));
 
     // Remove the 'image_scale' effect and updates the style, which in turn
     // forces an image style flush.
@@ -113,18 +111,16 @@ class ImageStyleFlushTest extends ImageFieldTestBase {
     foreach ($style->getEffects() as $uuid => $effect) {
       $uuids[$effect->getPluginId()] = $uuid;
     }
-    $this->drupalGet($style_path . '/effects/' . $uuids['image_scale'] . '/delete');
-    $this->submitForm([], 'Delete');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->drupalGet($style_path);
-    $this->submitForm([], 'Save');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->drupalPostForm($style_path . '/effects/' . $uuids['image_scale'] . '/delete', [], t('Delete'));
+    $this->assertResponse(200);
+    $this->drupalPostForm($style_path, [], t('Save'));
+    $this->assertResponse(200);
 
     // Post flush, expected 1 image in the 'public' wrapper (sample.png).
-    $this->assertEquals(1, $this->getImageCount($style, 'public'), new FormattableMarkup('Image style %style flushed correctly for %wrapper wrapper.', ['%style' => $style->label(), '%wrapper' => 'public']));
+    $this->assertEqual($this->getImageCount($style, 'public'), 1, new FormattableMarkup('Image style %style flushed correctly for %wrapper wrapper.', ['%style' => $style->label(), '%wrapper' => 'public']));
 
     // Post flush, expected no image in the 'private' wrapper.
-    $this->assertEquals(0, $this->getImageCount($style, 'private'), new FormattableMarkup('Image style %style flushed correctly for %wrapper wrapper.', ['%style' => $style->label(), '%wrapper' => 'private']));
+    $this->assertEqual($this->getImageCount($style, 'private'), 0, new FormattableMarkup('Image style %style flushed correctly for %wrapper wrapper.', ['%style' => $style->label(), '%wrapper' => 'private']));
   }
 
 }

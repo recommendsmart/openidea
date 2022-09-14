@@ -7,7 +7,6 @@ use Drupal\Core\Form\FormBuilder;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Form\FormValidator;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -116,7 +115,7 @@ abstract class FormTestBase extends UnitTestCase {
   /**
    * The event dispatcher.
    *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $eventDispatcher;
 
@@ -164,7 +163,7 @@ abstract class FormTestBase extends UnitTestCase {
       ->getMock();
     $this->elementInfo->expects($this->any())
       ->method('getInfo')
-      ->willReturnCallback([$this, 'getInfo']);
+      ->will($this->returnCallback([$this, 'getInfo']));
 
     $this->csrfToken = $this->getMockBuilder('Drupal\Core\Access\CsrfTokenGenerator')
       ->disableOriginalConstructor()
@@ -175,17 +174,20 @@ abstract class FormTestBase extends UnitTestCase {
     $this->account = $this->createMock('Drupal\Core\Session\AccountInterface');
     $this->themeManager = $this->createMock('Drupal\Core\Theme\ThemeManagerInterface');
     $this->request = Request::createFromGlobals();
-    $this->eventDispatcher = $this->createMock('Symfony\Contracts\EventDispatcher\EventDispatcherInterface');
+    $this->eventDispatcher = $this->createMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
     $this->requestStack = new RequestStack();
     $this->requestStack->push($this->request);
     $this->logger = $this->createMock('Drupal\Core\Logger\LoggerChannelInterface');
     $form_error_handler = $this->createMock('Drupal\Core\Form\FormErrorHandlerInterface');
-    $this->formValidator = new FormValidator($this->requestStack, $this->getStringTranslationStub(), $this->csrfToken, $this->logger, $form_error_handler);
+    $this->formValidator = $this->getMockBuilder('Drupal\Core\Form\FormValidator')
+      ->setConstructorArgs([$this->requestStack, $this->getStringTranslationStub(), $this->csrfToken, $this->logger, $form_error_handler])
+      ->setMethods(NULL)
+      ->getMock();
     $this->formSubmitter = $this->getMockBuilder('Drupal\Core\Form\FormSubmitter')
       ->setConstructorArgs([$this->requestStack, $this->urlGenerator])
-      ->onlyMethods(['batchGet'])
+      ->setMethods(['batchGet', 'drupalInstallationAttempted'])
       ->getMock();
-    $this->root = dirname(substr(__DIR__, 0, -strlen(__NAMESPACE__)), 2);
+    $this->root = dirname(dirname(substr(__DIR__, 0, -strlen(__NAMESPACE__))));
 
     $this->formBuilder = new FormBuilder($this->formValidator, $this->formSubmitter, $this->formCache, $this->moduleHandler, $this->eventDispatcher, $this->requestStack, $this->classResolver, $this->elementInfo, $this->themeManager, $this->csrfToken);
   }

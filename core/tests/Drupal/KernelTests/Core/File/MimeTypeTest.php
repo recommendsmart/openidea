@@ -2,6 +2,8 @@
 
 namespace Drupal\KernelTests\Core\File;
 
+use Drupal\Component\Render\FormattableMarkup;
+
 /**
  * Tests filename mimetype detection.
  *
@@ -14,10 +16,10 @@ class MimeTypeTest extends FileTestBase {
    *
    * @var array
    */
-  protected static $modules = ['file_test'];
+  public static $modules = ['file_test'];
 
   /**
-   * Tests mapping of mimetypes from filenames.
+   * Test mapping of mimetypes from filenames.
    */
   public function testFileMimeTypeDetection() {
     $prefixes = ['public://', 'private://', 'temporary://', 'dummy-remote://'];
@@ -44,13 +46,13 @@ class MimeTypeTest extends FileTestBase {
     foreach ($test_case as $input => $expected) {
       // Test stream [URI].
       foreach ($prefixes as $prefix) {
-        $output = $guesser->guessMimeType($prefix . $input);
-        $this->assertSame($expected, $output);
+        $output = $guesser->guess($prefix . $input);
+        $this->assertIdentical($output, $expected, new FormattableMarkup('Mimetype for %input is %output (expected: %expected).', ['%input' => $prefix . $input, '%output' => $output, '%expected' => $expected]));
       }
 
       // Test normal path equivalent
-      $output = $guesser->guessMimeType($input);
-      $this->assertSame($expected, $output);
+      $output = $guesser->guess($input);
+      $this->assertIdentical($output, $expected, new FormattableMarkup('Mimetype (using default mappings) for %input is %output (expected: %expected).', ['%input' => $input, '%output' => $output, '%expected' => $expected]));
     }
 
     // Now test the extension guesser by passing in a custom mapping.
@@ -84,24 +86,9 @@ class MimeTypeTest extends FileTestBase {
     $extension_guesser->setMapping($mapping);
 
     foreach ($test_case as $input => $expected) {
-      $output = $extension_guesser->guessMimeType($input);
-      $this->assertSame($expected, $output);
+      $output = $extension_guesser->guess($input);
+      $this->assertIdentical($output, $expected, new FormattableMarkup('Mimetype (using passed-in mappings) for %input is %output (expected: %expected).', ['%input' => $input, '%output' => $output, '%expected' => $expected]));
     }
-  }
-
-  /**
-   * Test deprecations.
-   *
-   * @group legacy
-   */
-  public function testFileMimeTypeDetectionDeprecation() {
-    $this->expectDeprecation('The "Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser" class is deprecated since Symfony 4.3, use "Symfony\Component\Mime\MimeTypes" instead.');
-    $this->expectDeprecation('The "Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser" class is deprecated since Symfony 4.3, use "Symfony\Component\Mime\FileBinaryMimeTypeGuesser" instead.');
-    $this->expectDeprecation('The "Symfony\Component\HttpFoundation\File\MimeType\FileinfoMimeTypeGuesser" class is deprecated since Symfony 4.3, use "Symfony\Component\Mime\FileinfoMimeTypeGuesser" instead.');
-    $this->expectDeprecation('Drupal\Core\File\MimeType\MimeTypeGuesser::guess() is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Use ::guessMimeType() instead. See https://www.drupal.org/node/3133341');
-    $guesser = $this->container->get('file.mime_type.guesser');
-    $output = $guesser->guess('public://test.jar');
-    $this->assertSame('application/java-archive', $output);
   }
 
 }

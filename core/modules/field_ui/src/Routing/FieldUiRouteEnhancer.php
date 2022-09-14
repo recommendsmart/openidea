@@ -2,8 +2,9 @@
 
 namespace Drupal\field_ui\Routing;
 
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Routing\EnhancerInterface;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
@@ -12,6 +13,12 @@ use Symfony\Component\Routing\Route;
  * Enhances Field UI routes by adding proper information about the bundle name.
  */
 class FieldUiRouteEnhancer implements EnhancerInterface {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The entity type manager service.

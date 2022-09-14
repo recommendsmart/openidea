@@ -5,6 +5,7 @@ namespace Drupal\Core\Plugin\Context;
 use Drupal\Component\Plugin\Definition\ContextAwarePluginDefinitionInterface;
 use Drupal\Component\Plugin\Exception\ContextException;
 use Drupal\Component\Plugin\Exception\MissingValueContextException;
+use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 
@@ -81,7 +82,7 @@ class ContextHandler implements ContextHandlerInterface {
    * {@inheritdoc}
    */
   public function applyContextMapping(ContextAwarePluginInterface $plugin, $contexts, $mappings = []) {
-    /** @var \Drupal\Core\Plugin\Context\ContextInterface[] $contexts */
+    /** @var $contexts \Drupal\Core\Plugin\Context\ContextInterface[] */
     $mappings += $plugin->getContextMapping();
     // Loop through each of the expected contexts.
 
@@ -89,7 +90,7 @@ class ContextHandler implements ContextHandlerInterface {
 
     foreach ($plugin->getContextDefinitions() as $plugin_context_id => $plugin_context_definition) {
       // If this context was given a specific name, use that.
-      $context_id = $mappings[$plugin_context_id] ?? $plugin_context_id;
+      $context_id = isset($mappings[$plugin_context_id]) ? $mappings[$plugin_context_id] : $plugin_context_id;
       if (!empty($contexts[$context_id])) {
         // This assignment has been used, remove it.
         unset($mappings[$plugin_context_id]);
@@ -119,6 +120,10 @@ class ContextHandler implements ContextHandlerInterface {
         $context = $plugin->getContext($context_id);
       }
       catch (ContextException $e) {
+        $context = NULL;
+      }
+      // @todo Remove in https://www.drupal.org/project/drupal/issues/3046342.
+      catch (PluginException $e) {
         $context = NULL;
       }
 

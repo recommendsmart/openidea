@@ -41,21 +41,21 @@ class LinkRelationType extends PluginBase implements LinkRelationTypeInterface {
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->pluginDefinition['description'] ?? '';
+    return isset($this->pluginDefinition['description']) ? $this->pluginDefinition['description'] : '';
   }
 
   /**
    * {@inheritdoc}
    */
   public function getReference() {
-    return $this->pluginDefinition['reference'] ?? '';
+    return isset($this->pluginDefinition['reference']) ? $this->pluginDefinition['reference'] : '';
   }
 
   /**
    * {@inheritdoc}
    */
   public function getNotes() {
-    return $this->pluginDefinition['notes'] ?? '';
+    return isset($this->pluginDefinition['notes']) ? $this->pluginDefinition['notes'] : '';
   }
 
 }

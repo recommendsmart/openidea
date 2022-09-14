@@ -21,14 +21,14 @@ interface StaticMenuLinkOverridesInterface {
    * @param string $id
    *   A menu link plugin ID.
    *
-   * @return array
+   * @return array|null
    *   An override with following supported keys:
    *     - parent
    *     - weight
    *     - menu_name
    *     - expanded
    *     - enabled
-   *   or an empty array if there is no override for the given ID.
+   *   or NULL if there is no override for the given ID.
    */
   public function loadOverride($id);
 

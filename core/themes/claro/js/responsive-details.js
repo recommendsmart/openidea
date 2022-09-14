@@ -8,13 +8,12 @@
 (function ($, Drupal) {
   Drupal.behaviors.responsiveDetails = {
     attach: function attach(context) {
-      var details = once('responsive-details', 'details', context);
+      var $details = $(context).find('details').once('responsive-details');
 
-      if (!details.length) {
+      if (!$details.length) {
         return;
       }
 
-      var $details = $(details);
       var $summaries = $details.find('> summary');
 
       function detailsToggle(matches) {
@@ -25,6 +24,7 @@
         } else {
           var $notPressed = $details.find('> summary[aria-pressed!=true]').attr('aria-expanded', false);
           $notPressed.parent('details').attr('open', false);
+
           $summaries.off('.details-open');
         }
       }

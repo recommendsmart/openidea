@@ -31,20 +31,17 @@ class UserAdminLanguageTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['user', 'language', 'language_test'];
+  public static $modules = ['user', 'language', 'language_test'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // User to add and remove language.
-    $this->adminUser = $this->drupalCreateUser([
-      'administer languages',
-      'access administration pages',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['administer languages', 'access administration pages']);
     // User to check non-admin access.
     $this->regularUser = $this->drupalCreateUser();
   }
@@ -58,7 +55,7 @@ class UserAdminLanguageTest extends BrowserTestBase {
     $path = 'user/' . $this->adminUser->id() . '/edit';
     $this->drupalGet($path);
     // Ensure administration pages language settings widget is not available.
-    $this->assertSession()->fieldNotExists('edit-preferred-admin-langcode');
+    $this->assertNoFieldByXPath($this->constructFieldXpath('id', 'edit-preferred-admin-langcode'), NULL, 'Administration pages language selector not available.');
   }
 
   /**
@@ -72,21 +69,20 @@ class UserAdminLanguageTest extends BrowserTestBase {
     // Checks with user administration pages language negotiation disabled.
     $this->drupalGet($path);
     // Ensure administration pages language settings widget is not available.
-    $this->assertSession()->fieldNotExists('edit-preferred-admin-langcode');
+    $this->assertNoFieldByXPath($this->constructFieldXpath('id', 'edit-preferred-admin-langcode'), NULL, 'Administration pages language selector not available.');
 
     // Checks with user administration pages language negotiation enabled.
     $this->setLanguageNegotiation();
     $this->drupalGet($path);
     // Ensure administration pages language settings widget is available.
-    $this->assertSession()->fieldExists('edit-preferred-admin-langcode');
+    $this->assertFieldByXPath($this->constructFieldXpath('id', 'edit-preferred-admin-langcode'), NULL, 'Administration pages language selector is available.');
   }
 
   /**
    * Tests that the admin language is configurable only for administrators.
    *
-   * If a user has the permission "access administration pages" or
-   * "view the administration theme", they should be able to see the setting to
-   * pick the language they want those pages in.
+   * If a user has the permission "access administration pages", they should
+   * be able to see the setting to pick the language they want those pages in.
    *
    * If a user does not have that permission, it would confusing for them to
    * have a setting for pages they cannot access, so they should not be able to
@@ -100,20 +96,13 @@ class UserAdminLanguageTest extends BrowserTestBase {
     $path = 'user/' . $this->adminUser->id() . '/edit';
     $this->drupalGet($path);
     // Ensure administration pages language setting is visible for admin.
-    $this->assertSession()->fieldExists('edit-preferred-admin-langcode');
-
-    // Ensure administration pages language setting is visible for editors.
-    $editor = $this->drupalCreateUser(['view the administration theme']);
-    $this->drupalLogin($editor);
-    $path = 'user/' . $editor->id() . '/edit';
-    $this->drupalGet($path);
-    $this->assertSession()->fieldExists('edit-preferred-admin-langcode');
+    $this->assertFieldByXPath($this->constructFieldXpath('id', 'edit-preferred-admin-langcode'), NULL, 'Administration pages language selector available for admins.');
 
     // Ensure administration pages language setting is hidden for non-admins.
     $this->drupalLogin($this->regularUser);
     $path = 'user/' . $this->regularUser->id() . '/edit';
     $this->drupalGet($path);
-    $this->assertSession()->fieldNotExists('edit-preferred-admin-langcode');
+    $this->assertNoFieldByXPath($this->constructFieldXpath('id', 'edit-preferred-admin-langcode'), NULL, 'Administration pages language selector not available for regular user.');
   }
 
   /**
@@ -128,40 +117,38 @@ class UserAdminLanguageTest extends BrowserTestBase {
     // no preference set, negotiation will fall back further.
     $path = 'user/' . $this->adminUser->id() . '/edit';
     $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-default');
+    $this->assertText('Language negotiation method: language-default');
     $this->drupalGet('xx/' . $path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-url');
+    $this->assertText('Language negotiation method: language-url');
 
     // Set a preferred language code for the user.
     $edit = [];
     $edit['preferred_admin_langcode'] = 'xx';
-    $this->drupalGet($path);
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm($path, $edit, t('Save'));
 
     // Test negotiation with the URL method first. The admin method will only
     // be used if the URL method did not match.
     $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-user-admin');
+    $this->assertText('Language negotiation method: language-user-admin');
     $this->drupalGet('xx/' . $path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-url');
+    $this->assertText('Language negotiation method: language-url');
 
     // Test negotiation with the admin language method first. The admin method
     // will be used at all times.
     $this->setLanguageNegotiation(TRUE);
     $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-user-admin');
+    $this->assertText('Language negotiation method: language-user-admin');
     $this->drupalGet('xx/' . $path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-user-admin');
+    $this->assertText('Language negotiation method: language-user-admin');
 
     // Unset the preferred language code for the user.
     $edit = [];
     $edit['preferred_admin_langcode'] = '';
+    $this->drupalPostForm($path, $edit, t('Save'));
     $this->drupalGet($path);
-    $this->submitForm($edit, 'Save');
-    $this->drupalGet($path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-default');
+    $this->assertText('Language negotiation method: language-default');
     $this->drupalGet('xx/' . $path);
-    $this->assertSession()->pageTextContains('Language negotiation method: language-url');
+    $this->assertText('Language negotiation method: language-url');
   }
 
   /**
@@ -180,8 +167,7 @@ class UserAdminLanguageTest extends BrowserTestBase {
       'language_interface[weight][language-user-admin]' => ($admin_first ? -12 : -8),
       'language_interface[weight][language-url]' => -10,
     ];
-    $this->drupalGet('admin/config/regional/language/detection');
-    $this->submitForm($edit, 'Save settings');
+    $this->drupalPostForm('admin/config/regional/language/detection', $edit, t('Save settings'));
   }
 
   /**
@@ -197,8 +183,7 @@ class UserAdminLanguageTest extends BrowserTestBase {
       'label' => $name,
       'direction' => LanguageInterface::DIRECTION_LTR,
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add custom language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add custom language'));
   }
 
 }

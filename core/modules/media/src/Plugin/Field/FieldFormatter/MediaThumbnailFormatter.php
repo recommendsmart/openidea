@@ -35,7 +35,7 @@ class MediaThumbnailFormatter extends ImageFormatter {
   protected $renderer;
 
   /**
-   * Constructs a MediaThumbnailFormatter object.
+   * Constructs an MediaThumbnailFormatter object.
    *
    * @param string $plugin_id
    *   The plugin_id for the formatter.
@@ -50,7 +50,7 @@ class MediaThumbnailFormatter extends ImageFormatter {
    * @param string $view_mode
    *   The view mode.
    * @param array $third_party_settings
-   *   Any third party settings.
+   *   Any third party settings settings.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    * @param \Drupal\image\ImageStyleStorageInterface $image_style_storage

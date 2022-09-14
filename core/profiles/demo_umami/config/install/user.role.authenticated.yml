@@ -1,15 +1,6 @@
 langcode: en
 status: true
-dependencies:
-  config:
-    - filter.format.basic_html
-  module:
-    - contact
-    - filter
-    - media
-    - search
-    - shortcut
-    - system
+dependencies: {  }
 id: authenticated
 label: 'Authenticated user'
 weight: 1

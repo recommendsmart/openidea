@@ -26,7 +26,7 @@ class UserUpdate8002 extends ProcessPluginBase {
       1 => 'anonymous',
       2 => 'authenticated',
     ];
-    return $map[$rid] ?? $value;
+    return isset($map[$rid]) ? $map[$rid] : $value;
   }
 
 }

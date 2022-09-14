@@ -218,10 +218,6 @@ class MediaSourceTest extends MediaKernelTestBase {
     $media->save();
     $media_source = $media->getSource();
     $this->assertSame('some_value', $media_source->getSourceFieldValue($media));
-
-    // Test that NULL is returned if there is no value in the source field.
-    $media->set('field_media_test', NULL)->save();
-    $this->assertNull($media_source->getSourceFieldValue($media));
   }
 
   /**
@@ -582,7 +578,7 @@ class MediaSourceTest extends MediaKernelTestBase {
     $form_state->setValues([
       'label' => 'Test type',
       'id' => $source_plugin_id,
-      'op' => 'Save',
+      'op' => t('Save'),
     ]);
 
     /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager */

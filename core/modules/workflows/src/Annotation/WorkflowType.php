@@ -5,7 +5,7 @@ namespace Drupal\workflows\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a Workflow type annotation object.
+ * Defines an Workflow type annotation object.
  *
  * Plugin Namespace: Plugin\WorkflowType
  *

@@ -2,6 +2,7 @@
 
 namespace Drupal\options\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\AllowedTagsXssTrait;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -22,6 +23,8 @@ use Drupal\Core\Form\OptGroup;
  */
 class OptionsDefaultFormatter extends FormatterBase {
 
+  use AllowedTagsXssTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -40,7 +43,7 @@ class OptionsDefaultFormatter extends FormatterBase {
         $value = $item->value;
         // If the stored value is in the current set of allowed values, display
         // the associated label, otherwise just display the raw value.
-        $output = $options[$value] ?? $value;
+        $output = isset($options[$value]) ? $options[$value] : $value;
         $elements[$delta] = [
           '#markup' => $output,
           '#allowed_tags' => FieldFilteredMarkup::allowedTags(),

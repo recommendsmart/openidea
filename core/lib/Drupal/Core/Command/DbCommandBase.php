@@ -26,7 +26,6 @@ class DbCommandBase extends Command {
    *
    * @param \Symfony\Component\Console\Input\InputInterface $input
    *   Input object.
-   *
    * @return \Drupal\Core\Database\Connection
    */
   protected function getDatabaseConnection(InputInterface $input) {
@@ -49,7 +48,7 @@ class DbCommandBase extends Command {
     $prefix = $input->getOption('prefix');
     if ($prefix) {
       $info = Database::getConnectionInfo($key)['default'];
-      $info['prefix'] = $prefix;
+      $info['prefix']['default'] = $prefix;
 
       Database::removeConnection($key);
       Database::addConnectionInfo($key, 'default', $info);

@@ -20,7 +20,7 @@ class StringFieldTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['entity_test', 'file'];
+  public static $modules = ['entity_test', 'file'];
 
   /**
    * {@inheritdoc}
@@ -34,21 +34,17 @@ class StringFieldTest extends BrowserTestBase {
    */
   protected $webUser;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
-    $this->webUser = $this->drupalCreateUser([
-      'view test entity',
-      'administer entity_test content',
-      'access content',
-    ]);
+    $this->webUser = $this->drupalCreateUser(['view test entity', 'administer entity_test content', 'access content']);
     $this->drupalLogin($this->webUser);
   }
 
   // Test fields.
 
   /**
-   * Tests widgets.
+   * Test widgets.
    */
   public function testTextfieldWidgets() {
     $this->_testTextfieldWidgets('string', 'string_textfield');
@@ -90,26 +86,26 @@ class StringFieldTest extends BrowserTestBase {
 
     // Display creation form.
     $this->drupalGet('entity_test/add');
-    $this->assertSession()->fieldValueEquals("{$field_name}[0][value]", '');
-    $this->assertSession()->fieldNotExists("{$field_name}[0][format]");
-    $this->assertSession()->responseContains(new FormattableMarkup('placeholder="A placeholder on @widget_type"', ['@widget_type' => $widget_type]));
+    $this->assertFieldByName("{$field_name}[0][value]", '', 'Widget is displayed');
+    $this->assertNoFieldByName("{$field_name}[0][format]", '1', 'Format selector is not displayed');
+    $this->assertRaw(new FormattableMarkup('placeholder="A placeholder on @widget_type"', ['@widget_type' => $widget_type]));
 
     // Submit with some value.
     $value = $this->randomMachineName();
     $edit = [
       "{$field_name}[0][value]" => $value,
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
     preg_match('|entity_test/manage/(\d+)|', $this->getUrl(), $match);
     $id = $match[1];
-    $this->assertSession()->pageTextContains('entity_test ' . $id . ' has been created.');
+    $this->assertText(t('entity_test @id has been created.', ['@id' => $id]), 'Entity was created');
 
     // Display the entity.
     $entity = EntityTest::load($id);
     $display = $display_repository->getViewDisplay($entity->getEntityTypeId(), $entity->bundle(), 'full');
     $content = $display->build($entity);
     $rendered_entity = \Drupal::service('renderer')->renderRoot($content);
-    $this->assertStringContainsString($value, (string) $rendered_entity);
+    $this->assertContains($value, (string) $rendered_entity);
   }
 
 }

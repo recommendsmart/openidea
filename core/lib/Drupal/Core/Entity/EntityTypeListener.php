@@ -2,7 +2,7 @@
 
 namespace Drupal\Core\Entity;
 
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Reacts to entity type CRUD on behalf of the Entity system.
@@ -28,7 +28,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
   /**
    * The event dispatcher.
    *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected $eventDispatcher;
 
@@ -46,7 +46,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    *   The entity field manager.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
    * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository
    *   The entity last installed schema repository.
@@ -76,7 +76,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
       $this->entityLastInstalledSchemaRepository->setLastInstalledFieldStorageDefinitions($entity_type_id, $this->entityFieldManager->getFieldStorageDefinitions($entity_type_id));
     }
 
-    $this->eventDispatcher->dispatch(new EntityTypeEvent($entity_type), EntityTypeEvents::CREATE);
+    $this->eventDispatcher->dispatch(EntityTypeEvents::CREATE, new EntityTypeEvent($entity_type));
     $this->clearCachedDefinitions();
   }
 
@@ -98,7 +98,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
       $this->entityLastInstalledSchemaRepository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
     }
 
-    $this->eventDispatcher->dispatch(new EntityTypeEvent($entity_type), EntityTypeEvents::CREATE);
+    $this->eventDispatcher->dispatch(EntityTypeEvents::CREATE, new EntityTypeEvent($entity_type));
     $this->clearCachedDefinitions();
   }
 
@@ -119,7 +119,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
 
     $this->entityLastInstalledSchemaRepository->setLastInstalledDefinition($entity_type);
 
-    $this->eventDispatcher->dispatch(new EntityTypeEvent($entity_type, $original), EntityTypeEvents::UPDATE);
+    $this->eventDispatcher->dispatch(EntityTypeEvents::UPDATE, new EntityTypeEvent($entity_type, $original));
     $this->clearCachedDefinitions();
   }
 
@@ -142,7 +142,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
 
     $this->entityLastInstalledSchemaRepository->deleteLastInstalledDefinition($entity_type_id);
 
-    $this->eventDispatcher->dispatch(new EntityTypeEvent($entity_type), EntityTypeEvents::DELETE);
+    $this->eventDispatcher->dispatch(EntityTypeEvents::DELETE, new EntityTypeEvent($entity_type));
     $this->clearCachedDefinitions();
   }
 
@@ -165,7 +165,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
         $this->entityLastInstalledSchemaRepository->setLastInstalledFieldStorageDefinitions($entity_type_id, $field_storage_definitions);
       }
 
-      $this->eventDispatcher->dispatch(new EntityTypeEvent($entity_type, $original), EntityTypeEvents::UPDATE);
+      $this->eventDispatcher->dispatch(EntityTypeEvents::UPDATE, new EntityTypeEvent($entity_type, $original));
       $this->clearCachedDefinitions();
     }
   }

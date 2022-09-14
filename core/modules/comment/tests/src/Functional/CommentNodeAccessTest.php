@@ -19,14 +19,14 @@ class CommentNodeAccessTest extends CommentTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node_access_test'];
+  public static $modules = ['node_access_test'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'classy';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     node_access_rebuild();
@@ -46,7 +46,7 @@ class CommentNodeAccessTest extends CommentTestBase {
   }
 
   /**
-   * Tests that threaded comments can be viewed.
+   * Test that threaded comments can be viewed.
    */
   public function testThreadedCommentView() {
     // Set comments to have subject required and preview disabled.
@@ -66,8 +66,8 @@ class CommentNodeAccessTest extends CommentTestBase {
 
     // Check comment display.
     $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->pageTextContains($comment_subject);
-    $this->assertSession()->pageTextContains($comment_text);
+    $this->assertText($comment_subject, 'Individual comment subject found.');
+    $this->assertText($comment_text, 'Individual comment body found.');
 
     // Reply to comment, creating second comment.
     $this->drupalGet('comment/reply/node/' . $this->node->id() . '/comment/' . $comment->id());
@@ -78,10 +78,10 @@ class CommentNodeAccessTest extends CommentTestBase {
 
     // Go to the node page and verify comment and reply are visible.
     $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->pageTextContains($comment_text);
-    $this->assertSession()->pageTextContains($comment_subject);
-    $this->assertSession()->pageTextContains($reply_text);
-    $this->assertSession()->pageTextContains($reply_subject);
+    $this->assertText($comment_text);
+    $this->assertText($comment_subject);
+    $this->assertText($reply_text);
+    $this->assertText($reply_subject);
   }
 
 }

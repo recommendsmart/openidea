@@ -19,7 +19,7 @@ class FieldEntityTranslationTest extends ViewTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'locale',
     'content_translation',
@@ -39,7 +39,7 @@ class FieldEntityTranslationTest extends ViewTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     $node_type = NodeType::create([
@@ -168,10 +168,8 @@ class FieldEntityTranslationTest extends ViewTestBase {
    *
    * @param array $expected
    *   The expected rows of the result.
-   *
-   * @internal
    */
-  protected function assertRows(array $expected = []): void {
+  protected function assertRows($expected = []) {
     $actual = [];
     $rows = $this->cssSelect('div.views-row');
     foreach ($rows as $row) {
@@ -180,7 +178,7 @@ class FieldEntityTranslationTest extends ViewTestBase {
         'sticky' => $row->find('xpath', (new CssSelectorConverter())->toXPath('.views-field-sticky span.field-content'))->getText(),
       ];
     }
-    $this->assertEquals($expected, $actual);
+    $this->assertEqual($actual, $expected);
   }
 
 }

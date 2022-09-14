@@ -43,7 +43,6 @@ class WriteSafeSessionHandler implements \SessionHandlerInterface, WriteSafeSess
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function close() {
     return $this->wrappedSessionHandler->close();
   }
@@ -51,7 +50,6 @@ class WriteSafeSessionHandler implements \SessionHandlerInterface, WriteSafeSess
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function destroy($session_id) {
     return $this->wrappedSessionHandler->destroy($session_id);
   }
@@ -59,7 +57,6 @@ class WriteSafeSessionHandler implements \SessionHandlerInterface, WriteSafeSess
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function gc($max_lifetime) {
     return $this->wrappedSessionHandler->gc($max_lifetime);
   }
@@ -67,7 +64,6 @@ class WriteSafeSessionHandler implements \SessionHandlerInterface, WriteSafeSess
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function open($save_path, $session_id) {
     return $this->wrappedSessionHandler->open($save_path, $session_id);
   }
@@ -75,7 +71,6 @@ class WriteSafeSessionHandler implements \SessionHandlerInterface, WriteSafeSess
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function read($session_id) {
     $value = $this->wrappedSessionHandler->read($session_id);
     $this->readSessions[$session_id] = $value;
@@ -85,7 +80,6 @@ class WriteSafeSessionHandler implements \SessionHandlerInterface, WriteSafeSess
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function write($session_id, $session_data) {
     // Only write the session when it has been modified.
     if (isset($this->readSessions[$session_id]) && $this->readSessions[$session_id] === $session_data) {

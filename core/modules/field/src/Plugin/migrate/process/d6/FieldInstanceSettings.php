@@ -6,8 +6,6 @@ use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
-// cspell:ignore filefield imagefield
-
 /**
  * @MigrateProcessPlugin(
  *   id = "d6_field_field_settings"
@@ -21,7 +19,7 @@ class FieldInstanceSettings extends ProcessPluginBase {
    * Set the field instance defaults.
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    [$widget_type, $widget_settings, $field_settings] = $value;
+    list($widget_type, $widget_settings, $field_settings) = $value;
     $settings = [];
     switch ($widget_type) {
       case 'number':

@@ -54,6 +54,10 @@ abstract class PluginBase implements PluginInspectionInterface, DerivativeInspec
     $this->configuration = $configuration;
     $this->pluginId = $plugin_id;
     $this->pluginDefinition = $plugin_definition;
+
+    if ($this instanceof ConfigurablePluginInterface && !$this instanceof ConfigurableInterface) {
+      @trigger_error('Drupal\Component\Plugin\ConfigurablePluginInterface is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. You should implement ConfigurableInterface and/or DependentPluginInterface directly as needed. If you implement ConfigurableInterface you may choose to implement ConfigurablePluginInterface in Drupal 8 as well for maximum compatibility, however this must be removed prior to Drupal 9. See https://www.drupal.org/node/2946161', E_USER_DEPRECATED);
+    }
   }
 
   /**
@@ -69,7 +73,7 @@ abstract class PluginBase implements PluginInspectionInterface, DerivativeInspec
   public function getBaseId() {
     $plugin_id = $this->getPluginId();
     if (strpos($plugin_id, static::DERIVATIVE_SEPARATOR)) {
-      [$plugin_id] = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 2);
+      list($plugin_id) = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 2);
     }
     return $plugin_id;
   }
@@ -81,7 +85,7 @@ abstract class PluginBase implements PluginInspectionInterface, DerivativeInspec
     $plugin_id = $this->getPluginId();
     $derivative_id = NULL;
     if (strpos($plugin_id, static::DERIVATIVE_SEPARATOR)) {
-      [, $derivative_id] = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 2);
+      list(, $derivative_id) = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 2);
     }
     return $derivative_id;
   }
@@ -100,7 +104,7 @@ abstract class PluginBase implements PluginInspectionInterface, DerivativeInspec
    *   A boolean indicating whether the plugin is configurable.
    */
   public function isConfigurable() {
-    return $this instanceof ConfigurableInterface;
+    return $this instanceof ConfigurableInterface || $this instanceof ConfigurablePluginInterface;
   }
 
 }

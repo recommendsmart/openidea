@@ -26,8 +26,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ConsoleLogger extends AbstractLogger
 {
-    public const INFO = 'info';
-    public const ERROR = 'error';
+    const INFO = 'info';
+    const ERROR = 'error';
 
     private $output;
     private $verbosityLevelMap = [
@@ -61,8 +61,6 @@ class ConsoleLogger extends AbstractLogger
 
     /**
      * {@inheritdoc}
-     *
-     * @return void
      */
     public function log($level, $message, array $context = [])
     {
@@ -101,10 +99,14 @@ class ConsoleLogger extends AbstractLogger
      * Interpolates context values into the message placeholders.
      *
      * @author PHP Framework Interoperability Group
+     *
+     * @param string $message
+     *
+     * @return string
      */
-    private function interpolate(string $message, array $context): string
+    private function interpolate($message, array $context)
     {
-        if (!str_contains($message, '{')) {
+        if (false === strpos($message, '{')) {
             return $message;
         }
 

@@ -29,8 +29,7 @@ class UserEditedOwnAccountTest extends BrowserTestBase {
     // Change own username.
     $edit = [];
     $edit['name'] = $this->randomMachineName();
-    $this->drupalGet('user/' . $account->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('user/' . $account->id() . '/edit', $edit, t('Save'));
 
     // Log out.
     $this->drupalLogout();

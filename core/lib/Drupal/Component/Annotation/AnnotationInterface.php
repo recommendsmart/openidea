@@ -23,7 +23,6 @@ interface AnnotationInterface {
    * Sets the name of the provider of the annotated class.
    *
    * @param string $provider
-   *   The provider of the annotated class.
    */
   public function setProvider($provider);
 
@@ -45,7 +44,6 @@ interface AnnotationInterface {
    * Sets the class of the annotated class.
    *
    * @param string $class
-   *   The class of the annotated class.
    */
   public function setClass($class);
 

@@ -18,12 +18,12 @@ class MigrateBundleTest extends MigrateTestBase {
    *
    * @var array
    */
-  protected static $modules = ['taxonomy', 'text', 'user', 'system'];
+  public static $modules = ['taxonomy', 'text', 'user', 'system'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->installEntitySchema('taxonomy_vocabulary');
@@ -68,7 +68,7 @@ class MigrateBundleTest extends MigrateTestBase {
     $term_executable->import();
     /** @var \Drupal\taxonomy\Entity\Term $term */
     $term = Term::load(1);
-    $this->assertEquals('categories', $term->bundle());
+    $this->assertEquals($term->bundle(), 'categories');
   }
 
   /**
@@ -106,9 +106,9 @@ class MigrateBundleTest extends MigrateTestBase {
     $term_executable->import();
     /** @var \Drupal\taxonomy\Entity\Term $term */
     $term = Term::load(1);
-    $this->assertEquals('categories', $term->bundle());
+    $this->assertEquals($term->bundle(), 'categories');
     $term = Term::load(2);
-    $this->assertEquals('tags', $term->bundle());
+    $this->assertEquals($term->bundle(), 'tags');
   }
 
   /**
@@ -148,9 +148,9 @@ class MigrateBundleTest extends MigrateTestBase {
     $term_executable->import();
     /** @var \Drupal\taxonomy\Entity\Term $term */
     $term = Term::load(1);
-    $this->assertEquals('categories', $term->bundle());
+    $this->assertEquals($term->bundle(), 'categories');
     $term = Term::load(2);
-    $this->assertEquals('tags', $term->bundle());
+    $this->assertEquals($term->bundle(), 'tags');
   }
 
 }

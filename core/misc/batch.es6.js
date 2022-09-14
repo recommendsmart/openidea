@@ -3,7 +3,7 @@
  * Drupal's batch API.
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   /**
    * Attaches the batch behavior to progress bars.
    *
@@ -12,7 +12,7 @@
   Drupal.behaviors.batch = {
     attach(context, settings) {
       const batch = settings.batch;
-      const $progress = $(once('batch', '[data-drupal-progress]'));
+      const $progress = $('[data-drupal-progress]').once('batch');
       let progressBar;
 
       // Success: redirect to the summary.

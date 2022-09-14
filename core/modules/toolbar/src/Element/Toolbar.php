@@ -17,7 +17,7 @@ class Toolbar extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#pre_render' => [
         [$class, 'preRenderToolbar'],
@@ -50,7 +50,7 @@ class Toolbar extends RenderElement {
   }
 
   /**
-   * Builds the Toolbar as a structured array ready for rendering.
+   * Builds the Toolbar as a structured array ready for drupal_render().
    *
    * Since building the toolbar takes some time, it is done just prior to
    * rendering to ensure that it is built only if it will be displayed.

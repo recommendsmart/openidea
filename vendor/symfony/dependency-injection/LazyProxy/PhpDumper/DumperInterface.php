@@ -30,12 +30,11 @@ interface DumperInterface
     /**
      * Generates the code to be used to instantiate a proxy in the dumped factory code.
      *
-     * @param string $id          Service identifier
-     * @param string $factoryCode The code to execute to create the service
+     * @param string $id Service identifier
      *
      * @return string
      */
-    public function getProxyFactoryCode(Definition $definition, $id, $factoryCode);
+    public function getProxyFactoryCode(Definition $definition, $id/**, $factoryCode = null */);
 
     /**
      * Generates the code for the lazy proxy.

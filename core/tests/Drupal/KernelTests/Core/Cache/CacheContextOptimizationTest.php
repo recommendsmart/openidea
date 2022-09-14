@@ -20,12 +20,12 @@ class CacheContextOptimizationTest extends KernelTestBase {
    *
    * @var string[]
    */
-  protected static $modules = ['user', 'system'];
+  public static $modules = ['user', 'system'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->installConfig(['user']);
@@ -37,7 +37,7 @@ class CacheContextOptimizationTest extends KernelTestBase {
    */
   public function testUserPermissionCacheContextOptimization() {
     $user1 = $this->createUser();
-    $this->assertEquals(1, $user1->id());
+    $this->assertEqual($user1->id(), 1);
 
     $authenticated_user = $this->createUser(['administer permissions']);
     $role = $authenticated_user->getRoles()[1];
@@ -52,14 +52,14 @@ class CacheContextOptimizationTest extends KernelTestBase {
     $element = $test_element;
     $element['#markup'] = 'content for authenticated users';
     $output = \Drupal::service('renderer')->renderRoot($element);
-    $this->assertEquals('content for authenticated users', $output);
+    $this->assertEqual($output, 'content for authenticated users');
 
     // Verify that the render caching is working so that other tests can be
     // trusted.
     $element = $test_element;
     $element['#markup'] = 'this should not be visible';
     $output = \Drupal::service('renderer')->renderRoot($element);
-    $this->assertEquals('content for authenticated users', $output);
+    $this->assertEqual($output, 'content for authenticated users');
 
     // Even though the cache contexts have been optimized to only include 'user'
     // cache context, the element should have been changed because
@@ -72,7 +72,7 @@ class CacheContextOptimizationTest extends KernelTestBase {
     $element = $test_element;
     $element['#markup'] = 'this should be visible';
     $output = \Drupal::service('renderer')->renderRoot($element);
-    $this->assertEquals('this should be visible', $output);
+    $this->assertEqual($output, 'this should be visible');
   }
 
   /**
@@ -80,7 +80,7 @@ class CacheContextOptimizationTest extends KernelTestBase {
    */
   public function testUserRolesCacheContextOptimization() {
     $root_user = $this->createUser();
-    $this->assertEquals(1, $root_user->id());
+    $this->assertEqual($root_user->id(), 1);
 
     $authenticated_user = $this->createUser(['administer permissions']);
     $role = $authenticated_user->getRoles()[1];
@@ -95,14 +95,14 @@ class CacheContextOptimizationTest extends KernelTestBase {
     $element = $test_element;
     $element['#markup'] = 'content for authenticated users';
     $output = \Drupal::service('renderer')->renderRoot($element);
-    $this->assertEquals('content for authenticated users', $output);
+    $this->assertEqual($output, 'content for authenticated users');
 
     // Verify that the render caching is working so that other tests can be
     // trusted.
     $element = $test_element;
     $element['#markup'] = 'this should not be visible';
     $output = \Drupal::service('renderer')->renderRoot($element);
-    $this->assertEquals('content for authenticated users', $output);
+    $this->assertEqual($output, 'content for authenticated users');
 
     // Even though the cache contexts have been optimized to only include 'user'
     // cache context, the element should have been changed because 'user.roles'
@@ -113,7 +113,7 @@ class CacheContextOptimizationTest extends KernelTestBase {
     $element = $test_element;
     $element['#markup'] = 'this should be visible';
     $output = \Drupal::service('renderer')->renderRoot($element);
-    $this->assertEquals('this should be visible', $output);
+    $this->assertEqual($output, 'this should be visible');
   }
 
 }

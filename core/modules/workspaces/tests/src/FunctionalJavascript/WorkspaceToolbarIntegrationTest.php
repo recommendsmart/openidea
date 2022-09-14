@@ -14,7 +14,7 @@ class WorkspaceToolbarIntegrationTest extends OffCanvasTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['toolbar', 'workspaces'];
+  public static $modules = ['toolbar', 'workspaces'];
 
   /**
    * {@inheritdoc}
@@ -24,7 +24,7 @@ class WorkspaceToolbarIntegrationTest extends OffCanvasTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $admin_user = $this->drupalCreateUser([
       'administer workspaces',
@@ -35,7 +35,7 @@ class WorkspaceToolbarIntegrationTest extends OffCanvasTestBase {
   }
 
   /**
-   * Tests workspace canvas can be toggled with JavaScript.
+   * Test workspace canvas can be toggled with JavaScript.
    */
   public function testWorkspaceCanvasToggling() {
     $page = $this->getSession()->getPage();
@@ -59,7 +59,7 @@ class WorkspaceToolbarIntegrationTest extends OffCanvasTestBase {
   }
 
   /**
-   * Tests workspace switch and landing page behavior.
+   * Test workspace switch and landing page behaviour.
    */
   public function testWorkspaceSwitch() {
     $page = $this->getSession()->getPage();

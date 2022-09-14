@@ -22,7 +22,7 @@ class ConfigDependencyWebTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['config_test'];
+  public static $modules = ['config_test'];
 
   /**
    * {@inheritdoc}
@@ -35,9 +35,7 @@ class ConfigDependencyWebTest extends BrowserTestBase {
    * @see \Drupal\Core\Config\Entity\ConfigDependencyDeleteFormTrait
    */
   public function testConfigDependencyDeleteFormTrait() {
-    $this->drupalLogin($this->drupalCreateUser([
-      'administer site configuration',
-    ]));
+    $this->drupalLogin($this->drupalCreateUser(['administer site configuration']));
 
     /** @var \Drupal\Core\Config\Entity\ConfigEntityStorage $storage */
     $storage = $this->container->get('entity_type.manager')->getStorage('config_test');
@@ -66,14 +64,13 @@ class ConfigDependencyWebTest extends BrowserTestBase {
     $entity2->save();
 
     $this->drupalGet($entity2->toUrl('delete-form'));
-    $this->assertSession()->pageTextNotContains('Configuration updates');
-    $this->assertSession()->pageTextNotContains('Configuration deletions');
+    $this->assertNoText(t('Configuration updates'), 'No configuration updates found.');
+    $this->assertNoText(t('Configuration deletions'), 'No configuration deletes found.');
     $this->drupalGet($entity1->toUrl('delete-form'));
-    $this->assertSession()->pageTextNotContains('Configuration updates');
-    $this->assertSession()->pageTextContains('Configuration deletions');
-    $this->assertSession()->pageTextContains($entity2->id());
-    $this->drupalGet($entity1->toUrl('delete-form'));
-    $this->submitForm([], 'Delete');
+    $this->assertNoText(t('Configuration updates'), 'No configuration updates found.');
+    $this->assertText(t('Configuration deletions'), 'Configuration deletions found.');
+    $this->assertText($entity2->id(), 'Entity2 id found');
+    $this->drupalPostForm($entity1->toUrl('delete-form'), [], 'Delete');
     $storage->resetCache();
     $this->assertEmpty($storage->loadMultiple([$entity1->id(), $entity2->id()]), 'Test entities deleted');
 
@@ -118,13 +115,12 @@ class ConfigDependencyWebTest extends BrowserTestBase {
     $entity3->save();
 
     $this->drupalGet($entity1->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains('Configuration updates');
-    $this->assertSession()->pageTextNotContains('Configuration deletions');
-    $this->assertSession()->pageTextNotContains($entity2->id());
-    $this->assertSession()->pageTextContains($entity2->label());
-    $this->assertSession()->pageTextNotContains($entity3->id());
-    $this->drupalGet($entity1->toUrl('delete-form'));
-    $this->submitForm([], 'Delete');
+    $this->assertText(t('Configuration updates'), 'Configuration updates found.');
+    $this->assertNoText(t('Configuration deletions'), 'No configuration deletions found.');
+    $this->assertNoText($entity2->id(), 'Entity2 id not found');
+    $this->assertText($entity2->label(), 'Entity2 label not found');
+    $this->assertNoText($entity3->id(), 'Entity3 id not found');
+    $this->drupalPostForm($entity1->toUrl('delete-form'), [], 'Delete');
     $storage->resetCache();
     $this->assertNull($storage->load('entity1'), 'Test entity 1 deleted');
     $entity2 = $storage->load('entity2');

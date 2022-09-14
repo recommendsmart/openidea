@@ -9,12 +9,12 @@ use Drupal\Core\Security\TrustedCallbackInterface;
 class BigPipeTestController implements TrustedCallbackInterface {
 
   /**
-   * Returns all BigPipe placeholder test case render arrays.
+   * Returns a all BigPipe placeholder test case render arrays.
    *
    * @return array
    */
   public function test() {
-    $has_session = \Drupal::service('session_configuration')->hasSession(\Drupal::requestStack()->getMainRequest());
+    $has_session = \Drupal::service('session_configuration')->hasSession(\Drupal::requestStack()->getMasterRequest());
 
     $build = [];
 
@@ -162,7 +162,7 @@ class BigPipeTestController implements TrustedCallbackInterface {
    * {@inheritdoc}
    */
   public static function trustedCallbacks() {
-    return ['currentTime', 'helloOrYarhar', 'exception', 'responseException', 'counter'];
+    return ['currentTime', 'counter'];
   }
 
 }

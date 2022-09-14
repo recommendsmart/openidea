@@ -54,7 +54,7 @@ class ConfigEntityImportTest extends KernelTestBase {
   }
 
   /**
-   * Tests updating an action during import.
+   * Tests updating a action during import.
    */
   protected function doActionUpdate() {
     // Create a test action with a known label.
@@ -101,7 +101,7 @@ class ConfigEntityImportTest extends KernelTestBase {
     // Create a test filter format with a known label.
     $name = 'filter.format.plain_text';
 
-    /** @var \Drupal\filter\Entity\FilterFormat $entity */
+    /** @var $entity \Drupal\filter\Entity\FilterFormat */
     $entity = FilterFormat::load('plain_text');
     $plugin_collection = $entity->getPluginCollections()['filters'];
 
@@ -133,7 +133,7 @@ class ConfigEntityImportTest extends KernelTestBase {
     // Create a test image style with a known label.
     $name = 'image.style.thumbnail';
 
-    /** @var \Drupal\image\Entity\ImageStyle $entity */
+    /** @var $entity \Drupal\image\Entity\ImageStyle */
     $entity = ImageStyle::load('thumbnail');
     $plugin_collection = $entity->getPluginCollections()['effects'];
 
@@ -254,10 +254,8 @@ class ConfigEntityImportTest extends KernelTestBase {
    *   The original data stored in the config object.
    * @param array $custom_data
    *   The new data to store in the config object.
-   *
-   * @internal
    */
-  public function assertConfigUpdateImport(string $name, array $original_data, array $custom_data): void {
+  public function assertConfigUpdateImport($name, $original_data, $custom_data) {
     $this->container->get('config.storage.sync')->write($name, $custom_data);
 
     // Verify the active configuration still returns the default values.

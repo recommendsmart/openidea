@@ -233,7 +233,7 @@ class UserViewsData extends EntityViewsData {
       'name field' => 'name',
       'empty field name' => $this->t('No role'),
       'zero is null' => TRUE,
-      'numeric' => FALSE,
+      'numeric' => TRUE,
     ];
 
     $data['user__roles']['permission'] = [
@@ -248,10 +248,6 @@ class UserViewsData extends EntityViewsData {
         'real field' => 'roles_target_id',
       ],
     ];
-
-    // Unset the "pass" field because the access control handler for the user
-    // entity type allows editing the password, but not viewing it.
-    unset($data['users_field_data']['pass']);
 
     return $data;
   }

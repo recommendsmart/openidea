@@ -1,9 +1,9 @@
-langcode: en
-status: true
-name: Default
 type: default
+name: Default
 description: 'Default description.'
 help: ''
 new_revision: true
-preview_mode: 1
 display_submitted: true
+preview_mode: 1
+status: true
+langcode: en

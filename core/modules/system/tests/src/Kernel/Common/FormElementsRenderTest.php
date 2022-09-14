@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Performs integration tests on \Drupal::service('renderer')->render().
+ * Performs integration tests on drupal_render().
  *
  * @group system
  */
@@ -139,12 +139,11 @@ class FormElementsRenderTest extends KernelTestBase {
 
   /**
    * Tests that elements are rendered properly.
-   *
-   * @internal
    */
-  protected function assertRenderedElement(array $element, string $xpath, array $xpath_args = []): void {
+  protected function assertRenderedElement(array $element, $xpath, array $xpath_args = []) {
     $this->render($element);
 
+    // @see \Drupal\simpletest\WebTestBase::xpath()
     $xpath = $this->buildXPathQuery($xpath, $xpath_args);
     $element += ['#value' => NULL];
     $this->assertFieldByXPath($xpath, $element['#value'], new FormattableMarkup('#type @type was properly rendered.', [

@@ -7,6 +7,7 @@ use Drupal\Core\Render\BubbleableMetadata;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RequestContext as SymfonyRequestContext;
 use Symfony\Component\Routing\Route as SymfonyRoute;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\PathProcessor\OutboundPathProcessorInterface;
 use Drupal\Core\RouteProcessor\OutboundRouteProcessorInterface;
@@ -253,7 +254,7 @@ class UrlGenerator implements UrlGeneratorInterface {
   /**
    * {@inheritdoc}
    */
-  public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH): string {
+  public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH) {
     $options['absolute'] = is_bool($referenceType) ? $referenceType : $referenceType === self::ABSOLUTE_URL;
     return $this->generateFromRoute($name, $parameters, $options);
   }
@@ -422,8 +423,8 @@ class UrlGenerator implements UrlGeneratorInterface {
     if ($name instanceof SymfonyRoute) {
       $route = $name;
     }
-    else {
-      $route = clone $this->provider->getRouteByName($name);
+    elseif (NULL === $route = clone $this->provider->getRouteByName($name)) {
+      throw new RouteNotFoundException(sprintf('Route "%s" does not exist.', $name));
     }
     return $route;
   }

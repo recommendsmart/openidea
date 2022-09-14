@@ -12,7 +12,7 @@ abstract class AccessTestBase extends UserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['block'];
+  public static $modules = ['block'];
 
   /**
    * Contains a user object that has no special permissions.
@@ -56,9 +56,7 @@ abstract class AccessTestBase extends UserTestBase {
     $this->webRole = $roles[0];
 
     $this->normalRole = $this->drupalCreateRole([]);
-    $this->normalUser = $this->drupalCreateUser([
-      'views_test_data test permission',
-    ]);
+    $this->normalUser = $this->drupalCreateUser(['views_test_data test permission']);
     $this->normalUser->addRole($this->normalRole);
     $this->normalUser->save();
     // @todo when all the plugin information is cached make a reset function and

@@ -17,7 +17,7 @@ trait OEmbedTestTrait {
    * @return string
    */
   protected function getFixturesDirectory() {
-    return \Drupal::service('extension.list.module')->getPath('media') . '/tests/fixtures/oembed';
+    return drupal_get_path('module', 'media') . '/tests/fixtures/oembed';
   }
 
   /**
@@ -55,10 +55,6 @@ trait OEmbedTestTrait {
         ],
       ],
     ]);
-    // Rebuild the container in case there is already an instantiated service
-    // that has a dependency on the http_client service.
-    $this->container->get('kernel')->rebuildContainer();
-    $this->container = $this->container->get('kernel')->getContainer();
   }
 
   /**

@@ -21,13 +21,7 @@ class BooleanFormatterTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = [
-    'field',
-    'text',
-    'entity_test',
-    'user',
-    'system',
-  ];
+  public static $modules = ['field', 'text', 'entity_test', 'user', 'system'];
 
   /**
    * @var string
@@ -52,7 +46,7 @@ class BooleanFormatterTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installConfig(['field']);
@@ -127,7 +121,7 @@ class BooleanFormatterTest extends KernelTestBase {
     $data[] = [1, $format, 'TRUE'];
 
     foreach ($data as $test_data) {
-      [$value, $settings, $expected] = $test_data;
+      list($value, $settings, $expected) = $test_data;
 
       $component = $this->display->getComponent($this->fieldName);
       $component['settings'] = $settings;

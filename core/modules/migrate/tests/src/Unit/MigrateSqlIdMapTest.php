@@ -56,7 +56,7 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->database = $this->getDatabase([]);
   }
 
@@ -110,7 +110,7 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
     $migration
       ->method('getDestinationPlugin')
       ->willReturn($plugin);
-    $event_dispatcher = $this->createMock('Symfony\Contracts\EventDispatcher\EventDispatcherInterface');
+    $event_dispatcher = $this->createMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
 
     $id_map = new TestSqlIdMap($this->database, [], 'sql', [], $migration, $event_dispatcher);
     $migration
@@ -194,7 +194,7 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
     $message = $this->createMock('Drupal\migrate\MigrateMessageInterface');
     $id_map = $this->getIdMap();
     $id_map->setMessage($message);
-    $this->assertEquals($message, $id_map->message);
+    $this->assertAttributeEquals($message, 'message', $id_map);
   }
 
   /**
@@ -328,7 +328,7 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
       $this->assertEquals($message_default, $message_row->message);
       $this->assertEquals(MigrationInterface::MESSAGE_ERROR, $message_row->level);
     }
-    $this->assertEquals(1, $count);
+    $this->assertEquals($count, 1);
 
     // Retrieve messages with a specific level.
     $messages = $id_map->getMessages([], MigrationInterface::MESSAGE_WARNING);
@@ -337,7 +337,18 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
       $count = 1;
       $this->assertEquals(MigrationInterface::MESSAGE_WARNING, $message_row->level);
     }
-    $this->assertEquals(1, $count);
+    $this->assertEquals($count, 1);
+  }
+
+  /**
+   * Tests the SQL ID map get message iterator method.
+   *
+   * @group legacy
+   *
+   * @expectedDeprecation getMessageIterator() is deprecated in drupal:8.8.0 and is removed from drupal:9.0.0. Use getMessages() instead. See https://www.drupal.org/node/3060969
+   */
+  public function testGetMessageIterator() {
+    $this->getIdMap()->getMessageIterator();
   }
 
   /**
@@ -427,7 +438,7 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
     $this->assertSame([$expected_result], $destination_ids);
     // Test for a miss.
     $destination_ids = $id_map->lookupDestinationIds($nonexistent_id_values);
-    $this->assertCount(0, $destination_ids);
+    $this->assertSame(0, count($destination_ids));
   }
 
   /**
@@ -550,6 +561,31 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
   }
 
   /**
+   * Tests lookupDestinationId().
+   *
+   * @group legacy
+   * @expectedDeprecation Drupal\migrate\Plugin\migrate\id_map\Sql::lookupDestinationId() is deprecated in drupal:8.1.0 and is removed from drupal:9.0.0. Use Sql::lookupDestinationIds() instead. See https://www.drupal.org/node/2725809
+   */
+  public function testLookupDestinationId() {
+    // Simple map with one source and one destination ID.
+    $id_map = $this->setupRows(['nid'], ['nid'], [
+      [1, 101],
+      [2, 102],
+      [3, 103],
+    ]);
+
+    // Lookup nothing, gives nothing.
+    $this->assertEquals([], $id_map->lookupDestinationId([]));
+
+    // Lookup by complete non-associative list.
+    $this->assertEquals([101], $id_map->lookupDestinationId([1]));
+    $this->assertEquals([], $id_map->lookupDestinationId([99]));
+
+    // Lookup by complete associative list.
+    $this->assertEquals([101], $id_map->lookupDestinationId(['nid' => 1]));
+  }
+
+  /**
    * Tests the getRowByDestination method.
    */
   public function testGetRowByDestination() {
@@ -571,19 +607,11 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
     $id_map = $this->getIdMap();
     $result_row = $id_map->getRowByDestination($dest_id_values);
     $this->assertSame($row, $result_row);
-    // This value does not exist, getRowByDestination should return an (empty)
-    // array.
-    // @see \Drupal\migrate\Plugin\MigrateIdMapInterface::getRowByDestination()
-    $missing_result_row = $id_map->getRowByDestination([
-      'destination_id_property' => 'invalid_destination_id_property',
-    ]);
-    $this->assertEquals([], $missing_result_row);
-    // The destination ID values array does not contain all the destination ID
-    // keys, we expect an empty array.
-    $invalid_result_row = $id_map->getRowByDestination([
-      'invalid_destination_key' => 'invalid_destination_id_property',
-    ]);
-    $this->assertEquals([], $invalid_result_row);
+    // This value does not exist.
+    $dest_id_values = ['destination_id_property' => 'invalid_destination_id_property'];
+    $id_map = $this->getIdMap();
+    $result_row = $id_map->getRowByDestination($dest_id_values);
+    $this->assertFalse($result_row);
   }
 
   /**
@@ -647,7 +675,7 @@ class MigrateSqlIdMapTest extends MigrateTestCase {
     $this->assertSame($expected_result, $source_id);
     // Test for a miss.
     $source_id = $id_map->lookupSourceId($nonexistent_id_values);
-    $this->assertCount(0, $source_id);
+    $this->assertSame(0, count($source_id));
   }
 
   /**

@@ -19,7 +19,7 @@ class PathItemTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'path',
     'path_alias',
     'node',
@@ -32,7 +32,7 @@ class PathItemTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('node');
@@ -49,7 +49,7 @@ class PathItemTest extends KernelTestBase {
   }
 
   /**
-   * Tests creating, loading, updating and deleting aliases through PathItem.
+   * Test creating, loading, updating and deleting aliases through PathItem.
    */
   public function testPathItem() {
     /** @var \Drupal\path_alias\AliasRepositoryInterface $alias_repository */

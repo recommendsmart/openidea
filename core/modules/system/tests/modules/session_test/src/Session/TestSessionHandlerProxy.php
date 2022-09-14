@@ -37,7 +37,6 @@ class TestSessionHandlerProxy implements \SessionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function open($save_path, $name) {
     $trace = \Drupal::service('session_test.session_handler_proxy_trace');
     $trace[] = ['BEGIN', $this->optionalArgument, __FUNCTION__];
@@ -49,7 +48,6 @@ class TestSessionHandlerProxy implements \SessionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function close() {
     $trace = \Drupal::service('session_test.session_handler_proxy_trace');
     $trace[] = ['BEGIN', $this->optionalArgument, __FUNCTION__];
@@ -61,7 +59,6 @@ class TestSessionHandlerProxy implements \SessionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function read($session_id) {
     $trace = \Drupal::service('session_test.session_handler_proxy_trace');
     $trace[] = ['BEGIN', $this->optionalArgument, __FUNCTION__, $session_id];
@@ -73,7 +70,6 @@ class TestSessionHandlerProxy implements \SessionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function write($session_id, $session_data) {
     $trace = \Drupal::service('session_test.session_handler_proxy_trace');
     $trace[] = ['BEGIN', $this->optionalArgument, __FUNCTION__, $session_id];
@@ -85,7 +81,6 @@ class TestSessionHandlerProxy implements \SessionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function destroy($session_id) {
     return $this->sessionHandler->destroy($session_id);
   }
@@ -93,7 +88,6 @@ class TestSessionHandlerProxy implements \SessionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function gc($max_lifetime) {
     return $this->sessionHandler->gc($max_lifetime);
   }

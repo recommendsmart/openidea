@@ -42,7 +42,7 @@ class FieldDiscoveryTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
     $this->fieldPluginManager = $this->prophesize(MigrateFieldPluginManagerInterface::class);
     $this->migrationPluginManager = $this->prophesize(MigrationPluginManagerInterface::class);
@@ -213,7 +213,7 @@ class FieldDiscoveryTest extends UnitTestCase {
   }
 
   /**
-   * Tests the protected getCoreVersion method.
+   * Test the protected getCoreVersion method.
    *
    * @param string[] $tags
    *   The migration tags.

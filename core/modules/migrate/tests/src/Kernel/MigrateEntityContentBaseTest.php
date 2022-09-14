@@ -24,7 +24,7 @@ class MigrateEntityContentBaseTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['migrate', 'user', 'language', 'entity_test'];
+  public static $modules = ['migrate', 'user', 'language', 'entity_test'];
 
   /**
    * The storage for entity_test_mul.
@@ -43,7 +43,7 @@ class MigrateEntityContentBaseTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Enable two required fields with default values: a single-value field and
@@ -67,10 +67,8 @@ class MigrateEntityContentBaseTest extends KernelTestBase {
    *   The expected default translation language code.
    * @param string[] $others
    *   The expected other translation language codes.
-   *
-   * @internal
    */
-  protected function assertTranslations(int $id, string $default, array $others = []): void {
+  protected function assertTranslations($id, $default, $others = []) {
     $entity = $this->storage->load($id);
     $this->assertNotEmpty($entity, "Entity exists");
     $this->assertEquals($default, $entity->language()->getId(), "Entity default translation");
@@ -95,13 +93,12 @@ class MigrateEntityContentBaseTest extends KernelTestBase {
       $this->storage,
       [],
       $this->container->get('entity_field.manager'),
-      $this->container->get('plugin.manager.field.field_type'),
-      $this->container->get('account_switcher')
+      $this->container->get('plugin.manager.field.field_type')
     );
   }
 
   /**
-   * Tests importing and rolling back translated entities.
+   * Test importing and rolling back translated entities.
    */
   public function testTranslated() {
     // Create a destination.
@@ -302,26 +299,6 @@ class MigrateEntityContentBaseTest extends KernelTestBase {
     for ($i = 0; $i < $count; ++$i) {
       $this->assertSame($multi_default_value[$i], $entity->get($multi_field_name)->get($i)->getValue());
     }
-  }
-
-  /**
-   * Test BC injection of account switcher service.
-   *
-   * @group legacy
-   */
-  public function testAccountSwitcherBackwardsCompatibility() {
-    $this->expectDeprecation('Calling Drupal\migrate\Plugin\migrate\destination\EntityContentBase::__construct() without the $account_switcher argument is deprecated in drupal:9.3.0 and will be required in drupal:10.0.0. See https://www.drupal.org/node/3142975');
-    $destination = new EntityContentBase(
-      [],
-      'fake_plugin_id',
-      [],
-      $this->createMock(MigrationInterface::class),
-      $this->storage,
-      [],
-      $this->container->get('entity_field.manager'),
-      $this->container->get('plugin.manager.field.field_type')
-    );
-    $this->assertInstanceOf(EntityContentBase::class, $destination);
   }
 
 }

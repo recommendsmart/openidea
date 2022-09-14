@@ -16,7 +16,7 @@ class BookBreadcrumbTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['book', 'block', 'book_breadcrumb_test'];
+  public static $modules = ['book', 'block', 'book_breadcrumb_test'];
 
   /**
    * {@inheritdoc}
@@ -47,30 +47,14 @@ class BookBreadcrumbTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->drupalPlaceBlock('system_breadcrumb_block');
     $this->drupalPlaceBlock('page_title_block');
 
     // Create users.
-    $this->bookAuthor = $this->drupalCreateUser([
-      'create new books',
-      'create book content',
-      'edit own book content',
-      'add content to books',
-    ]);
-    $this->adminUser = $this->drupalCreateUser([
-      'create new books',
-      'create book content',
-      'edit any book content',
-      'delete any book content',
-      'add content to books',
-      'administer blocks',
-      'administer permissions',
-      'administer book outlines',
-      'administer content types',
-      'administer site configuration',
-    ]);
+    $this->bookAuthor = $this->drupalCreateUser(['create new books', 'create book content', 'edit own book content', 'add content to books']);
+    $this->adminUser = $this->drupalCreateUser(['create new books', 'create book content', 'edit any book content', 'delete any book content', 'add content to books', 'administer blocks', 'administer permissions', 'administer book outlines', 'administer content types', 'administer site configuration']);
   }
 
   /**
@@ -134,18 +118,16 @@ class BookBreadcrumbTest extends BrowserTestBase {
     $edit['book[bid]'] = $book_nid;
 
     if ($parent !== NULL) {
-      $this->drupalGet('node/add/book');
-      $this->submitForm($edit, 'Change book (update list of parents)');
+      $this->drupalPostForm('node/add/book', $edit, t('Change book (update list of parents)'));
 
       $edit['book[pid]'] = $parent;
-      $this->submitForm($edit, 'Save');
+      $this->drupalPostForm(NULL, $edit, t('Save'));
       // Make sure the parent was flagged as having children.
       $parent_node = \Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($parent);
-      $this->assertNotEmpty($parent_node->book['has_children'], 'Parent node is marked as having children');
+      $this->assertFalse(empty($parent_node->book['has_children']), 'Parent node is marked as having children');
     }
     else {
-      $this->drupalGet('node/add/book');
-      $this->submitForm($edit, 'Save');
+      $this->drupalPostForm('node/add/book', $edit, t('Save'));
     }
 
     // Check to make sure the book node was created.
@@ -157,7 +139,7 @@ class BookBreadcrumbTest extends BrowserTestBase {
   }
 
   /**
-   * Tests that the breadcrumb is updated when book content changes.
+   * Test that the breadcrumb is updated when book content changes.
    */
   public function testBreadcrumbTitleUpdates() {
     // Create a new book.
@@ -174,13 +156,12 @@ class BookBreadcrumbTest extends BrowserTestBase {
       $got_breadcrumb[] = $link->getText();
     }
     // Home link and four parent book nodes should be in the breadcrumb.
-    $this->assertCount(5, $got_breadcrumb);
-    $this->assertEquals($nodes[3]->getTitle(), end($got_breadcrumb));
+    $this->assertEqual(5, count($got_breadcrumb));
+    $this->assertEqual($nodes[3]->getTitle(), end($got_breadcrumb));
     $edit = [
       'title[0][value]' => 'Updated node5 title',
     ];
-    $this->drupalGet($nodes[3]->toUrl('edit-form'));
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm($nodes[3]->toUrl('edit-form'), $edit, 'Save');
     $this->drupalGet($nodes[4]->toUrl());
     // Fetch each node title in the current breadcrumb.
     $links = $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
@@ -188,12 +169,12 @@ class BookBreadcrumbTest extends BrowserTestBase {
     foreach ($links as $link) {
       $got_breadcrumb[] = $link->getText();
     }
-    $this->assertCount(5, $got_breadcrumb);
-    $this->assertEquals($edit['title[0][value]'], end($got_breadcrumb));
+    $this->assertEqual(5, count($got_breadcrumb));
+    $this->assertEqual($edit['title[0][value]'], end($got_breadcrumb));
   }
 
   /**
-   * Tests that the breadcrumb is updated when book access changes.
+   * Test that the breadcrumb is updated when book access changes.
    */
   public function testBreadcrumbAccessUpdates() {
     // Create a new book.
@@ -202,16 +183,15 @@ class BookBreadcrumbTest extends BrowserTestBase {
     $edit = [
       'title[0][value]' => "you can't see me",
     ];
-    $this->drupalGet($nodes[3]->toUrl('edit-form'));
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm($nodes[3]->toUrl('edit-form'), $edit, 'Save');
     $this->drupalGet($nodes[4]->toUrl());
     $links = $this->xpath('//nav[@class="breadcrumb"]/ol/li/a');
     $got_breadcrumb = [];
     foreach ($links as $link) {
       $got_breadcrumb[] = $link->getText();
     }
-    $this->assertCount(5, $got_breadcrumb);
-    $this->assertEquals($edit['title[0][value]'], end($got_breadcrumb));
+    $this->assertEqual(5, count($got_breadcrumb));
+    $this->assertEqual($edit['title[0][value]'], end($got_breadcrumb));
     $config = $this->container->get('config.factory')->getEditable('book_breadcrumb_test.settings');
     $config->set('hide', TRUE)->save();
     $this->drupalGet($nodes[4]->toUrl());
@@ -220,10 +200,10 @@ class BookBreadcrumbTest extends BrowserTestBase {
     foreach ($links as $link) {
       $got_breadcrumb[] = $link->getText();
     }
-    $this->assertCount(4, $got_breadcrumb);
-    $this->assertEquals($nodes[2]->getTitle(), end($got_breadcrumb));
+    $this->assertEqual(4, count($got_breadcrumb));
+    $this->assertEqual($nodes[2]->getTitle(), end($got_breadcrumb));
     $this->drupalGet($nodes[3]->toUrl());
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
   }
 
 }

@@ -3,7 +3,7 @@
 namespace Drupal\migrate\Event;
 
 use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Wraps a row deletion event for event listeners.

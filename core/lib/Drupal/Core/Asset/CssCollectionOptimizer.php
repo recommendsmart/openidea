@@ -59,11 +59,15 @@ class CssCollectionOptimizer implements AssetCollectionOptimizerInterface {
    * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The file system service.
    */
-  public function __construct(AssetCollectionGrouperInterface $grouper, AssetOptimizerInterface $optimizer, AssetDumperInterface $dumper, StateInterface $state, FileSystemInterface $file_system) {
+  public function __construct(AssetCollectionGrouperInterface $grouper, AssetOptimizerInterface $optimizer, AssetDumperInterface $dumper, StateInterface $state, FileSystemInterface $file_system = NULL) {
     $this->grouper = $grouper;
     $this->optimizer = $optimizer;
     $this->dumper = $dumper;
     $this->state = $state;
+    if (!$file_system) {
+      @trigger_error('The file_system service must be passed to CssCollectionOptimizer::__construct(), it is required before Drupal 9.0.0. See https://www.drupal.org/node/3006851.', E_USER_DEPRECATED);
+      $file_system = \Drupal::service('file_system');
+    }
     $this->fileSystem = $file_system;
   }
 
@@ -91,7 +95,7 @@ class CssCollectionOptimizer implements AssetCollectionOptimizerInterface {
     // Drupal contrib can override this default CSS aggregator to keep the same
     // grouping, optimizing and dumping, but change the strategy that is used to
     // determine when the aggregate should be rebuilt (e.g. mtime, HTTPS …).
-    $map = $this->state->get('drupal_css_cache_files', []);
+    $map = $this->state->get('drupal_css_cache_files') ?: [];
     $css_assets = [];
     foreach ($css_groups as $order => $css_group) {
       // We have to return a single asset, not a group of assets. It is now up
@@ -123,12 +127,8 @@ class CssCollectionOptimizer implements AssetCollectionOptimizerInterface {
               // Per the W3C specification at
               // http://www.w3.org/TR/REC-CSS2/cascade.html#at-import, @import
               // rules must precede any other style, so we move those to the
-              // top. The regular expression is expressed in NOWDOC since it is
-              // detecting backslashes as well as single and double quotes. It
-              // is difficult to read when represented as a quoted string.
-              $regexp = <<<'REGEXP'
-/@import\s*(?:'(?:\\'|.)*'|"(?:\\"|.)*"|url\(\s*(?:\\[\)\'\"]|[^'")])*\s*\)|url\(\s*'(?:\'|.)*'\s*\)|url\(\s*"(?:\"|.)*"\s*\)).*;/iU
-REGEXP;
+              // top.
+              $regexp = '/@import[^;]+;/i';
               preg_match_all($regexp, $data, $matches);
               $data = preg_replace($regexp, '', $data);
               $data = implode('', $matches[0]) . $data;

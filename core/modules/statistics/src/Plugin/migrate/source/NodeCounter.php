@@ -5,12 +5,7 @@ namespace Drupal\statistics\Plugin\migrate\source;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 
 /**
- * Drupal 6/7 node counter source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Node counter source from database.
  *
  * @MigrateSource(
  *   id = "node_counter",

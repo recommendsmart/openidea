@@ -2,7 +2,7 @@
 
 namespace Drupal\locale;
 
-use Drupal\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines a Locale event.

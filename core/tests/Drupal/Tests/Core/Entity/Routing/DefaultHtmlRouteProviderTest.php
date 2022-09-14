@@ -50,7 +50,7 @@ class DefaultHtmlRouteProviderTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->entityTypeManager = $this->prophesize(EntityTypeManagerInterface::class);
@@ -335,8 +335,6 @@ class DefaultHtmlRouteProviderTest extends UnitTestCase {
 
   /**
    * @param \Prophecy\Prophecy\ObjectProphecy $base_entity_type
-   *   (optional) The prophesize base entity type.
-   *
    * @return \Prophecy\Prophecy\ObjectProphecy
    */
   protected function getEntityType(ObjectProphecy $base_entity_type = NULL) {

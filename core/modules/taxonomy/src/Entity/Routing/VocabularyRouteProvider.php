@@ -51,11 +51,6 @@ class VocabularyRouteProvider extends AdminHtmlRouteProvider {
     $route->setDefault('_title', 'Reset');
     $route->setRequirement('_permission', $entity_type->getAdminPermission());
     $route->setOption('_admin_route', TRUE);
-    $route->setOption('parameters', [
-      'taxonomy_vocabulary' => [
-        'with_config_overrides' => TRUE,
-      ],
-    ]);
 
     return $route;
   }
@@ -71,15 +66,10 @@ class VocabularyRouteProvider extends AdminHtmlRouteProvider {
    */
   protected function getOverviewPageRoute(EntityTypeInterface $entity_type) {
     $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/overview');
-    $route->setDefault('_title_callback', '\Drupal\Core\Entity\Controller\EntityController::title');
+    $route->setDefault('_title_callback', 'Drupal\taxonomy\Controller\TaxonomyController::vocabularyTitle');
     $route->setDefault('_form', 'Drupal\taxonomy\Form\OverviewTerms');
     $route->setRequirement('_entity_access', 'taxonomy_vocabulary.access taxonomy overview');
     $route->setOption('_admin_route', TRUE);
-    $route->setOption('parameters', [
-      'taxonomy_vocabulary' => [
-        'with_config_overrides' => TRUE,
-      ],
-    ]);
 
     return $route;
   }

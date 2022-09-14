@@ -51,12 +51,21 @@ abstract class FieldRdfaTestBase extends FieldKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['rdf'];
+  public static $modules = ['rdf'];
 
   /**
    * @var string
    */
   protected $testValue;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    \Drupal::service('router.builder')->rebuild();
+  }
 
   /**
    * Helper function to test the formatter's RDFa.

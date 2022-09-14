@@ -22,12 +22,9 @@ class SessionConfiguration implements SessionConfigurationInterface {
    *
    * @see \Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage::__construct()
    * @see http://php.net/manual/session.configuration.php
-   * @see https://www.php.net/manual/session.security.ini.php
    */
   public function __construct($options = []) {
-    // Provide sensible defaults for sid_length and sid_bits_per_character.
-    // See core/assets/scaffold/files/default.services.yml for more information.
-    $this->options = $options + ['sid_length' => 48, 'sid_bits_per_character' => 6];
+    $this->options = $options;
   }
 
   /**

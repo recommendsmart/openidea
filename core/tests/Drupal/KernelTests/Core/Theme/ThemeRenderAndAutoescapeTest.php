@@ -25,7 +25,16 @@ class ThemeRenderAndAutoescapeTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    \Drupal::service('router.builder')->rebuild();
+  }
 
   /**
    * @dataProvider providerTestThemeRenderAndAutoescape
@@ -44,7 +53,7 @@ class ThemeRenderAndAutoescapeTest extends KernelTestBase {
     $renderer = \Drupal::service('renderer');
     $output = $renderer->executeInRenderContext($context, $theme_render_and_autoescape);
     $this->assertEquals($expected, $output);
-    $this->assertIsString($output);
+    $this->assertInternalType('string', $output);
   }
 
   /**

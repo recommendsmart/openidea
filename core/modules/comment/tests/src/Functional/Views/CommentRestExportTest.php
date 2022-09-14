@@ -27,7 +27,7 @@ class CommentRestExportTest extends CommentTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'comment',
     'comment_test_views',
@@ -35,7 +35,7 @@ class CommentRestExportTest extends CommentTestBase {
     'hal',
   ];
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
     // Add another anonymous comment.
     $comment = [
@@ -58,20 +58,20 @@ class CommentRestExportTest extends CommentTestBase {
   }
 
   /**
-   * Tests comment row.
+   * Test comment row.
    */
   public function testCommentRestExport() {
     $this->drupalGet(sprintf('node/%d/comments', $this->nodeUserCommented->id()), ['query' => ['_format' => 'hal_json']]);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $contents = Json::decode($this->getSession()->getPage()->getContent());
-    $this->assertEquals('How much wood would a woodchuck chuck', $contents[0]['subject']);
-    $this->assertEquals('A lot, apparently', $contents[1]['subject']);
-    $this->assertCount(2, $contents);
+    $this->assertEqual($contents[0]['subject'], 'How much wood would a woodchuck chuck');
+    $this->assertEqual($contents[1]['subject'], 'A lot, apparently');
+    $this->assertEqual(count($contents), 2);
 
     // Ensure field-level access is respected - user shouldn't be able to see
     // mail or hostname fields.
-    $this->assertSession()->responseNotContains('someone@example.com');
-    $this->assertSession()->responseNotContains('public.example.com');
+    $this->assertNoText('someone@example.com');
+    $this->assertNoText('public.example.com');
   }
 
 }

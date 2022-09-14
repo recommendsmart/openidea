@@ -2,8 +2,11 @@ name: 'Migrate Drupal Multilingual'
 type: module
 description: 'Provides a requirement for multilingual migrations.'
 package: 'Core (Experimental)'
-lifecycle: experimental
-version: VERSION
+core: 8.x
 dependencies:
-  - drupal:migrate_drupal
-hidden: true
+  - migrate_drupal
+
+# Information added by Drupal.org packaging script on 2020-11-26
+version: '8.8.12'
+project: 'drupal'
+datestamp: 1606360921

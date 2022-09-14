@@ -33,7 +33,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'George'],
           ];
           break;
-
         case 'minute':
           $expected = [
             ['name' => 'John'],
@@ -43,7 +42,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'George'],
           ];
           break;
-
         case 'hour':
           $expected = [
             ['name' => 'John'],
@@ -53,7 +51,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'George'],
           ];
           break;
-
         case 'day':
           $expected = [
             ['name' => 'John'],
@@ -63,7 +60,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'George'],
           ];
           break;
-
         case 'month':
           $expected = [
             ['name' => 'John'],
@@ -73,7 +69,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'Meredith'],
           ];
           break;
-
         case 'year':
           $expected = [
             ['name' => 'John'],
@@ -96,7 +91,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'John'],
           ];
           break;
-
         case 'minute':
           $expected = [
             ['name' => 'George'],
@@ -106,7 +100,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'John'],
            ];
           break;
-
         case 'hour':
           $expected = [
             ['name' => 'George'],
@@ -116,7 +109,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'John'],
           ];
           break;
-
         case 'day':
           $expected = [
             ['name' => 'George'],
@@ -126,7 +118,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'Meredith'],
           ];
           break;
-
         case 'month':
           $expected = [
             ['name' => 'John'],
@@ -136,7 +127,6 @@ class SortDateTest extends ViewsKernelTestBase {
             ['name' => 'Meredith'],
           ];
           break;
-
         case 'year':
           $expected = [
             ['name' => 'John'],
@@ -200,6 +190,7 @@ class SortDateTest extends ViewsKernelTestBase {
         $this->executeView($view);
 
         // Verify the result.
+        $this->assertEqual(count($this->dataSet()), count($view->result), 'The number of returned rows match.');
         $this->assertIdenticalResultset($view, $this->expectedResultSet($granularity, $reverse), [
           'views_test_data_name' => 'name',
         ], new FormattableMarkup('Result is returned correctly when ordering by granularity @granularity, @reverse.', ['@granularity' => $granularity, '@reverse' => $reverse ? 'reverse' : 'forward']));

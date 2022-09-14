@@ -23,12 +23,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['theme_test'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->container->get('theme_installer')->install(['test_theme', 'classy']);
@@ -68,7 +63,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     $this->activateTheme('test_theme');
 
     // Assert that entire library was correctly overridden.
-    $this->assertEquals($this->libraryDiscovery->getLibraryByName('core', 'drupal.collapse'), $this->libraryDiscovery->getLibraryByName('test_theme', 'collapse'), 'Entire library correctly overridden.');
+    $this->assertEqual($this->libraryDiscovery->getLibraryByName('core', 'drupal.collapse'), $this->libraryDiscovery->getLibraryByName('test_theme', 'collapse'), 'Entire library correctly overridden.');
 
     // Assert that classy library assets were correctly overridden or removed.
     $this->assertNoAssetInLibrary('core/themes/classy/css/components/button.css', 'classy', 'base', 'css');
@@ -89,8 +84,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     $library = $this->libraryDiscovery->getLibraryByName('core', 'jquery');
     foreach ($library['js'] as $definition) {
       if ($definition['data'] == 'core/modules/system/tests/themes/test_theme/js/collapse.js') {
-        $this->assertTrue($definition['minified']);
-        $this->assertSame(-20, $definition['weight'], 'Previous attributes retained');
+        $this->assertTrue($definition['minified'] && $definition['weight'] == -20, 'Previous attributes retained');
         break;
       }
     }
@@ -110,7 +104,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     }
     catch (InvalidLibrariesOverrideSpecificationException $e) {
       $expected_message = 'drupalSettings may not be overridden in libraries-override. Trying to override core/drupal.ajax/drupalSettings. Use hook_library_info_alter() instead.';
-      $this->assertEquals($expected_message, $e->getMessage(), 'Throw Exception when trying to override drupalSettings');
+      $this->assertEqual($e->getMessage(), $expected_message, 'Throw Exception when trying to override drupalSettings');
     }
   }
 
@@ -128,7 +122,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     }
     catch (InvalidLibrariesOverrideSpecificationException $e) {
       $expected_message = 'Library asset core/drupal.dialog/css is not correctly specified. It should be in the form "extension/library_name/sub_key/path/to/asset.js".';
-      $this->assertEquals($expected_message, $e->getMessage(), 'Throw Exception when specifying invalid override');
+      $this->assertEqual($e->getMessage(), $expected_message, 'Throw Exception when specifying invalid override');
     }
   }
 
@@ -147,7 +141,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     $this->assertAssetInLibrary('public://my_css/vertical-tabs.css', 'core', 'drupal.vertical-tabs', 'css');
 
     // Assert a protocol-relative URI.
-    $this->assertAssetInLibrary('//my-server/my_theme/js/overridden.js', 'core', 'drupal.displace', 'js');
+    $this->assertAssetInLibrary('//my-server/my_theme/css/jquery_ui.css', 'core', 'jquery.ui', 'css');
 
     // Assert an absolute URI.
     $this->assertAssetInLibrary('http://example.com/my_theme/css/farbtastic.css', 'core', 'jquery.farbtastic', 'css');
@@ -199,7 +193,7 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     }
     catch (InvalidLibrariesExtendSpecificationException $e) {
       $expected_message = 'The specified library "test_theme_libraries_extend/non_existent_library" does not exist.';
-      $this->assertEquals($expected_message, $e->getMessage(), 'Throw Exception when specifying non-existent libraries-extend.');
+      $this->assertEqual($e->getMessage(), $expected_message, 'Throw Exception when specifying non-existent libraries-extend.');
     }
 
     // Also, test non-string libraries-extend. An exception should be thrown.
@@ -210,23 +204,8 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
     }
     catch (InvalidLibrariesExtendSpecificationException $e) {
       $expected_message = 'The libraries-extend specification for each library must be a list of strings.';
-      $this->assertEquals($expected_message, $e->getMessage(), 'Throw Exception when specifying non-string libraries-extend.');
+      $this->assertEqual($e->getMessage(), $expected_message, 'Throw Exception when specifying non-string libraries-extend.');
     }
-  }
-
-  /**
-   * Test deprecated libraries.
-   *
-   * @group legacy
-   */
-  public function testDeprecatedLibrary() {
-    $this->expectDeprecation('Theme "theme_test" is overriding a deprecated library. The "theme_test/deprecated_library" asset library is deprecated in drupal:X.0.0 and is removed from drupal:Y.0.0. Use another library instead. See https://www.example.com');
-    $this->expectDeprecation('Theme "theme_test" is extending a deprecated library. The "theme_test/another_deprecated_library" asset library is deprecated in drupal:X.0.0 and is removed from drupal:Y.0.0. Use another library instead. See https://www.example.com');
-    $this->expectDeprecation('The "theme_test/deprecated_library" asset library is deprecated in drupal:X.0.0 and is removed from drupal:Y.0.0. Use another library instead. See https://www.example.com');
-    $this->expectDeprecation('The "theme_test/another_deprecated_library" asset library is deprecated in drupal:X.0.0 and is removed from drupal:Y.0.0. Use another library instead. See https://www.example.com');
-    $this->activateTheme('test_legacy_theme');
-    $this->libraryDiscovery->getLibraryByName('theme_test', 'deprecated_library');
-    $this->libraryDiscovery->getLibraryByName('theme_test', 'another_deprecated_library');
   }
 
   /**
@@ -250,7 +229,8 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
 
     $this->libraryDiscovery->clearCachedDefinitions();
 
-    $this->assertSame($theme_name, $theme_manager->getActiveTheme()->getName());
+    // Assert message.
+    $this->pass(sprintf('Activated theme "%s"', $theme_name));
   }
 
   /**
@@ -262,24 +242,25 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
    *   The extension in which the $library is defined.
    * @param string $library_name
    *   Name of the library.
-   * @param string $sub_key
+   * @param mixed $sub_key
    *   The library sub key where the given asset is defined.
    * @param string $message
    *   (optional) A message to display with the assertion.
    *
-   * @internal
+   * @return bool
+   *   TRUE if the specified asset is found in the library.
    */
-  protected function assertAssetInLibrary(string $asset, string $extension, string $library_name, string $sub_key, string $message = NULL): void {
+  protected function assertAssetInLibrary($asset, $extension, $library_name, $sub_key, $message = NULL) {
     if (!isset($message)) {
       $message = sprintf('Asset %s found in library "%s/%s"', $asset, $extension, $library_name);
     }
     $library = $this->libraryDiscovery->getLibraryByName($extension, $library_name);
     foreach ($library[$sub_key] as $definition) {
       if ($asset == $definition['data']) {
-        return;
+        return $this->pass($message);
       }
     }
-    $this->fail($message);
+    return $this->fail($message);
   }
 
   /**
@@ -291,23 +272,25 @@ class LibraryDiscoveryIntegrationTest extends KernelTestBase {
    *   The extension in which the $library_name is defined.
    * @param string $library_name
    *   Name of the library.
-   * @param string $sub_key
+   * @param mixed $sub_key
    *   The library sub key where the given asset is defined.
    * @param string $message
    *   (optional) A message to display with the assertion.
    *
-   * @internal
+   * @return bool
+   *   TRUE if the specified asset is not found in the library.
    */
-  protected function assertNoAssetInLibrary(string $asset, string $extension, string $library_name, string $sub_key, string $message = NULL): void {
+  protected function assertNoAssetInLibrary($asset, $extension, $library_name, $sub_key, $message = NULL) {
     if (!isset($message)) {
       $message = sprintf('Asset %s not found in library "%s/%s"', $asset, $extension, $library_name);
     }
     $library = $this->libraryDiscovery->getLibraryByName($extension, $library_name);
     foreach ($library[$sub_key] as $definition) {
       if ($asset == $definition['data']) {
-        $this->fail($message);
+        return $this->fail($message);
       }
     }
+    return $this->pass($message);
   }
 
 }

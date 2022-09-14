@@ -15,7 +15,7 @@ class FieldStorageConfigTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['node', 'field_ui'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}

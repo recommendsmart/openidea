@@ -3,6 +3,7 @@
 namespace Drupal\comment;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
@@ -12,6 +13,12 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\user\EntityOwnerInterface;
 
 class CommentStatistics implements CommentStatisticsInterface {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The current database connection.
@@ -154,7 +161,7 @@ class CommentStatistics implements CommentStatisticsInterface {
    * {@inheritdoc}
    */
   public function getMaximumCount($entity_type) {
-    return $this->database->query('SELECT MAX([comment_count]) FROM {comment_entity_statistics} WHERE [entity_type] = :entity_type', [':entity_type' => $entity_type])->fetchField();
+    return $this->database->query('SELECT MAX(comment_count) FROM {comment_entity_statistics} WHERE entity_type = :entity_type', [':entity_type' => $entity_type])->fetchField();
   }
 
   /**
@@ -179,7 +186,7 @@ class CommentStatistics implements CommentStatisticsInterface {
         // values in as strings instead of numbers in complex expressions like
         // this.
         'score' => '2.0 - 2.0 / (1.0 + ces.comment_count * (ROUND(:comment_scale, 4)))',
-        'arguments' => [':comment_scale' => \Drupal::state()->get('comment.node_comment_statistics_scale', 0)],
+        'arguments' => [':comment_scale' => \Drupal::state()->get('comment.node_comment_statistics_scale') ?: 0],
       ],
     ];
   }
@@ -195,7 +202,7 @@ class CommentStatistics implements CommentStatisticsInterface {
     }
 
     $query = $this->database->select('comment_field_data', 'c');
-    $query->addExpression('COUNT([cid])');
+    $query->addExpression('COUNT(cid)');
     $count = $query->condition('c.entity_id', $comment->getCommentedEntityId())
       ->condition('c.entity_type', $comment->getCommentedEntityTypeId())
       ->condition('c.field_name', $comment->getFieldName())

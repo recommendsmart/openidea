@@ -61,7 +61,7 @@ class ForumManagerTest extends UnitTestCase {
       ->getMock();
 
     $manager = $this->getMockBuilder('\Drupal\forum\ForumManager')
-      ->onlyMethods(['getChildren'])
+      ->setMethods(['getChildren'])
       ->setConstructorArgs([
         $config_factory,
         $entity_type_manager,

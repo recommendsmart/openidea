@@ -2,6 +2,10 @@ name: 'Entity Update Test'
 type: module
 description: 'Provides an entity type for testing definition and schema updates.'
 package: Testing
-version: VERSION
-dependencies:
-  - drupal:field
+# version: VERSION
+core: 8.x
+
+# Information added by Drupal.org packaging script on 2020-11-26
+version: '8.8.12'
+project: 'drupal'
+datestamp: 1606360921

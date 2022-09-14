@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -20,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class DateTimeDefaultWidget extends DateTimeWidgetBase {
+class DateTimeDefaultWidget extends DateTimeWidgetBase implements ContainerFactoryPluginInterface {
 
   /**
    * The date format storage.

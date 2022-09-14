@@ -7,8 +7,8 @@
 >
 
     <testsuites>
-        <testsuite name="unit tests">
-            <directory>./tests</directory>
+        <testsuite name="Symfony Cmf Routing Test Suite">
+            <directory>./Tests</directory>
         </testsuite>
     </testsuites>
 

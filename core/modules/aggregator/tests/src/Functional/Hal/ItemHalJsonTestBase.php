@@ -18,7 +18,7 @@ abstract class ItemHalJsonTestBase extends ItemResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['hal'];
+  public static $modules = ['hal'];
 
   /**
    * {@inheritdoc}
@@ -60,7 +60,7 @@ abstract class ItemHalJsonTestBase extends ItemResourceTestBase {
       ],
       '_links' => [
         'self' => [
-          'href' => $this->baseUrl . '/entity/aggregator_item/1?_format=hal_json',
+          'href' => '',
         ],
         'type' => [
           'href' => $this->baseUrl . '/rest/type/aggregator_item/aggregator_item',

@@ -16,12 +16,12 @@ class MigrateCommentFieldTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'menu_ui'];
+  public static $modules = ['comment', 'menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['comment']);
     $this->executeMigrations([
@@ -35,10 +35,8 @@ class MigrateCommentFieldTest extends MigrateDrupal6TestBase {
    *
    * @param string $comment_type
    *   The comment type.
-   *
-   * @internal
    */
-  protected function assertEntity(string $comment_type): void {
+  protected function assertEntity($comment_type) {
     $entity = FieldStorageConfig::load('node.' . $comment_type);
     $this->assertInstanceOf(FieldStorageConfig::class, $entity);
     $this->assertSame('node', $entity->getTargetEntityTypeId());

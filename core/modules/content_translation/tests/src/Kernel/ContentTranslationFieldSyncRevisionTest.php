@@ -26,7 +26,7 @@ class ContentTranslationFieldSyncRevisionTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'file',
     'image',
     'language',
@@ -58,7 +58,7 @@ class ContentTranslationFieldSyncRevisionTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $entity_type_id = 'entity_test_mulrev';
@@ -374,7 +374,7 @@ class ContentTranslationFieldSyncRevisionTest extends EntityKernelTestBase {
   }
 
   /**
-   * Tests changing the default language of an entity.
+   * Test changing the default language of an entity.
    */
   public function testChangeDefaultLanguageNonTranslatableFieldsHidden() {
     $this->setUntranslatableFieldWidgetsDisplay(FALSE);
@@ -449,10 +449,8 @@ class ContentTranslationFieldSyncRevisionTest extends EntityKernelTestBase {
    *
    * @param \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations
    *   A list of violations.
-   *
-   * @internal
    */
-  protected function assertViolations(EntityConstraintViolationListInterface $violations): void {
+  protected function assertViolations(EntityConstraintViolationListInterface $violations) {
     $entity_type_id = $this->storage->getEntityTypeId();
     $settings = $this->contentTranslationManager->getBundleTranslationSettings($entity_type_id, $entity_type_id);
     $message = !empty($settings['untranslatable_fields_hide']) ?
@@ -480,13 +478,11 @@ class ContentTranslationFieldSyncRevisionTest extends EntityKernelTestBase {
    *   - target ID (it)
    *   - alt (en)
    *   - alt (it)
-   *
-   * @internal
    */
-  protected function assertLatestRevisionFieldValues(int $entity_id, array $expected_values): void {
+  protected function assertLatestRevisionFieldValues($entity_id, array $expected_values) {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $this->storage->loadRevision($this->storage->getLatestRevisionId($entity_id));
-    @[$revision_id, $target_id_en, $target_id_it, $alt_en, $alt_it] = $expected_values;
+    @list($revision_id, $target_id_en, $target_id_it, $alt_en, $alt_it) = $expected_values;
     $this->assertEquals($revision_id, $entity->getRevisionId());
     $this->assertEquals($target_id_en, $entity->get($this->fieldName)->target_id);
     $this->assertEquals($alt_en, $entity->get($this->fieldName)->alt);

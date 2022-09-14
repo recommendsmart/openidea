@@ -8,10 +8,10 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
-use Drupal\layout_builder\SectionListTrait;
+use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
 
 /**
- * Defines an item list class for layout section fields.
+ * Defines a item list class for layout section fields.
  *
  * @internal
  *   Plugin classes are internal.
@@ -20,7 +20,7 @@ use Drupal\layout_builder\SectionListTrait;
  */
 class LayoutSectionItemList extends FieldItemList implements SectionListInterface {
 
-  use SectionListTrait;
+  use SectionStorageTrait;
 
   /**
    * Numerically indexed array of field items.

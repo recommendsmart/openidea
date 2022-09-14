@@ -15,12 +15,7 @@ class ViewsDataTest extends OptionsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
-    'options',
-    'options_test',
-    'entity_test',
-    'views',
-  ];
+  public static $modules = ['options', 'options_test', 'entity_test', 'views'];
 
   /**
    * The field storage.
@@ -32,7 +27,7 @@ class ViewsDataTest extends OptionsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp();
 
     $this->installEntitySchema('entity_test');
@@ -64,8 +59,8 @@ class ViewsDataTest extends OptionsTestBase {
 
     // Check that the options module has properly overridden default views data.
     $test_options_field = $field_data['test_options_value'];
-    $this->assertEquals('string_list_field', $test_options_field['argument']['id'], 'Argument handler is properly set for fields with allowed value callbacks.');
-    $this->assertEquals('list_field', $test_options_field['filter']['id'], 'Filter handler is properly set for fields with allowed value callbacks.');
+    $this->assertEqual($test_options_field['argument']['id'], 'string_list_field', 'Argument handler is properly set for fields with allowed value callbacks.');
+    $this->assertEqual($test_options_field['filter']['id'], 'list_field', 'Filter handler is properly set for fields with allowed value callbacks.');
   }
 
 }

@@ -194,7 +194,7 @@ class NestedArray {
    *
    * Instead, use this helper function:
    * @code
-   * NestedArray::unsetValue($form, $parents, $element);
+   * NestedArray::unset_nested_value($form, $parents, $element);
    * @endcode
    *
    * However if the number of array parent keys is static, the value should

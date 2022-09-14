@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\language\Functional;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Url;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\language\Entity\ConfigurableLanguage;
@@ -19,7 +20,7 @@ class LanguageConfigurationTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['language'];
+  public static $modules = ['language'];
 
   /**
    * {@inheritdoc}
@@ -32,76 +33,72 @@ class LanguageConfigurationTest extends BrowserTestBase {
   public function testLanguageConfiguration() {
     // Ensure the after installing the language module the weight of the English
     // language is still 0.
-    $this->assertEquals(0, ConfigurableLanguage::load('en')->getWeight(), 'The English language has a weight of 0.');
+    $this->assertEqual(ConfigurableLanguage::load('en')->getWeight(), 0, 'The English language has a weight of 0.');
 
     // User to add and remove language.
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-      'access administration pages',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer languages', 'access administration pages']);
     $this->drupalLogin($admin_user);
 
     // Check if the Default English language has no path prefix.
     $this->drupalGet('admin/config/regional/language/detection/url');
-    $this->assertSession()->fieldValueEquals("prefix[en]", '');
+    $this->assertFieldByXPath('//input[@name="prefix[en]"]', '', 'Default English has no path prefix.');
 
     // Check that Add language is a primary button.
     $this->drupalGet('admin/config/regional/language/add');
-    $button = $this->assertSession()->buttonExists('Add language');
-    $this->assertTrue($button->hasClass("button--primary"));
+    $this->assertFieldByXPath('//input[contains(@class, "button--primary")]', 'Add language', 'Add language is a primary button');
 
     // Add predefined language.
     $edit = [
       'predefined_langcode' => 'fr',
     ];
-    $this->submitForm($edit, 'Add language');
-    $this->assertSession()->pageTextContains('French');
-    $this->assertSession()->addressEquals(Url::fromRoute('entity.configurable_language.collection'));
+    $this->drupalPostForm(NULL, $edit, 'Add language');
+    $this->assertText('French');
+    $this->assertUrl(Url::fromRoute('entity.configurable_language.collection', [], ['absolute' => TRUE])->toString(), [], 'Correct page redirection.');
     // Langcode for Languages is always 'en'.
     $language = $this->config('language.entity.fr')->get();
-    $this->assertEquals('en', $language['langcode']);
+    $this->assertEqual($language['langcode'], 'en');
 
     // Check if the Default English language has no path prefix.
     $this->drupalGet('admin/config/regional/language/detection/url');
-    $this->assertSession()->fieldValueEquals("prefix[en]", '');
+    $this->assertFieldByXPath('//input[@name="prefix[en]"]', '', 'Default English has no path prefix.');
     // Check if French has a path prefix.
     $this->drupalGet('admin/config/regional/language/detection/url');
-    $this->assertSession()->fieldValueEquals("prefix[fr]", 'fr');
+    $this->assertFieldByXPath('//input[@name="prefix[fr]"]', 'fr', 'French has a path prefix.');
 
     // Check if we can change the default language.
     $this->drupalGet('admin/config/regional/language');
-    $this->assertSession()->checkboxChecked('edit-site-default-language-en');
+    $this->assertFieldChecked('edit-site-default-language-en', 'English is the default language.');
 
     // Change the default language.
     $edit = [
       'site_default_language' => 'fr',
     ];
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm(NULL, $edit, t('Save configuration'));
     $this->rebuildContainer();
-    $this->assertSession()->checkboxChecked('edit-site-default-language-fr');
-    $this->assertSession()->addressEquals(Url::fromRoute('entity.configurable_language.collection', [], ['langcode' => 'fr']));
+    $this->assertFieldChecked('edit-site-default-language-fr', 'Default language updated.');
+    $this->assertUrl(Url::fromRoute('entity.configurable_language.collection', [], ['absolute' => TRUE, 'langcode' => 'fr'])->toString(), [], 'Correct page redirection.');
 
     // Check if a valid language prefix is added after changing the default
     // language.
     $this->drupalGet('admin/config/regional/language/detection/url');
-    $this->assertSession()->fieldValueEquals("prefix[en]", 'en');
+    $this->assertFieldByXPath('//input[@name="prefix[en]"]', 'en', 'A valid path prefix has been added to the previous default language.');
     // Check if French still has a path prefix.
     $this->drupalGet('admin/config/regional/language/detection/url');
-    $this->assertSession()->fieldValueEquals("prefix[fr]", 'fr');
+    $this->assertFieldByXPath('//input[@name="prefix[fr]"]', 'fr', 'French still has a path prefix.');
 
     // Check that prefix can be changed.
     $edit = [
       'prefix[fr]' => 'french',
     ];
-    $this->submitForm($edit, 'Save configuration');
-    $this->assertSession()->fieldValueEquals("prefix[fr]", 'french');
+    $this->drupalPostForm(NULL, $edit, t('Save configuration'));
+    $this->assertFieldByXPath('//input[@name="prefix[fr]"]', 'french', 'French path prefix has changed.');
 
     // Check that the prefix can be removed.
     $edit = [
       'prefix[fr]' => '',
     ];
-    $this->submitForm($edit, 'Save configuration');
-    $this->assertSession()->pageTextNotContains('The prefix may only be left blank for the selected detection fallback language.');
+    $this->drupalPostForm(NULL, $edit, t('Save configuration'));
+    $this->assertNoText(t('The prefix may only be left blank for the selected detection fallback language.'), 'The path prefix can be removed for the default language');
 
     // Change default negotiation language.
     $this->config('language.negotiation')->set('selected_langcode', 'fr')->save();
@@ -110,51 +107,49 @@ class LanguageConfigurationTest extends BrowserTestBase {
     $edit = [
       'prefix[en]' => '',
     ];
-    $this->submitForm($edit, 'Save configuration');
-    $this->assertSession()->pageTextContains('The prefix may only be left blank for the selected detection fallback language.');
+    $this->drupalPostForm(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('The prefix may only be left blank for the selected detection fallback language.'));
 
-    // Check that prefix cannot be changed to contain a slash.
+    //  Check that prefix cannot be changed to contain a slash.
     $edit = [
       'prefix[en]' => 'foo/bar',
     ];
-    $this->submitForm($edit, 'Save configuration');
-    $this->assertSession()->pageTextContains('The prefix may not contain a slash.');
+    $this->drupalPostForm(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('The prefix may not contain a slash.'), 'English prefix cannot be changed to contain a slash.');
 
     // Remove English language and add a new Language to check if langcode of
     // Language entity is 'en'.
-    $this->drupalGet('admin/config/regional/language/delete/en');
-    $this->submitForm([], 'Delete');
+    $this->drupalPostForm('admin/config/regional/language/delete/en', [], t('Delete'));
     $this->rebuildContainer();
-    $this->assertSession()->pageTextContains("The English (en) language has been removed.");
+    $this->assertRaw(t('The %language (%langcode) language has been removed.', ['%language' => 'English', '%langcode' => 'en']));
 
     // Ensure that French language has a weight of 1 after being created through
     // the UI.
     $french = ConfigurableLanguage::load('fr');
-    $this->assertEquals(1, $french->getWeight(), 'The French language has a weight of 1.');
+    $this->assertEqual($french->getWeight(), 1, 'The French language has a weight of 1.');
     // Ensure that French language can now have a weight of 0.
     $french->setWeight(0)->save();
-    $this->assertEquals(0, $french->getWeight(), 'The French language has a weight of 0.');
+    $this->assertEqual($french->getWeight(), 0, 'The French language has a weight of 0.');
     // Ensure that new languages created through the API get a weight of 0.
     $afrikaans = ConfigurableLanguage::createFromLangcode('af');
     $afrikaans->save();
-    $this->assertEquals(0, $afrikaans->getWeight(), 'The Afrikaans language has a weight of 0.');
+    $this->assertEqual($afrikaans->getWeight(), 0, 'The Afrikaans language has a weight of 0.');
     // Ensure that a new language can be created with any weight.
     $arabic = ConfigurableLanguage::createFromLangcode('ar');
     $arabic->setWeight(4)->save();
-    $this->assertEquals(4, $arabic->getWeight(), 'The Arabic language has a weight of 0.');
+    $this->assertEqual($arabic->getWeight(), 4, 'The Arabic language has a weight of 0.');
 
     $edit = [
       'predefined_langcode' => 'de',
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, 'Add language');
     $language = $this->config('language.entity.de')->get();
-    $this->assertEquals('fr', $language['langcode']);
+    $this->assertEqual($language['langcode'], 'fr');
 
     // Ensure that German language has a weight of 5 after being created through
     // the UI.
     $french = ConfigurableLanguage::load('de');
-    $this->assertEquals(5, $french->getWeight(), 'The German language has a weight of 5.');
+    $this->assertEqual($french->getWeight(), 5, 'The German language has a weight of 5.');
   }
 
   /**
@@ -162,10 +157,7 @@ class LanguageConfigurationTest extends BrowserTestBase {
    */
   public function testLanguageConfigurationWeight() {
     // User to add and remove language.
-    $admin_user = $this->drupalCreateUser([
-      'administer languages',
-      'access administration pages',
-      ]);
+    $admin_user = $this->drupalCreateUser(['administer languages', 'access administration pages']);
     $this->drupalLogin($admin_user);
     $this->checkConfigurableLanguageWeight();
 
@@ -173,21 +165,18 @@ class LanguageConfigurationTest extends BrowserTestBase {
     $edit = [
       'predefined_langcode' => 'fr',
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, 'Add language');
     $this->checkConfigurableLanguageWeight('after adding new language');
 
     // Re-ordering languages.
     $edit = [
       'languages[en][weight]' => $this->getHighestConfigurableLanguageWeight() + 1,
     ];
-    $this->drupalGet('admin/config/regional/language');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/regional/language', $edit, 'Save configuration');
     $this->checkConfigurableLanguageWeight('after re-ordering');
 
     // Remove predefined language.
-    $this->drupalGet('admin/config/regional/language/delete/fr');
-    $this->submitForm([], 'Delete');
+    $this->drupalPostForm('admin/config/regional/language/delete/fr', [], 'Delete');
     $this->checkConfigurableLanguageWeight('after deleting a language');
   }
 
@@ -203,8 +192,10 @@ class LanguageConfigurationTest extends BrowserTestBase {
     // Reset language list.
     \Drupal::languageManager()->reset();
     $max_configurable_language_weight = $this->getHighestConfigurableLanguageWeight();
+    $replacements = ['@event' => $state];
     foreach (\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_LOCKED) as $locked_language) {
-      $this->assertGreaterThan($max_configurable_language_weight, $locked_language->getWeight(), sprintf('System language %s does not have higher weight than configurable languages %s', $locked_language->getName(), $state));
+      $replacements['%language'] = $locked_language->getName();
+      $this->assertTrue($locked_language->getWeight() > $max_configurable_language_weight, new FormattableMarkup('System language %language has higher weight than configurable languages @event', $replacements));
     }
   }
 
@@ -220,7 +211,7 @@ class LanguageConfigurationTest extends BrowserTestBase {
     $storage = $this->container->get('entity_type.manager')
       ->getStorage('configurable_language');
     $storage->resetCache();
-    /** @var \Drupal\Core\Language\LanguageInterface[] $languages */
+    /* @var $languages \Drupal\Core\Language\LanguageInterface[] */
     $languages = $storage->loadMultiple();
     foreach ($languages as $language) {
       if (!$language->isLocked()) {

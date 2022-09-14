@@ -1,8 +1,0 @@
-services:
-  administerusersbyrole.route_subscriber:
-    class: Drupal\administerusersbyrole\Routing\RouteSubscriber
-    tags:
-      - { name: event_subscriber }
-  administerusersbyrole.access:
-    class: Drupal\administerusersbyrole\Services\AccessManager
-    arguments: ['@config.factory']

@@ -16,7 +16,7 @@ class MigrateEmbeddedDataTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['migrate'];
+  public static $modules = ['migrate'];
 
   /**
    * Tests the embedded_data source plugin.
@@ -45,7 +45,10 @@ class MigrateEmbeddedDataTest extends KernelTestBase {
     $results = [];
     /** @var \Drupal\migrate\Row $row */
     foreach ($source as $row) {
-      $this->assertFalse($row->isStub());
+      // The plugin should not mark any rows as stubs. We need to use
+      // assertSame() here because assertFalse() will pass falsy values (e.g.,
+      // empty arrays).
+      $this->assertSame(FALSE, $row->isStub());
 
       $data_row = $row->getSource();
       // The "data" row returned by getSource() also includes all source
@@ -55,17 +58,17 @@ class MigrateEmbeddedDataTest extends KernelTestBase {
       unset($data_row['ids']);
       $results[] = $data_row;
     }
-    $this->assertSame($data_rows, $results);
+    $this->assertIdentical($results, $data_rows);
 
     // Validate the public APIs.
-    $this->assertSame(count($data_rows), $source->count());
-    $this->assertSame($ids, $source->getIds());
+    $this->assertIdentical($source->count(), count($data_rows));
+    $this->assertIdentical($source->getIds(), $ids);
     $expected_fields = [
       'key' => 'key',
       'field1' => 'field1',
       'field2' => 'field2',
     ];
-    $this->assertSame($expected_fields, $source->fields());
+    $this->assertIdentical($source->fields(), $expected_fields);
   }
 
 }

@@ -51,8 +51,8 @@ class InstallerSiteConfigProfileTest extends InstallerTestBase {
    * {@inheritdoc}
    */
   protected function setUpSite() {
-    $this->assertSession()->fieldValueEquals('site_mail', self::EXPECTED_SITE_MAIL);
-    $this->assertSession()->fieldValueEquals('date_default_timezone', self::EXPECTED_TIMEZONE);
+    $this->assertFieldByName('site_mail', self::EXPECTED_SITE_MAIL);
+    $this->assertFieldByName('date_default_timezone', self::EXPECTED_TIMEZONE);
 
     return parent::setUpSite();
   }
@@ -61,8 +61,8 @@ class InstallerSiteConfigProfileTest extends InstallerTestBase {
    * Verify the correct site config was set.
    */
   public function testInstaller() {
-    $this->assertEquals(self::EXPECTED_SITE_MAIL, $this->config('system.site')->get('mail'));
-    $this->assertEquals(self::EXPECTED_TIMEZONE, $this->config('system.date')->get('timezone.default'));
+    $this->assertEqual($this->config('system.site')->get('mail'), self::EXPECTED_SITE_MAIL);
+    $this->assertEqual($this->config('system.date')->get('timezone.default'), self::EXPECTED_TIMEZONE);
   }
 
 }

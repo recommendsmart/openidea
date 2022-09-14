@@ -124,7 +124,6 @@ class OperationFactory {
    *
    * @param Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $file
    *   Scaffold file to check.
-   *
    * @return bool
    *   True if the file exists and has content.
    */

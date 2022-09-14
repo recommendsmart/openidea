@@ -12,7 +12,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
@@ -52,16 +52,9 @@ class FormAjaxSubscriberTest extends UnitTestCase {
   protected $messenger;
 
   /**
-   * The event used to derive the response.
-   *
-   * @var \Symfony\Component\HttpKernel\Event\ExceptionEvent
-   */
-  protected $event = NULL;
-
-  /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->httpKernel = $this->createMock('Symfony\Component\HttpKernel\HttpKernelInterface');
@@ -91,9 +84,9 @@ class FormAjaxSubscriberTest extends UnitTestCase {
       ->with($request, $expected_form, $form_state, $commands)
       ->willReturn($response);
 
-    $this->assertResponseFromException($request, $exception, $response);
-    $this->assertTrue($this->event->isAllowingCustomResponseCode());
-    $this->assertSame(200, $this->event->getResponse()->getStatusCode());
+    $event = $this->assertResponseFromException($request, $exception, $response);
+    $this->assertTrue($event->isAllowingCustomResponseCode());
+    $this->assertSame(200, $event->getResponse()->getStatusCode());
   }
 
   /**
@@ -116,9 +109,9 @@ class FormAjaxSubscriberTest extends UnitTestCase {
       ->with($request, $expected_form, $form_state, $commands)
       ->willReturn($response);
 
-    $this->assertResponseFromException($request, $exception, $response);
-    $this->assertTrue($this->event->isAllowingCustomResponseCode());
-    $this->assertSame(200, $this->event->getResponse()->getStatusCode());
+    $event = $this->assertResponseFromException($request, $exception, $response);
+    $this->assertTrue($event->isAllowingCustomResponseCode());
+    $this->assertSame(200, $event->getResponse()->getStatusCode());
   }
 
   /**
@@ -153,8 +146,8 @@ class FormAjaxSubscriberTest extends UnitTestCase {
       ->with($request, $expected_form, $form_state, $commands)
       ->willThrowException($expected_exception);
 
-    $this->assertResponseFromException($request, $exception, NULL);
-    $this->assertSame($expected_exception, $this->event->getThrowable());
+    $event = $this->assertResponseFromException($request, $exception, NULL);
+    $this->assertSame($expected_exception, $event->getException());
   }
 
   /**
@@ -173,7 +166,7 @@ class FormAjaxSubscriberTest extends UnitTestCase {
         $this->getStringTranslationStub(),
         $this->messenger,
       ])
-      ->onlyMethods(['formatSize'])
+      ->setMethods(['formatSize'])
       ->getMock();
 
     $this->subscriber->expects($this->once())
@@ -198,7 +191,7 @@ class FormAjaxSubscriberTest extends UnitTestCase {
     $exception = new BrokenPostRequestException(32 * 1e6);
     $request = new Request([FormBuilderInterface::AJAX_FORM_REQUEST => TRUE]);
 
-    $event = new ExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MASTER_REQUEST, $exception);
+    $event = new GetResponseForExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MASTER_REQUEST, $exception);
     $this->subscriber->onException($event);
     $this->assertTrue($event->isAllowingCustomResponseCode());
     $actual_response = $event->getResponse();
@@ -263,13 +256,15 @@ class FormAjaxSubscriberTest extends UnitTestCase {
    * @param \Symfony\Component\HttpFoundation\Response|null $expected_response
    *   The response expected to be set on the event.
    *
-   * @internal
+   * @return \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent
+   *   The event used to derive the response.
    */
-  protected function assertResponseFromException(Request $request, \Exception $exception, ?Response $expected_response): void {
-    $this->event = new ExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MASTER_REQUEST, $exception);
-    $this->subscriber->onException($this->event);
+  protected function assertResponseFromException(Request $request, \Exception $exception, $expected_response) {
+    $event = new GetResponseForExceptionEvent($this->httpKernel, $request, HttpKernelInterface::MASTER_REQUEST, $exception);
+    $this->subscriber->onException($event);
 
-    $this->assertSame($expected_response, $this->event->getResponse());
+    $this->assertSame($expected_response, $event->getResponse());
+    return $event;
   }
 
 }

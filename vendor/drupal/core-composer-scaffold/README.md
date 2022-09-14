@@ -48,14 +48,14 @@ their destination location. In order to prevent arbitrary dependencies from
 copying files via the scaffold mechanism, only those projects that are
 specifically permitted by the top-level project will be used to scaffold files.
 
-Example: Permit scaffolding from the project `upstream/project`
+Example: Permit scaffolding from the project `drupal/core`
 ```
   "name": "my/project",
   ...
   "extra": {
     "drupal-scaffold": {
       "allowed-packages": [
-        "upstream/project"
+        "drupal/core"
       ],
       ...
     }
@@ -63,9 +63,8 @@ Example: Permit scaffolding from the project `upstream/project`
 ```
 Allowing a package to scaffold files also permits it to delegate permission to
 scaffold to any project that it requires itself. This allows a package to
-organize its scaffold assets as it sees fit. For example, if `upstream/project`
-stores its assets in a subproject `upstream/assets`, `upstream/assets` would
-implicitly be allowed to scaffold files.
+organize its scaffold assets as it sees fit. For example, the project
+`drupal/core` may choose to store its assets in a subproject `drupal/assets`.
 
 It is possible for a project to obtain scaffold files from multiple projects.
 For example, a Drupal project using a distribution, and installing on a specific
@@ -78,8 +77,7 @@ web hosting service provider might take its scaffold files from:
 
 Each project allowed to scaffold by the top-level project will be used in turn,
 with projects declared later in the `allowed-packages` list taking precedence
-over the projects named before. `drupal/core` is implicitly allowed and will be
-placed at the top of the list. The top-level composer.json itself is also
+over the projects named before. The top-level composer.json itself is always
 implicitly allowed to scaffold files, and its scaffold files have highest
 priority.
 
@@ -232,7 +230,7 @@ The `allowed-packages` configuration setting contains an ordered list of package
 names that will be used during the scaffolding phase.
 ```
 "allowed-packages": [
-  "example/assets",
+  "drupal/core",
 ],
 ```
 ### file-mapping
@@ -383,7 +381,7 @@ Sample composer.json for a project that relies on packages that use composer-sca
   "name": "my/project",
   "require": {
     "drupal/core-composer-scaffold": "*",
-    "composer/installers": "^1.9",
+    "composer/installers": "^1.2",
     "cweagans/composer-patches": "^1.6.5",
     "drupal/core": "^8.8.x-dev",
     "service-provider/d8-scaffold-files": "^1"
@@ -394,10 +392,14 @@ Sample composer.json for a project that relies on packages that use composer-sca
   },
   "extra": {
     "drupal-scaffold": {
+      "allowed-packages": [
+        "drupal/core"
+      ],
       "locations": {
         "web-root": "./docroot"
       },
       "symlink": true,
+      "overwrite": true,
       "file-mapping": {
         "[web-root]/.htaccess": false,
         "[web-root]/robots.txt": "assets/robots-default.txt"

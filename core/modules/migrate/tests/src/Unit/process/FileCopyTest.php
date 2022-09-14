@@ -11,10 +11,63 @@ use Drupal\migrate\Plugin\MigrateProcessInterface;
  * Tests the file copy process plugin.
  *
  * @group migrate
+ * @group legacy
  *
  * @coversDefaultClass \Drupal\migrate\Plugin\migrate\process\FileCopy
  */
 class FileCopyTest extends MigrateProcessTestCase {
+
+  /**
+   * Tests that the rename configuration key will trigger a deprecation notice.
+   *
+   * @dataProvider providerDeprecationNoticeRename
+   *
+   * @param array $configuration
+   *   The plugin configuration.
+   * @param $expected
+   *   The expected value of the plugin configuration.
+   *
+   * @expectedDeprecation Using the key 'rename' is deprecated, use 'file_exists' => 'rename' instead. See https://www.drupal.org/node/2981389.
+   */
+  public function testDeprecationNoticeRename($configuration, $expected) {
+    $this->assertPlugin($configuration, $expected);
+  }
+
+  /**
+   * Data provider for testDeprecationNoticeRename.
+   */
+  public function providerDeprecationNoticeRename() {
+    return [
+      [['rename' => TRUE], FileSystemInterface::EXISTS_RENAME],
+      [['rename' => FALSE], FileSystemInterface::EXISTS_REPLACE],
+    ];
+  }
+
+  /**
+   * Tests that the reuse configuration key will trigger a deprecation notice.
+   *
+   * @dataProvider providerDeprecationNoticeReuse
+   *
+   * @param array $configuration
+   *   The plugin configuration.
+   * @param $expected
+   *   The expected value of the plugin configuration.
+   *
+   * @expectedDeprecation Using the key 'reuse' is deprecated, use 'file_exists' => 'use existing' instead. See https://www.drupal.org/node/2981389.
+   */
+  public function testDeprecationNoticeReuse($configuration, $expected) {
+    $this->assertPlugin($configuration, $expected);
+  }
+
+  /**
+   * Data provider for testDeprecationNoticeReuse.
+   */
+  public function providerDeprecationNoticeReuse() {
+    return [
+      [['reuse' => TRUE], FileSystemInterface::EXISTS_ERROR],
+      [['reuse' => FALSE], FileSystemInterface::EXISTS_REPLACE],
+    ];
+  }
 
   /**
    * Tests that the plugin constructor correctly sets the configuration.
@@ -48,12 +101,10 @@ class FileCopyTest extends MigrateProcessTestCase {
    *
    * @param array $configuration
    *   The plugin configuration.
-   * @param int $expected
+   * @param $expected
    *   The expected value of the plugin configuration.
-   *
-   * @internal
    */
-  protected function assertPlugin(array $configuration, int $expected): void {
+  protected function assertPlugin($configuration, $expected) {
     $stream_wrapper_manager = $this->prophesize(StreamWrapperManagerInterface::class)->reveal();
     $file_system = $this->prophesize(FileSystemInterface::class)->reveal();
     $download_plugin = $this->prophesize(MigrateProcessInterface::class)->reveal();

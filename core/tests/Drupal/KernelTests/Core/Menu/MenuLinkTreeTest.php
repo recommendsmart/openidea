@@ -35,7 +35,7 @@ class MenuLinkTreeTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'system',
     'menu_test',
     'menu_link_content',
@@ -47,8 +47,9 @@ class MenuLinkTreeTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
+    \Drupal::service('router.builder')->rebuild();
     $this->installEntitySchema('user');
     $this->installEntitySchema('menu_link_content');
 
@@ -68,17 +69,17 @@ class MenuLinkTreeTest extends KernelTestBase {
     \Drupal::entityTypeManager()->getStorage('menu_link_content')->create(['link' => ['uri' => 'internal:/menu_name_test'], 'menu_name' => 'menu2', 'bundle' => 'menu_link_content', 'title' => 'Link test'])->save();
 
     $output = $this->linkTree->load('menu1', new MenuTreeParameters());
-    $this->assertCount(2, $output);
+    $this->assertEqual(count($output), 2);
     $output = $this->linkTree->load('menu2', new MenuTreeParameters());
-    $this->assertCount(1, $output);
+    $this->assertEqual(count($output), 1);
 
     $this->menuLinkManager->deleteLinksInMenu('menu1');
 
     $output = $this->linkTree->load('menu1', new MenuTreeParameters());
-    $this->assertCount(0, $output);
+    $this->assertEqual(count($output), 0);
 
     $output = $this->linkTree->load('menu2', new MenuTreeParameters());
-    $this->assertCount(1, $output);
+    $this->assertEqual(count($output), 1);
   }
 
   /**
@@ -119,16 +120,16 @@ class MenuLinkTreeTest extends KernelTestBase {
       return array_reduce($tree, $sum);
     };
 
-    $this->assertEquals(8, $count($tree));
+    $this->assertEqual($count($tree), 8);
     $parameters = new MenuTreeParameters();
     $parameters->setRoot('test.example2');
     $tree = $this->linkTree->load($instance->getMenuName(), $parameters);
     $top_link = reset($tree);
-    $this->assertCount(1, $top_link->subtree);
+    $this->assertEqual(count($top_link->subtree), 1);
     $child = reset($top_link->subtree);
-    $this->assertEquals($links[3]->getPluginId(), $child->link->getPluginId());
+    $this->assertEqual($child->link->getPluginId(), $links[3]->getPluginId());
     $height = $this->linkTree->getSubtreeHeight('test.example2');
-    $this->assertEquals(3, $height);
+    $this->assertEqual($height, 3);
   }
 
 }

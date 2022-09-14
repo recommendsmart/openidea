@@ -11,7 +11,7 @@ use Drupal\migrate\Event\MigratePreRowSaveEvent;
 class MigratePreRowSaveEventTest extends EventBaseTest {
 
   /**
-   * Tests getRow method.
+   * Test getRow method.
    *
    * @covers ::__construct
    * @covers ::getRow

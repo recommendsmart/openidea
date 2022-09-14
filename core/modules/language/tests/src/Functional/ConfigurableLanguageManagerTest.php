@@ -24,7 +24,7 @@ class ConfigurableLanguageManagerTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'content_translation',
     'node',
@@ -42,7 +42,7 @@ class ConfigurableLanguageManagerTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     /** @var \Drupal\user\UserInterface $user */
@@ -53,7 +53,7 @@ class ConfigurableLanguageManagerTest extends BrowserTestBase {
     // Create a page node type and make it translatable.
     NodeType::create([
       'type' => 'page',
-      'name' => 'Page',
+      'name' => t('Page'),
     ])->save();
 
     $config = ContentLanguageSettings::loadByEntityTypeBundle('node', 'page');
@@ -103,7 +103,7 @@ class ConfigurableLanguageManagerTest extends BrowserTestBase {
   }
 
   /**
-   * Tests translation with URL and Preferred Admin Language negotiators.
+   * Test translation with URL and Preferred Admin Language negotiators.
    *
    * The interface language uses the preferred language for admin pages of the
    * user and after that the URL. The Content uses just the URL.
@@ -147,7 +147,7 @@ class ConfigurableLanguageManagerTest extends BrowserTestBase {
   }
 
   /**
-   * Tests translation with URL and Session Language Negotiators.
+   * Test translation with URL and Session Language Negotiators.
    */
   public function testUrlContentTranslationWithSessionLanguage() {
     $assert_session = $this->assertSession();
@@ -256,12 +256,12 @@ class ConfigurableLanguageManagerTest extends BrowserTestBase {
     $assert_session->pageTextNotContains($field_label_es);
 
     // Set admin language to Spanish.
-    $this->submitForm(['edit-preferred-admin-langcode' => 'es'], 'edit-submit');
+    $this->drupalPostForm(NULL, ['edit-preferred-admin-langcode' => 'es'], 'edit-submit');
     $assert_session->pageTextContains($field_label_es);
     $assert_session->pageTextNotContains($field_label_en);
 
     // Set admin language to English.
-    $this->submitForm(['edit-preferred-admin-langcode' => 'en'], 'edit-submit');
+    $this->drupalPostForm(NULL, ['edit-preferred-admin-langcode' => 'en'], 'edit-submit');
     $assert_session->pageTextContains($field_label_en);
     $assert_session->pageTextNotContains($field_label_es);
   }

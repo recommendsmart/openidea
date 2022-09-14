@@ -30,7 +30,7 @@ class StorageTest extends UITestBase {
    *
    * @var array
    */
-  protected static $modules = ['views_ui', 'language'];
+  public static $modules = ['views_ui', 'language'];
 
   /**
    * Tests changing label, description and tag.
@@ -49,14 +49,13 @@ class StorageTest extends UITestBase {
       'langcode' => 'fr',
     ];
 
-    $this->drupalGet("admin/structure/views/nojs/edit-details/{$view_name}/default");
-    $this->submitForm($edit, 'Apply');
-    $this->submitForm([], 'Save');
+    $this->drupalPostForm("admin/structure/views/nojs/edit-details/$view_name/default", $edit, t('Apply'));
+    $this->drupalPostForm(NULL, [], t('Save'));
 
     $view = Views::getView($view_name);
 
     foreach (['label', 'tag', 'description', 'langcode'] as $property) {
-      $this->assertEquals($edit[$property], $view->storage->get($property), new FormattableMarkup('Make sure the property @property got probably saved.', ['@property' => $property]));
+      $this->assertEqual($view->storage->get($property), $edit[$property], new FormattableMarkup('Make sure the property @property got probably saved.', ['@property' => $property]));
     }
   }
 

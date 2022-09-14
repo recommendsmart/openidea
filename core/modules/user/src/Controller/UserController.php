@@ -71,11 +71,15 @@ class UserController extends ControllerBase {
    * @param \Drupal\Core\Flood\FloodInterface $flood
    *   The flood service.
    */
-  public function __construct(DateFormatterInterface $date_formatter, UserStorageInterface $user_storage, UserDataInterface $user_data, LoggerInterface $logger, FloodInterface $flood) {
+  public function __construct(DateFormatterInterface $date_formatter, UserStorageInterface $user_storage, UserDataInterface $user_data, LoggerInterface $logger, FloodInterface $flood = NULL) {
     $this->dateFormatter = $date_formatter;
     $this->userStorage = $user_storage;
     $this->userData = $user_data;
     $this->logger = $logger;
+    if (!$flood) {
+      @trigger_error('Calling ' . __METHOD__ . ' without the $flood parameter is deprecated in drupal:8.8.0 and is required in drupal:9.0.0. See https://www.drupal.org/node/1681832', E_USER_DEPRECATED);
+      $flood = \Drupal::service('flood');
+    }
     $this->flood = $flood;
   }
 
@@ -210,8 +214,6 @@ class UserController extends ControllerBase {
    *   The current timestamp.
    * @param string $hash
    *   Login link hash.
-   * @param \Symfony\Component\HttpFoundation\Request $request
-   *   The request.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Returns a redirect to the user edit form if the information is correct.
@@ -221,7 +223,7 @@ class UserController extends ControllerBase {
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    *   If $uid is for a blocked user or invalid user ID.
    */
-  public function resetPassLogin($uid, $timestamp, $hash, Request $request) {
+  public function resetPassLogin($uid, $timestamp, $hash) {
     // The current user is not logged in, so check the parameters.
     $current = REQUEST_TIME;
     /** @var \Drupal\user\UserInterface $user */
@@ -248,7 +250,7 @@ class UserController extends ControllerBase {
       // Let the user's password be changed without the current password
       // check.
       $token = Crypt::randomBytesBase64(55);
-      $request->getSession()->set('pass_reset_' . $user->id(), $token);
+      $_SESSION['pass_reset_' . $user->id()] = $token;
       // Clear any flood events for this user.
       $this->flood->clear('user.password_request_user', $uid);
       return $this->redirect(
@@ -315,9 +317,7 @@ class UserController extends ControllerBase {
    *   A redirection to home page.
    */
   public function logout() {
-    if ($this->currentUser()->isAuthenticated()) {
-      user_logout();
-    }
+    user_logout();
     return $this->redirect('<front>');
   }
 
@@ -345,7 +345,7 @@ class UserController extends ControllerBase {
       // Validate expiration and hashed password/login.
       if ($timestamp <= $current && $current - $timestamp < $timeout && $user->id() && $timestamp >= $user->getLastLoginTime() && hash_equals($hashed_pass, user_pass_rehash($user, $timestamp))) {
         $edit = [
-          'user_cancel_notify' => $account_data['cancel_notify'] ?? $this->config('user.settings')->get('notify.status_canceled'),
+          'user_cancel_notify' => isset($account_data['cancel_notify']) ? $account_data['cancel_notify'] : $this->config('user.settings')->get('notify.status_canceled'),
         ];
         user_cancel($edit, $user->id(), $account_data['cancel_method']);
         // Since user_cancel() is not invoked via Form API, batch processing

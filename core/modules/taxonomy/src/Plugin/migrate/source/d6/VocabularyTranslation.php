@@ -6,12 +6,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 
 /**
- * Drupal 6 i18n vocabulary translations source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Drupal 6 vocabulary translations from source database.
  *
  * @MigrateSource(
  *   id = "d6_taxonomy_vocabulary_translation",
@@ -34,8 +29,8 @@ class VocabularyTranslation extends DrupalSqlBase {
     // and objectindex. The objectid column is a text field. Therefore, for the
     // join to work in PostgreSQL, use the objectindex field as this is numeric
     // like the vid field.
-    $query->join('i18n_strings', 'i18n', '[v].[vid] = [i18n].[objectindex]');
-    $query->innerJoin('locales_target', 'lt', '[lt].[lid] = [i18n].[lid]');
+    $query->join('i18n_strings', 'i18n', 'v.vid = i18n.objectindex');
+    $query->innerJoin('locales_target', 'lt', 'lt.lid = i18n.lid');
 
     return $query;
   }
@@ -60,7 +55,6 @@ class VocabularyTranslation extends DrupalSqlBase {
     // the language.
     $language = $row->getSourceProperty('ltlanguage');
     $row->setSourceProperty('language', $language);
-    return parent::prepareRow($row);
   }
 
   /**

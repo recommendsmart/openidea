@@ -148,8 +148,8 @@ class ServerCommand extends Command {
       $url = escapeshellarg($url);
     }
 
-    $is_linux = Process::fromShellCommandline('which xdg-open')->run();
-    $is_osx = Process::fromShellCommandline('which open')->run();
+    $is_linux = (new Process('which xdg-open'))->run();
+    $is_osx = (new Process('which open'))->run();
     if ($is_linux === 0) {
       $cmd = 'xdg-open ' . $url;
     }
@@ -176,6 +176,7 @@ class ServerCommand extends Command {
     $php = "<?php sleep(2); passthru(\"$cmd\"); ?>";
     $process = new PhpProcess($php);
     $process->start();
+    return;
   }
 
   /**

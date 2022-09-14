@@ -12,7 +12,7 @@ use Drupal\image\ConfigurableImageEffectBase;
  * @ImageEffect(
  *   id = "image_convert",
  *   label = @Translation("Convert"),
- *   description = @Translation("Converts an image to a format (such as JPEG).")
+ *   description = @Translation("Converts an image between extensions (e.g. from PNG to JPEG).")
  * )
  */
 class ConvertImageEffect extends ConfigurableImageEffectBase {
@@ -67,7 +67,7 @@ class ConvertImageEffect extends ConfigurableImageEffectBase {
     );
     $form['extension'] = [
       '#type' => 'select',
-      '#title' => t('Convert to'),
+      '#title' => t('Extension'),
       '#default_value' => $this->configuration['extension'],
       '#required' => TRUE,
       '#options' => $options,

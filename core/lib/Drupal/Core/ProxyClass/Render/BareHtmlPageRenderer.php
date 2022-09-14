@@ -1,5 +1,5 @@
 <?php
-// phpcs:ignoreFile
+// @codingStandardsIgnoreFile
 
 /**
  * This file was generated via php core/scripts/generate-proxy-class.php 'Drupal\Core\Render\BareHtmlPageRenderer' "core/lib/Drupal/Core".

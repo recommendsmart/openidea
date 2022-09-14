@@ -26,7 +26,7 @@ class QuickEditEntityFieldAccessCheckTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->editAccessCheck = new QuickEditEntityFieldAccessCheck();
 
     $cache_contexts_manager = $this->prophesize(CacheContextsManager::class);
@@ -132,16 +132,16 @@ class QuickEditEntityFieldAccessCheckTest extends UnitTestCase {
 
     $entity->expects($this->any())
       ->method('hasTranslation')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         [LanguageInterface::LANGCODE_NOT_SPECIFIED, TRUE],
         ['xx-lolspeak', FALSE],
-      ]);
+      ]));
     $entity->expects($this->any())
       ->method('hasField')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         ['valid', TRUE],
         ['not_valid', FALSE],
-      ]);
+      ]));
 
     return $entity;
   }

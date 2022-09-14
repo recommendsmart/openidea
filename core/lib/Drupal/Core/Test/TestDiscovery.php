@@ -2,12 +2,11 @@
 
 namespace Drupal\Core\Test;
 
-use Drupal\Component\Annotation\Doctrine\StaticReflectionParser;
+use Doctrine\Common\Reflection\StaticReflectionParser;
 use Drupal\Component\Annotation\Reflection\MockFileFinder;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Extension\ExtensionDiscovery;
 use Drupal\Core\Test\Exception\MissingGroupException;
-use Drupal\TestTools\PhpUnitCompatibility\PhpUnit8\ClassWriter;
 use PHPUnit\Util\Test;
 
 /**
@@ -117,10 +116,6 @@ class TestDiscovery {
       $this->classLoader->addPsr4($prefix, $paths);
     }
 
-    $loader = require __DIR__ . '/../../../../../autoload.php';
-    // Ensure we have a valid TestCase class.
-    ClassWriter::mutateTestBase($loader);
-
     return $this->testNamespaces;
   }
 
@@ -136,7 +131,6 @@ class TestDiscovery {
    *   An array of tests keyed by the group name. If a test is annotated to
    *   belong to multiple groups, it will appear under all group keys it belongs
    *   to.
-   *
    * @code
    *     $groups['block'] => array(
    *       'Drupal\Tests\block\Functional\BlockTest' => array(
@@ -186,7 +180,7 @@ class TestDiscovery {
       // unavailable modules. TestDiscovery should not filter out module
       // requirements for PHPUnit-based test classes.
       // @todo Move this behavior to \Drupal\simpletest\TestBase so tests can be
-      //   marked as skipped, instead.
+      //       marked as skipped, instead.
       // @see https://www.drupal.org/node/1273478
       if ($info['type'] == 'Simpletest') {
         if (!empty($info['requires']['module'])) {
@@ -389,7 +383,6 @@ class TestDiscovery {
    * Parses the phpDoc summary line of a test class.
    *
    * @param string $doc_comment
-   *   The documentation comment.
    *
    * @return string
    *   The parsed phpDoc summary line. An empty string is returned if no summary
@@ -440,7 +433,7 @@ class TestDiscovery {
     // @see https://www.drupal.org/node/1273478
     if (isset($annotations['requires'])) {
       foreach ($annotations['requires'] as $i => $value) {
-        [$type, $value] = explode(' ', $value, 2);
+        list($type, $value) = explode(' ', $value, 2);
         if ($type === 'module') {
           $annotations['requires']['module'][$value] = $value;
           unset($annotations['requires'][$i]);

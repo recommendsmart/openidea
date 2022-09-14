@@ -53,7 +53,7 @@ class VerticalTabs extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#default_tab' => '',
       '#process' => [

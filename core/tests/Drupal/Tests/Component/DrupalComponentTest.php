@@ -38,10 +38,9 @@ class DrupalComponentTest extends TestCase {
    *
    * @param $component_path
    *   The path to the component.
-   *
    * @dataProvider \Drupal\Tests\Component\DrupalComponentTest::getComponents
    */
-  public function testComponentLicense($component_path) {
+  public function testComponentLicence($component_path) {
     $this->assertFileExists($component_path . DIRECTORY_SEPARATOR . 'LICENSE.txt');
     $this->assertSame('e84dac1d9fbb5a4a69e38654ce644cea769aa76b', hash_file('sha1', $component_path . DIRECTORY_SEPARATOR . 'LICENSE.txt'));
   }
@@ -90,10 +89,8 @@ class DrupalComponentTest extends TestCase {
    *
    * @param string $class_path
    *   The full path to the class that should be checked.
-   *
-   * @internal
    */
-  protected function assertNoCoreUsage(string $class_path): void {
+  protected function assertNoCoreUsage($class_path) {
     $contents = file_get_contents($class_path);
     preg_match_all('/^.*Drupal\\\Core.*$/m', $contents, $matches);
     $matches = array_filter($matches[0], function ($line) {
@@ -104,14 +101,14 @@ class DrupalComponentTest extends TestCase {
   }
 
   /**
-   * Data provider for testAssertNoCoreUsage().
+   * Data provider for testAssertNoCoreUseage().
    *
    * @return array
-   *   Data for testAssertNoCoreUsage() in the form:
+   *   Data for testAssertNoCoreUseage() in the form:
    *   - TRUE if the test passes, FALSE otherwise.
    *   - File data as a string. This will be used as a virtual file.
    */
-  public function providerAssertNoCoreUsage() {
+  public function providerAssertNoCoreUseage() {
     return [
       [
         TRUE,
@@ -136,9 +133,9 @@ class DrupalComponentTest extends TestCase {
 
   /**
    * @covers \Drupal\Tests\Component\DrupalComponentTest::assertNoCoreUsage
-   * @dataProvider providerAssertNoCoreUsage
+   * @dataProvider providerAssertNoCoreUseage
    */
-  public function testAssertNoCoreUsage($expected_pass, $file_data) {
+  public function testAssertNoCoreUseage($expected_pass, $file_data) {
     // Set up a virtual file to read.
     $vfs_root = vfsStream::setup('root');
     vfsStream::newFile('Test.php')->at($vfs_root)->setContent($file_data);

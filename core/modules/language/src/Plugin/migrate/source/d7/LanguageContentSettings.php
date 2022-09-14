@@ -6,12 +6,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 
 /**
- * Drupal 7 i18n node settings from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBas
+ * Drupal multilingual node settings from database.
  *
  * @MigrateSource(
  *   id = "d7_language_content_settings",

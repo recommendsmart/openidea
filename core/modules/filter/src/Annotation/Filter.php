@@ -5,7 +5,7 @@ namespace Drupal\filter\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a filter annotation object.
+ * Defines an filter annotation object.
  *
  * Plugin Namespace: Plugin\Filter
  *
@@ -48,38 +48,30 @@ class Filter extends Plugin {
   /**
    * Additional administrative information about the filter's behavior.
    *
-   * This property is optional and it does not need to be declared.
-   *
    * @ingroup plugin_translatable
    *
-   * @var \Drupal\Core\Annotation\Translation
+   * @var \Drupal\Core\Annotation\Translation (optional)
    */
   public $description = '';
 
   /**
    * A default weight for the filter in new text formats.
    *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var int
+   * @var int (optional)
    */
   public $weight = 0;
 
   /**
    * Whether this filter is enabled or disabled by default.
    *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var bool
+   * @var bool (optional)
    */
   public $status = FALSE;
 
   /**
    * The default settings for the filter.
    *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var array
+   * @var array (optional)
    */
   public $settings = [];
 

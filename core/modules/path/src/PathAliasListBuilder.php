@@ -93,7 +93,7 @@ class PathAliasListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   protected function getEntityIds() {
-    $query = $this->getStorage()->getQuery()->accessCheck(TRUE);
+    $query = $this->getStorage()->getQuery();
 
     $search = $this->currentRequest->query->get('search');
     if ($search) {

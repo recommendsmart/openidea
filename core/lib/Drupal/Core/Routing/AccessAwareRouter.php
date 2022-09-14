@@ -10,7 +10,6 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Matcher\RequestMatcherInterface;
-use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\RequestContext as SymfonyRequestContext;
 use Symfony\Component\Routing\RequestContextAwareInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -89,7 +88,7 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    *   Thrown when access checking failed.
    */
-  public function matchRequest(Request $request): array {
+  public function matchRequest(Request $request) {
     $parameters = $this->router->matchRequest($request);
     $request->attributes->add($parameters);
     $this->checkAccess($request);
@@ -115,10 +114,10 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
     }
     if (!$access_result->isAllowed()) {
       if ($access_result instanceof CacheableDependencyInterface && $request->isMethodCacheable()) {
-        throw new CacheableAccessDeniedHttpException($access_result, $access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : '');
+        throw new CacheableAccessDeniedHttpException($access_result, $access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : NULL);
       }
       else {
-        throw new AccessDeniedHttpException($access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : '');
+        throw new AccessDeniedHttpException($access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : NULL);
       }
     }
   }
@@ -126,7 +125,7 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRouteCollection(): RouteCollection {
+  public function getRouteCollection() {
     if ($this->router instanceof RouterInterface) {
       return $this->router->getRouteCollection();
     }
@@ -135,7 +134,7 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
   /**
    * {@inheritdoc}
    */
-  public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH): string {
+  public function generate($name, $parameters = [], $referenceType = self::ABSOLUTE_PATH) {
     if ($this->router instanceof UrlGeneratorInterface) {
       return $this->router->generate($name, $parameters, $referenceType);
     }
@@ -147,7 +146,7 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    *   Thrown when access checking failed.
    */
-  public function match($pathinfo): array {
+  public function match($pathinfo) {
     return $this->matchRequest(Request::create($pathinfo));
   }
 

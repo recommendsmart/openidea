@@ -17,20 +17,9 @@ use Symfony\Component\Validator\Constraint;
  */
 class ContentTranslationSynchronizedFieldsConstraint extends Constraint {
 
-  /**
-   * Message shown for non-translatable field changes in non-default revision.
-   *
-   * In this case "elements" refers to "field properties". It is what we are
-   * using in the UI elsewhere.
-   */
+  // In this case "elements" refers to "field properties", in fact it is what we
+  // are using in the UI elsewhere.
   public $defaultRevisionMessage = 'Non-translatable field elements can only be changed when updating the current revision.';
-
-  /**
-   * Message shown for non-translatable field changes in different language.
-   *
-   * In this case "elements" refers to "field properties". It is what we are
-   * using in the UI elsewhere.
-   */
   public $defaultTranslationMessage = 'Non-translatable field elements can only be changed when updating the original language.';
 
 }

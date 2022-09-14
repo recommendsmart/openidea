@@ -19,7 +19,7 @@ class CachedStorageTest extends UnitTestCase {
   protected $cacheFactory;
 
   /**
-   * Tests listAll static cache.
+   * Test listAll static cache.
    */
   public function testListAllStaticCache() {
     $prefix = __FUNCTION__;

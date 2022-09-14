@@ -3,7 +3,6 @@ status: true
 dependencies:
   config:
     - field.field.node.page.body
-    - field.field.node.page.layout_builder__layout
     - node.type.page
     - workflows.workflow.editorial
   module:
@@ -52,24 +51,24 @@ content:
     third_party_settings: {  }
   promote:
     type: boolean_checkbox
-    weight: 3
-    region: content
     settings:
       display_label: true
+    weight: 3
+    region: content
     third_party_settings: {  }
   status:
     type: boolean_checkbox
-    weight: 7
-    region: content
     settings:
       display_label: true
+    weight: 7
+    region: content
     third_party_settings: {  }
   sticky:
     type: boolean_checkbox
-    weight: 4
-    region: content
     settings:
       display_label: true
+    weight: 4
+    region: content
     third_party_settings: {  }
   title:
     type: string_textfield
@@ -81,9 +80,9 @@ content:
     third_party_settings: {  }
   translation:
     weight: 10
-    region: content
     settings: {  }
     third_party_settings: {  }
+    region: content
   uid:
     type: entity_reference_autocomplete
     weight: 1
@@ -94,5 +93,4 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-hidden:
-  layout_builder__layout: true
+hidden: {  }

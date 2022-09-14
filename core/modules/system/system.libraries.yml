@@ -51,8 +51,7 @@ drupal.system:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
 
 drupal.system.modules:
   version: VERSION
@@ -62,8 +61,7 @@ drupal.system.modules:
     - core/jquery
     - core/drupal
     - core/drupal.debounce
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/drupal.announce
 
 diff:
@@ -80,6 +78,5 @@ drupal.system.date:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/drupal.form

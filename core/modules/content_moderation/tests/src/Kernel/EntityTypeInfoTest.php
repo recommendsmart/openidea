@@ -22,7 +22,7 @@ class EntityTypeInfoTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'content_moderation',
     'workflows',
     'entity_test',
@@ -52,7 +52,7 @@ class EntityTypeInfoTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->entityTypeInfo = $this->container->get('class_resolver')->getInstanceFromDefinition(EntityTypeInfo::class);
@@ -78,7 +78,7 @@ class EntityTypeInfoTest extends KernelTestBase {
   }
 
   /**
-   * Tests the correct entity types have moderation added.
+   * Test the correct entity types have moderation added.
    *
    * @covers ::entityTypeAlter
    *
@@ -129,7 +129,7 @@ class EntityTypeInfoTest extends KernelTestBase {
   }
 
   /**
-   * Tests entity base field provider.
+   * Test entity base field provider.
    */
   public function testEntityBaseFieldProvider() {
     $this->enableModeration('entity_test_mulrev', 'entity_test_mulrev');

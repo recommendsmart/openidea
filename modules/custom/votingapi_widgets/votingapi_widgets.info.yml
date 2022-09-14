@@ -1,9 +1,0 @@
-name: Votingapi Widgets
-type: module
-description: 'Voting API Widgets.'
-package: Voting
-core_version_requirement: ^8.8.2 || ^9.3
-dependencies:
-  - votingapi
-  - field
-# Information added by Drupal.org packaging script on 2018-10-24

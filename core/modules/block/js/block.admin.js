@@ -5,12 +5,12 @@
 * @preserve
 **/
 
-(function ($, Drupal, debounce, once) {
+(function ($, Drupal, debounce) {
   Drupal.behaviors.blockFilterByText = {
     attach: function attach(context, settings) {
-      var $input = $(once('block-filter-text', 'input.block-filter-text'));
+      var $input = $('input.block-filter-text').once('block-filter-text');
       var $table = $($input.attr('data-element'));
-      var $filterRows;
+      var $filterRows = void 0;
 
       function filterBlockList(e) {
         var query = $(e.target).val().toLowerCase();
@@ -18,7 +18,7 @@
         function toggleBlockEntry(index, label) {
           var $label = $(label);
           var $row = $label.parent().parent();
-          var textMatch = $label.text().toLowerCase().includes(query);
+          var textMatch = $label.text().toLowerCase().indexOf(query) !== -1;
           $row.toggle(textMatch);
         }
 
@@ -38,11 +38,13 @@
       }
     }
   };
+
   Drupal.behaviors.blockHighlightPlacement = {
     attach: function attach(context, settings) {
       if (settings.blockPlacement && $('.js-block-placed').length) {
-        once('block-highlight', '[data-drupal-selector="edit-blocks"]', context).forEach(function (container) {
-          var $container = $(container);
+        $(context).find('[data-drupal-selector="edit-blocks"]').once('block-highlight').each(function () {
+          var $container = $(this);
+
           $('html, body').animate({
             scrollTop: $('.js-block-placed').offset().top - $container.offset().top + $container.scrollTop()
           }, 500);
@@ -50,4 +52,4 @@
       }
     }
   };
-})(jQuery, Drupal, Drupal.debounce, once);
+})(jQuery, Drupal, Drupal.debounce);

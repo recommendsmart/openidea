@@ -18,7 +18,7 @@ class LocalActionTest extends BrowserTestBase {
    *
    * @var string[]
    */
-  protected static $modules = ['block', 'menu_test'];
+  public static $modules = ['block', 'menu_test'];
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class LocalActionTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalPlaceBlock('local_actions_block');
@@ -54,7 +54,8 @@ class LocalActionTest extends BrowserTestBase {
       [Url::fromRoute('menu_test.local_action5'), 'Original title'],
     ]);
     // Verify the expected cache tag in the response headers.
-    $this->assertSession()->responseHeaderContains('x-drupal-cache-tags', 'config:menu_test.links.action');
+    $header_values = explode(' ', $this->drupalGetHeader('x-drupal-cache-tags'));
+    $this->assertTrue(in_array('config:menu_test.links.action', $header_values), "Found 'config:menu_test.links.action' cache tag in header");
     /** @var \Drupal\Core\Config\Config $config */
     $config = $this->container->get('config.factory')->getEditable('menu_test.links.action');
     $config->set('title', 'New title');
@@ -70,23 +71,21 @@ class LocalActionTest extends BrowserTestBase {
    *
    * @param array $actions
    *   A list of expected action link titles, keyed by the hrefs.
-   *
-   * @internal
    */
-  protected function assertLocalAction(array $actions): void {
+  protected function assertLocalAction(array $actions) {
     $elements = $this->xpath('//a[contains(@class, :class)]', [
       ':class' => 'button-action',
     ]);
     $index = 0;
     foreach ($actions as $action) {
       /** @var \Drupal\Core\Url $url */
-      [$url, $title] = $action;
+      list($url, $title) = $action;
       // SimpleXML gives us the unescaped text, not the actual escaped markup,
       // so use a pattern instead to check the raw content.
-      // This behavior is a bug in libxml, see
+      // This behaviour is a bug in libxml, see
       // https://bugs.php.net/bug.php?id=49437.
-      $this->assertSession()->responseMatches('@<a [^>]*class="[^"]*button-action[^"]*"[^>]*>' . preg_quote($title, '@') . '</@');
-      $this->assertEquals($url->toString(), $elements[$index]->getAttribute('href'));
+      $this->assertPattern('@<a [^>]*class="[^"]*button-action[^"]*"[^>]*>' . preg_quote($title, '@') . '</@');
+      $this->assertEqual($elements[$index]->getAttribute('href'), $url->toString());
       $index++;
     }
   }

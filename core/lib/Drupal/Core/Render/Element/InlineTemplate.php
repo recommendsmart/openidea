@@ -29,7 +29,7 @@ class InlineTemplate extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#pre_render' => [
         [$class, 'preRenderInlineTemplate'],
@@ -43,7 +43,6 @@ class InlineTemplate extends RenderElement {
    * Renders a twig string directly.
    *
    * @param array $element
-   *   The element.
    *
    * @return array
    */

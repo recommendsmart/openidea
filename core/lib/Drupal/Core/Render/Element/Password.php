@@ -33,7 +33,7 @@ class Password extends FormElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#input' => TRUE,
       '#size' => 60,

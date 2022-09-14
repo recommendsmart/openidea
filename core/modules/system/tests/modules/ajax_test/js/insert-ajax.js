@@ -8,7 +8,7 @@
 (function ($, window, Drupal) {
   Drupal.behaviors.insertTest = {
     attach: function attach(context) {
-      $(once('ajax-insert', '.ajax-insert')).on('click', function (event) {
+      $('.ajax-insert').once('ajax-insert').on('click', function (event) {
         event.preventDefault();
         var ajaxSettings = {
           url: event.currentTarget.getAttribute('href'),
@@ -21,7 +21,8 @@
         var myAjaxObject = Drupal.ajax(ajaxSettings);
         myAjaxObject.execute();
       });
-      $(once('ajax-insert', '.ajax-insert-inline')).on('click', function (event) {
+
+      $('.ajax-insert-inline').once('ajax-insert').on('click', function (event) {
         event.preventDefault();
         var ajaxSettings = {
           url: event.currentTarget.getAttribute('href'),
@@ -34,6 +35,7 @@
         var myAjaxObject = Drupal.ajax(ajaxSettings);
         myAjaxObject.execute();
       });
+
       $(context).addClass('processed');
     }
   };

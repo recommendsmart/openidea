@@ -21,12 +21,12 @@ class MigrateImageTest extends MigrateNodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['menu_ui'];
+  public static $modules = ['menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->setUpMigratedFiles();
     $this->installSchema('file', ['file_usage']);
@@ -36,7 +36,7 @@ class MigrateImageTest extends MigrateNodeTestBase {
   }
 
   /**
-   * Tests image migration from Drupal 6 to 8.
+   * Test image migration from Drupal 6 to 8.
    */
   public function testNode() {
     $node = Node::load(9);

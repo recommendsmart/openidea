@@ -13,7 +13,7 @@ use Drupal\Tests\migrate_drupal\Kernel\d7\MigrateDrupal7TestBase;
  */
 class MigrateCustomBlockTest extends MigrateDrupal7TestBase {
 
-  protected static $modules = [
+  public static $modules = [
     'block_content',
     'filter',
     'text',
@@ -22,7 +22,7 @@ class MigrateCustomBlockTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('block_content');
     $this->installConfig(static::$modules);
@@ -40,13 +40,13 @@ class MigrateCustomBlockTest extends MigrateDrupal7TestBase {
    */
   public function testCustomBlockMigration() {
     $block = BlockContent::load(1);
-    $this->assertInstanceOf(BlockContentInterface::class, $block);
+    $this->assertTrue($block instanceof BlockContentInterface);
     /** @var \Drupal\block_content\BlockContentInterface $block */
-    $this->assertSame('Limerick', $block->label());
+    $this->assertIdentical('Limerick', $block->label());
 
     $expected_body = "A fellow jumped off a high wall\r\nAnd had a most terrible fall\r\nHe went back to bed\r\nWith a bump on his head\r\nThat's why you don't jump off a wall";
-    $this->assertSame($expected_body, $block->body->value);
-    $this->assertSame('filtered_html', $block->body->format);
+    $this->assertIdentical($expected_body, $block->body->value);
+    $this->assertIdentical('filtered_html', $block->body->format);
   }
 
 }

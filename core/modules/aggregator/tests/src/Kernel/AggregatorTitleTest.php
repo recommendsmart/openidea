@@ -18,7 +18,7 @@ class AggregatorTitleTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'file',
     'field',
     'options',
@@ -36,12 +36,14 @@ class AggregatorTitleTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installConfig(['field']);
     $this->installEntitySchema('aggregator_feed');
     $this->installEntitySchema('aggregator_item');
+
+    \Drupal::service('router.builder')->rebuild();
 
     $this->fieldName = 'title';
   }
@@ -69,25 +71,25 @@ class AggregatorTitleTest extends KernelTestBase {
     $build = $aggregator_feed->{$this->fieldName}->view(['type' => 'aggregator_title', 'settings' => ['display_as_link' => TRUE]]);
     $result = $this->render($build);
 
-    $this->assertStringContainsString('testing title', $result);
-    $this->assertStringContainsString('href="' . $aggregator_feed->getUrl() . '"', $result);
+    $this->assertContains('testing title', $result);
+    $this->assertContains('href="' . $aggregator_feed->getUrl() . '"', $result);
 
     $build = $aggregator_feed->{$this->fieldName}->view(['type' => 'aggregator_title', 'settings' => ['display_as_link' => FALSE]]);
     $result = $this->render($build);
-    $this->assertStringContainsString('testing title', $result);
-    $this->assertStringNotContainsString($aggregator_feed->getUrl(), $result);
+    $this->assertContains('testing title', $result);
+    $this->assertNotContains($aggregator_feed->getUrl(), $result);
 
     // Verify aggregator item title with and without links.
     $build = $aggregator_item->{$this->fieldName}->view(['type' => 'aggregator_title', 'settings' => ['display_as_link' => TRUE]]);
     $result = $this->render($build);
 
-    $this->assertStringContainsString('test title', $result);
-    $this->assertStringContainsString('href="' . $aggregator_item->getLink() . '"', $result);
+    $this->assertContains('test title', $result);
+    $this->assertContains('href="' . $aggregator_item->getLink() . '"', $result);
 
     $build = $aggregator_item->{$this->fieldName}->view(['type' => 'aggregator_title', 'settings' => ['display_as_link' => FALSE]]);
     $result = $this->render($build);
-    $this->assertStringContainsString('test title', $result);
-    $this->assertStringNotContainsString($aggregator_item->getLink(), $result);
+    $this->assertContains('test title', $result);
+    $this->assertNotContains($aggregator_item->getLink(), $result);
   }
 
 }

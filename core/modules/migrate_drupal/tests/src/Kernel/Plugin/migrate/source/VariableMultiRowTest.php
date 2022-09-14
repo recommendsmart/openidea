@@ -4,8 +4,6 @@ namespace Drupal\Tests\migrate_drupal\Kernel\Plugin\migrate\source;
 
 use Drupal\Tests\migrate\Kernel\MigrateSqlSourceTestBase;
 
-// cspell:ignore multirow
-
 /**
  * Tests the variable multirow source plugin.
  *
@@ -18,7 +16,7 @@ class VariableMultiRowTest extends MigrateSqlSourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate_drupal'];
+  public static $modules = ['migrate_drupal'];
 
   /**
    * {@inheritdoc}

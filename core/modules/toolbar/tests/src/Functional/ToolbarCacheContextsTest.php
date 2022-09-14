@@ -21,7 +21,7 @@ class ToolbarCacheContextsTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['toolbar', 'test_page_test'];
+  public static $modules = ['toolbar', 'test_page_test'];
 
   /**
    * {@inheritdoc}
@@ -56,7 +56,7 @@ class ToolbarCacheContextsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->adminUser = $this->drupalCreateUser($this->perms);
@@ -65,19 +65,14 @@ class ToolbarCacheContextsTest extends BrowserTestBase {
 
   /**
    * Tests toolbar cache integration.
-   *
-   * @group legacy
    */
   public function testCacheIntegration() {
-    $this->expectDeprecation('Route requirement _access_rest_csrf is deprecated in drupal:9.2.0 and is removed in drupal:10.0.0. Use _csrf_request_header_token instead. See https://www.drupal.org/node/2772399');
-    $this->installExtraModules(['csrf_test', 'dynamic_page_cache']);
+    $this->installExtraModules(['dynamic_page_cache']);
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('test-page');
-    $this->assertSession()->responseHeaderEquals('X-Drupal-Dynamic-Cache', 'MISS');
-    $this->assertCacheContexts(['session', 'user', 'url.query_args:' . MainContentViewSubscriber::WRAPPER_FORMAT], 'Expected cache contexts found with CSRF token link.');
+    $this->assertSame('MISS', $this->getSession()->getResponseHeader('X-Drupal-Dynamic-Cache'));
     $this->drupalGet('test-page');
-    $this->assertSession()->responseHeaderEquals('X-Drupal-Dynamic-Cache', 'HIT');
-    $this->assertCacheContexts(['session', 'user', 'url.query_args:' . MainContentViewSubscriber::WRAPPER_FORMAT], 'Expected cache contexts found with CSRF token link.');
+    $this->assertSame('HIT', $this->getSession()->getResponseHeader('X-Drupal-Dynamic-Cache'));
   }
 
   /**
@@ -103,6 +98,11 @@ class ToolbarCacheContextsTest extends BrowserTestBase {
     $this->adminUser2 = $this->drupalCreateUser(array_merge($this->perms, ['access tour']));
     $this->assertToolbarCacheContexts(['user.permissions'], 'Expected cache contexts found with tour module enabled.');
     \Drupal::service('module_installer')->uninstall(['tour']);
+
+    // Test with shortcut module enabled.
+    $this->installExtraModules(['shortcut']);
+    $this->adminUser2 = $this->drupalCreateUser(array_merge($this->perms, ['access shortcuts', 'administer shortcuts']));
+    $this->assertToolbarCacheContexts(['user'], 'Expected cache contexts found with shortcut module enabled.');
   }
 
   /**
@@ -113,9 +113,10 @@ class ToolbarCacheContextsTest extends BrowserTestBase {
    * @param string $message
    *   (optional) A verbose message to output.
    *
-   * @internal
+   * @return
+   *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  protected function assertToolbarCacheContexts(array $cache_contexts, string $message = NULL): void {
+  protected function assertToolbarCacheContexts(array $cache_contexts, $message = NULL) {
     // Default cache contexts that should exist on all test cases.
     $default_cache_contexts = [
       'languages:language_interface',
@@ -127,13 +128,21 @@ class ToolbarCacheContextsTest extends BrowserTestBase {
     // Assert contexts for user1 which has only default permissions.
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('test-page');
-    $this->assertCacheContexts($cache_contexts, $message);
+    $return = $this->assertCacheContexts($cache_contexts);
     $this->drupalLogout();
 
     // Assert contexts for user2 which has some additional permissions.
     $this->drupalLogin($this->adminUser2);
     $this->drupalGet('test-page');
-    $this->assertCacheContexts($cache_contexts, $message);
+    $return = $return && $this->assertCacheContexts($cache_contexts);
+
+    if ($return) {
+      $this->pass($message);
+    }
+    else {
+      $this->fail($message);
+    }
+    return $return;
   }
 
   /**

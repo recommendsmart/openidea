@@ -4,19 +4,19 @@ namespace Drupal\Tests\layout_builder\Kernel;
 
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionListInterface;
-use Drupal\layout_builder\SectionListTrait;
+use Drupal\layout_builder\SectionStorage\SectionStorageTrait;
 
 /**
- * @coversDefaultClass \Drupal\layout_builder\SectionListTrait
+ * @coversDefaultClass \Drupal\layout_builder\SectionStorage\SectionStorageTrait
  *
  * @group layout_builder
  */
-class SectionListTraitTest extends SectionListTestBase {
+class SectionListTraitTest extends SectionStorageTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected function getSectionList(array $section_data) {
+  protected function getSectionStorage(array $section_data) {
     return new TestSectionList($section_data);
   }
 
@@ -26,14 +26,14 @@ class SectionListTraitTest extends SectionListTestBase {
   public function testAddBlankSection() {
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage('A blank section must only be added to an empty list');
-    $this->sectionList->addBlankSection();
+    $this->sectionStorage->addBlankSection();
   }
 
 }
 
 class TestSectionList implements SectionListInterface {
 
-  use SectionListTrait {
+  use SectionStorageTrait {
     addBlankSection as public;
   }
 

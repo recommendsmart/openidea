@@ -18,7 +18,7 @@ class TelephoneFieldTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'field',
     'node',
     'telephone',
@@ -39,14 +39,11 @@ class TelephoneFieldTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalCreateContentType(['type' => 'article']);
-    $this->webUser = $this->drupalCreateUser([
-      'create article content',
-      'edit own article content',
-    ]);
+    $this->webUser = $this->drupalCreateUser(['create article content', 'edit own article content']);
     $this->drupalLogin($this->webUser);
 
     // Add the telephone field to the article content type.
@@ -82,18 +79,18 @@ class TelephoneFieldTest extends BrowserTestBase {
   }
 
   /**
-   * Tests to confirm the widget is setup.
+   * Test to confirm the widget is setup.
    *
    * @covers \Drupal\telephone\Plugin\Field\FieldWidget\TelephoneDefaultWidget::formElement
    */
   public function testTelephoneWidget() {
     $this->drupalGet('node/add/article');
-    $this->assertSession()->fieldValueEquals("field_telephone[0][value]", '');
-    $this->assertSession()->responseContains('placeholder="123-456-7890"');
+    $this->assertFieldByName("field_telephone[0][value]", '', 'Widget found.');
+    $this->assertRaw('placeholder="123-456-7890"');
   }
 
   /**
-   * Tests the telephone formatter.
+   * Test the telephone formatter.
    *
    * @covers \Drupal\telephone\Plugin\Field\FieldFormatter\TelephoneLinkFormatter::viewElements
    *
@@ -106,9 +103,8 @@ class TelephoneFieldTest extends BrowserTestBase {
       'field_telephone[0][value]' => $input,
     ];
 
-    $this->drupalGet('node/add/article');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->responseContains('<a href="tel:' . $expected . '">');
+    $this->drupalPostForm('node/add/article', $edit, t('Save'));
+    $this->assertRaw('<a href="tel:' . $expected . '">');
   }
 
   /**

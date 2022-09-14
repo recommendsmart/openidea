@@ -77,6 +77,17 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   protected $languageManager;
 
   /**
+   * Static cache of entities, keyed first by entity ID, then by an extra key.
+   *
+   * The additional cache key is to maintain separate caches for different
+   * states of config overrides.
+   *
+   * @var array
+   * @see \Drupal\Core\Config\ConfigFactoryInterface::getCacheKeys().
+   */
+  protected $entities = [];
+
+  /**
    * Determines if the underlying configuration is retrieved override free.
    *
    * @var bool
@@ -94,10 +105,10 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
    *   The UUID service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
-   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface|null $memory_cache
    *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache) {
+  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache = NULL) {
     parent::__construct($entity_type, $memory_cache);
 
     $this->configFactory = $config_factory;
@@ -179,7 +190,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
       $records[$id] = $this->overrideFree ? $config->getOriginal(NULL, FALSE) : $config->get();
       $configs[$id] = $config;
     }
-    $entities = $this->mapFromStorageRecords($records);
+    $entities = $this->mapFromStorageRecords($records, $configs);
 
     // Config entities wrap config objects, and therefore they need to inherit
     // the cacheability metadata of config objects (to ensure e.g. additional
@@ -214,8 +225,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   protected function doCreate(array $values) {
     // Set default language to current language if not provided.
     $values += [$this->langcodeKey => $this->languageManager->getCurrentLanguage()->getId()];
-    $entity_class = $this->getEntityClass();
-    $entity = new $entity_class($values, $this->entityTypeId);
+    $entity = new $this->entityClass($values, $this->entityTypeId);
 
     return $entity;
   }
@@ -246,8 +256,8 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
     // @see \Drupal\Core\Config\Entity\ConfigEntityStorage::MAX_ID_LENGTH
     // @todo Consider moving this to a protected method on the parent class, and
     //   abstracting it for all entity types.
-    if (strlen($id) > static::MAX_ID_LENGTH) {
-      throw new ConfigEntityIdLengthException("Configuration entity ID {$id} exceeds maximum allowed length of " . static::MAX_ID_LENGTH . " characters.");
+    if (strlen($entity->get($this->idKey)) > static::MAX_ID_LENGTH) {
+      throw new ConfigEntityIdLengthException("Configuration entity ID {$entity->get($this->idKey)} exceeds maximum allowed length of " . static::MAX_ID_LENGTH . " characters.");
     }
 
     return parent::save($entity);
@@ -471,7 +481,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
    */
   public function loadOverrideFree($id) {
     $entities = $this->loadMultipleOverrideFree([$id]);
-    return $entities[$id] ?? NULL;
+    return isset($entities[$id]) ? $entities[$id] : NULL;
   }
 
   /**

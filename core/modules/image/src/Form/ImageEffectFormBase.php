@@ -39,10 +39,6 @@ abstract class ImageEffectFormBase extends FormBase {
   /**
    * {@inheritdoc}
    *
-   * @param array $form
-   *   A nested array form elements comprising the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
    * @param \Drupal\image\ImageStyleInterface $image_style
    *   The image style.
    * @param string $image_effect

@@ -2,6 +2,7 @@
 
 namespace Drupal\file\Plugin\views\argument;
 
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\views\Plugin\views\argument\NumericArgument;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -15,6 +16,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @ViewsArgument("file_fid")
  */
 class Fid extends NumericArgument implements ContainerFactoryPluginInterface {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The entity type manager.
@@ -58,7 +65,6 @@ class Fid extends NumericArgument implements ContainerFactoryPluginInterface {
   public function titleQuery() {
     $storage = $this->entityTypeManager->getStorage('file');
     $fids = $storage->getQuery()
-      ->accessCheck(FALSE)
       ->condition('fid', $this->value, 'IN')
       ->execute();
     $files = $storage->loadMultiple($fids);

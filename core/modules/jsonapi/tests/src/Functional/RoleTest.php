@@ -16,7 +16,7 @@ class RoleTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user'];
+  public static $modules = ['user'];
 
   /**
    * {@inheritdoc}
@@ -53,7 +53,7 @@ class RoleTest extends ResourceTestBase {
   protected function createEntity() {
     $role = Role::create([
       'id' => 'llama',
-      'label' => 'Llama',
+      'name' => $this->randomString(),
     ]);
     $role->save();
 
@@ -88,7 +88,7 @@ class RoleTest extends ResourceTestBase {
           'langcode' => 'en',
           'status' => TRUE,
           'dependencies' => [],
-          'label' => 'Llama',
+          'label' => NULL,
           'is_admin' => NULL,
           'permissions' => [],
           'drupal_internal__id' => 'llama',

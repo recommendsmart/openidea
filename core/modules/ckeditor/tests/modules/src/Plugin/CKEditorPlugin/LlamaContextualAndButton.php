@@ -50,7 +50,7 @@ class LlamaContextualAndButton extends Llama implements CKEditorPluginContextual
    * {@inheritdoc}
    */
   public function getFile() {
-    return $this->moduleList->getPath('ckeditor_test') . '/js/llama_contextual_and_button.js';
+    return drupal_get_path('module', 'ckeditor_test') . '/js/llama_contextual_and_button.js';
   }
 
   /**

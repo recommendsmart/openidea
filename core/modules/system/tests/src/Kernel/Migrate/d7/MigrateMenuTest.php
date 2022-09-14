@@ -16,7 +16,7 @@ class MigrateMenuTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('d7_menu');
   }
@@ -24,21 +24,16 @@ class MigrateMenuTest extends MigrateDrupal7TestBase {
   /**
    * Asserts various aspects of a menu.
    *
-   * @param string $id
+   * @param $id
    *   The menu ID.
-   * @param string $language
-   *   The menu language.
    * @param $label
    *   The menu label.
    * @param $description
    *   The menu description.
-   *
-   * @internal
    */
-  protected function assertEntity(string $id, string $language, string $label, string $description): void {
+  protected function assertEntity($id, $label, $description) {
     $navigation_menu = Menu::load($id);
     $this->assertSame($id, $navigation_menu->id());
-    $this->assertSame($language, $navigation_menu->language()->getId());
     $this->assertSame($label, $navigation_menu->label());
     $this->assertSame($description, $navigation_menu->getDescription());
   }
@@ -47,12 +42,11 @@ class MigrateMenuTest extends MigrateDrupal7TestBase {
    * Tests the Drupal 7 menu to Drupal 8 migration.
    */
   public function testMenu() {
-    $this->assertEntity('main', 'und', 'Main menu', 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.');
-    $this->assertEntity('admin', 'und', 'Management', 'The <em>Management</em> menu contains links for administrative tasks.');
-    $this->assertEntity('menu-test-menu', 'und', 'Test Menu', 'Test menu description.');
-    $this->assertEntity('tools', 'und', 'Navigation', 'The <em>Navigation</em> menu contains links intended for site visitors. Links are added to the <em>Navigation</em> menu automatically by some modules.');
-    $this->assertEntity('account', 'und', 'User menu', 'The <em>User</em> menu contains links related to the user\'s account, as well as the \'Log out\' link.');
-    $this->assertEntity('menu-fixedlang', 'is', 'FixedLang', '');
+    $this->assertEntity('main', 'Main menu', 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.');
+    $this->assertEntity('admin', 'Management', 'The <em>Management</em> menu contains links for administrative tasks.');
+    $this->assertEntity('menu-test-menu', 'Test Menu', 'Test menu description.');
+    $this->assertEntity('tools', 'Navigation', 'The <em>Navigation</em> menu contains links intended for site visitors. Links are added to the <em>Navigation</em> menu automatically by some modules.');
+    $this->assertEntity('account', 'User menu', 'The <em>User</em> menu contains links related to the user\'s account, as well as the \'Log out\' link.');
 
     // Test that we can re-import using the ConfigEntityBase destination.
     Database::getConnection('default', 'migrate')

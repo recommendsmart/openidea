@@ -11,7 +11,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Component\Utility\ArgumentsResolverInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 
 /**
  * Attaches access check services to routes and runs them on request.
@@ -55,7 +55,7 @@ class AccessManager implements AccessManagerInterface {
   protected $checkProvider;
 
   /**
-   * Constructs an AccessManager instance.
+   * Constructs a AccessManager instance.
    *
    * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
    *   The route provider.
@@ -66,7 +66,6 @@ class AccessManager implements AccessManagerInterface {
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
    * @param CheckProviderInterface $check_provider
-   *   The check access provider.
    */
   public function __construct(RouteProviderInterface $route_provider, ParamConverterManagerInterface $paramconverter_manager, AccessArgumentsResolverFactoryInterface $arguments_resolver_factory, AccountInterface $current_user, CheckProviderInterface $check_provider) {
     $this->routeProvider = $route_provider;
@@ -81,7 +80,7 @@ class AccessManager implements AccessManagerInterface {
    */
   public function checkNamedRoute($route_name, array $parameters = [], AccountInterface $account = NULL, $return_as_object = FALSE) {
     try {
-      $route = $this->routeProvider->getRouteByName($route_name);
+      $route = $this->routeProvider->getRouteByName($route_name, $parameters);
 
       // ParamConverterManager relies on the route name and object being
       // available from the parameters array.

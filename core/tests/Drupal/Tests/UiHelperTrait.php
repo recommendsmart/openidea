@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests;
 
-use Behat\Mink\Driver\BrowserKitDriver;
+use Behat\Mink\Driver\GoutteDriver;
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\UrlHelper;
@@ -10,7 +10,6 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Test\RefreshVariablesTrait;
 use Drupal\Core\Url;
-use Symfony\Component\CssSelector\CssSelectorConverter;
 
 /**
  * Provides UI helper methods.
@@ -18,6 +17,7 @@ use Symfony\Component\CssSelector\CssSelectorConverter;
 trait UiHelperTrait {
 
   use BrowserHtmlDebugTrait;
+  use AssertHelperTrait;
   use RefreshVariablesTrait;
 
   /**
@@ -108,9 +108,9 @@ trait UiHelperTrait {
       $this->metaRefreshCount = 0;
     }
 
-    // Log only for WebDriverTestBase tests because for tests using
-    // DrupalTestBrowser we log with ::getResponseLogHandler.
-    if ($this->htmlOutputEnabled && !$this->isTestUsingGuzzleClient()) {
+    // Log only for JavascriptTestBase tests because for Goutte we log with
+    // ::getResponseLogHandler.
+    if ($this->htmlOutputEnabled && !($this->getSession()->getDriver() instanceof GoutteDriver)) {
       $out = $this->getSession()->getPage()->getContent();
       $html_output = 'POST request to: ' . $action .
         '<hr />Ending URL: ' . $this->getSession()->getCurrentUrl();
@@ -134,12 +134,11 @@ trait UiHelperTrait {
    *   @code
    *   // First step in form.
    *   $edit = array(...);
-   *   $this->drupalGet('some_url');
-   *   $this->submitForm($edit, 'Save');
+   *   $this->drupalPostForm('some_url', $edit, 'Save');
    *
    *   // Second step in form.
    *   $edit = array(...);
-   *   $this->submitForm($edit, 'Save');
+   *   $this->drupalPostForm(NULL, $edit, 'Save');
    *   @endcode
    * @param array $edit
    *   Field data in an associative array. Changes the current input fields
@@ -165,6 +164,8 @@ trait UiHelperTrait {
    *   $edit = array();
    *   $edit['name[]'] = array('value1', 'value2');
    *   @endcode
+   *   @todo change $edit to disallow NULL as a value for Drupal 9.
+   *     https://www.drupal.org/node/2802401
    * @param string $submit
    *   The id, name, label or value of the submit button which is to be clicked.
    *   For example, 'Save'. The first element matched by
@@ -188,25 +189,17 @@ trait UiHelperTrait {
    *   just use the webAssert object for your assertions.
    *
    * @see \Drupal\Tests\WebAssert::buttonExists()
-   *
-   * @deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Use
-   *   $this->submitForm() instead.
-   *
-   * @see https://www.drupal.org/node/3168858
    */
   protected function drupalPostForm($path, $edit, $submit, array $options = [], $form_html_id = NULL) {
-    @trigger_error('UiHelperTrait::drupalPostForm() is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Use $this->submitForm() instead. See https://www.drupal.org/node/3168858', E_USER_DEPRECATED);
     if (is_object($submit)) {
-      @trigger_error('Calling ' . __METHOD__ . '() with $submit as an object is deprecated in drupal:9.2.0 and the method is removed in drupal:10.0.0. Use $this->submitForm() instead. See https://www.drupal.org/node/3168858', E_USER_DEPRECATED);
       // Cast MarkupInterface objects to string.
       $submit = (string) $submit;
     }
     if ($edit === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . '() with $edit set to NULL is deprecated in drupal:9.1.0 and the method is removed in drupal:10.0.0. Use $this->submitForm() instead. See https://www.drupal.org/node/3168858', E_USER_DEPRECATED);
       $edit = [];
     }
-    if ($path === NULL) {
-      @trigger_error('Calling ' . __METHOD__ . '() with $path set to NULL is deprecated in drupal:9.2.0 and the method is removed in drupal:10.0.0. Use $this->submitForm() instead. See https://www.drupal.org/node/3168858', E_USER_DEPRECATED);
+    if (is_array($edit)) {
+      $edit = $this->castSafeStrings($edit);
     }
 
     if (isset($path)) {
@@ -254,7 +247,7 @@ trait UiHelperTrait {
     $this->submitForm([
       'name' => $account->getAccountName(),
       'pass' => $account->passRaw,
-    ], 'Log in');
+    ], t('Log in'));
 
     // @see ::drupalUserIsLoggedIn()
     $account->sessionId = $this->getSession()->getCookie(\Drupal::service('session_configuration')->getOptions(\Drupal::request())['name']);
@@ -274,8 +267,7 @@ trait UiHelperTrait {
     // idea being if you were properly logged out you should be seeing a login
     // screen.
     $assert_session = $this->assertSession();
-    $destination = Url::fromRoute('user.page')->toString();
-    $this->drupalGet(Url::fromRoute('user.logout', [], ['query' => ['destination' => $destination]]));
+    $this->drupalGet(Url::fromRoute('user.logout', [], ['query' => ['destination' => 'user']]));
     $assert_session->fieldExists('name');
     $assert_session->fieldExists('pass');
 
@@ -344,9 +336,9 @@ trait UiHelperTrait {
       $this->metaRefreshCount = 0;
     }
 
-    // Log only for WebDriverTestBase tests because for BrowserKitDriver we log
-    // with ::getResponseLogHandler.
-    if ($this->htmlOutputEnabled && !$this->isTestUsingGuzzleClient()) {
+    // Log only for JavascriptTestBase tests because for Goutte we log with
+    // ::getResponseLogHandler.
+    if ($this->htmlOutputEnabled && !($this->getSession()->getDriver() instanceof GoutteDriver)) {
       $html_output = 'GET request to: ' . $url .
         '<hr />Ending URL: ' . $this->getSession()->getCurrentUrl();
       $html_output .= '<hr />' . $out;
@@ -358,7 +350,7 @@ trait UiHelperTrait {
   }
 
   /**
-   * Builds an absolute URL from a system path or a URL object.
+   * Builds an a absolute URL from a system path or a URL object.
    *
    * @param string|\Drupal\Core\Url $path
    *   A system path or a URL.
@@ -470,9 +462,9 @@ trait UiHelperTrait {
   protected function click($css_selector) {
     $starting_url = $this->getSession()->getCurrentUrl();
     $this->getSession()->getDriver()->click($this->cssSelectToXpath($css_selector));
-    // Log only for WebDriverTestBase tests because for BrowserKitDriver we log
-    // with ::getResponseLogHandler.
-    if ($this->htmlOutputEnabled && !$this->isTestUsingGuzzleClient()) {
+    // Log only for JavascriptTestBase tests because for Goutte we log with
+    // ::getResponseLogHandler.
+    if ($this->htmlOutputEnabled && !($this->getSession()->getDriver() instanceof GoutteDriver)) {
       $out = $this->getSession()->getPage()->getContent();
       $html_output =
         'Clicked element with CSS selector: ' . $css_selector .
@@ -535,7 +527,7 @@ trait UiHelperTrait {
     if (!empty($refresh) && (!isset($this->maximumMetaRefreshCount) || $this->metaRefreshCount < $this->maximumMetaRefreshCount)) {
       // Parse the content attribute of the meta tag for the format:
       // "[delay]: URL=[page_to_redirect_to]".
-      if (preg_match('/\d+;\s*URL=\'?(?<url>[^\']*)/i', $refresh[0]->getAttribute('content'), $match)) {
+      if (preg_match('/\d+;\s*URL=(?<url>.*)/i', $refresh[0]->getAttribute('content'), $match)) {
         $this->metaRefreshCount++;
         return $this->drupalGet($this->getAbsoluteUrl(Html::decodeEntities($match['url'])));
       }
@@ -556,39 +548,6 @@ trait UiHelperTrait {
    */
   protected function cssSelect($selector) {
     return $this->getSession()->getPage()->findAll('css', $selector);
-  }
-
-  /**
-   * Translates a CSS expression to its XPath equivalent.
-   *
-   * The search is relative to the root element (HTML tag normally) of the page.
-   *
-   * @param string $selector
-   *   CSS selector to use in the search.
-   * @param bool $html
-   *   (optional) Enables HTML support. Disable it for XML documents.
-   * @param string $prefix
-   *   (optional) The prefix for the XPath expression.
-   *
-   * @return string
-   *   The equivalent XPath of a CSS expression.
-   */
-  protected function cssSelectToXpath($selector, $html = TRUE, $prefix = 'descendant-or-self::') {
-    return (new CssSelectorConverter($html))->toXPath($selector, $prefix);
-  }
-
-  /**
-   * Determines if test is using DrupalTestBrowser.
-   *
-   * @return bool
-   *   TRUE if test is using DrupalTestBrowser.
-   */
-  protected function isTestUsingGuzzleClient() {
-    $driver = $this->getSession()->getDriver();
-    if ($driver instanceof BrowserKitDriver) {
-      return $driver->getClient() instanceof DrupalTestBrowser;
-    }
-    return FALSE;
   }
 
 }

@@ -15,21 +15,21 @@ use Drupal\Core\Render\Element;
  *
  * Example usage:
  * @code
- * $form['email'] = [
+ * $form['email'] = array(
  *   '#type' => 'email',
  *   '#title' => $this->t('Email'),
  *   '#pattern' => '*@example.com',
- * ];
- * @endcode
+ * );
+ * @end
  *
- * @see \Drupal\Core\Render\Element\Textfield
+ * @see \Drupal\Core\Render\Element\Render\Textfield
  *
  * @FormElement("email")
  */
 class Email extends FormElement {
 
   /**
-   * Defines the max length for an email address.
+   * Defines the max length for an email address
    *
    * The maximum length of an email address is 254 characters. RFC 3696
    * specifies a total length of 320 characters, but mentions that
@@ -44,7 +44,7 @@ class Email extends FormElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#input' => TRUE,
       '#size' => 60,

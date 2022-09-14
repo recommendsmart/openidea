@@ -7,7 +7,6 @@ use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Url;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
 
 /**
@@ -55,7 +54,7 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'block',
     'menu_ui',
@@ -72,7 +71,7 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $perms = [
@@ -101,10 +100,10 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     $this->drupalLogin($this->adminUser);
 
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Assert that the toolbar is present in the HTML.
-    $this->assertSession()->responseContains('id="toolbar-administration"');
+    $this->assertRaw('id="toolbar-administration"');
 
     // Store the adminUser admin menu subtrees hash for comparison later.
     $this->hash = $this->getSubtreesHash();
@@ -115,23 +114,12 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
    * implementations.
    */
   public function testModuleStatusChangeSubtreesHashCacheClear() {
-    // Use an admin role to ensure the user has all available permissions. This
-    // results in the admin menu links changing as the taxonomy module is
-    // installed and uninstalled because the role will always have the
-    // 'administer taxonomy' permission if it exists.
-    $role = Role::load($this->createRole([]));
-    $role->setIsAdmin(TRUE);
-    $role->save();
-    $this->adminUser->addRole($role->id());
-    $this->adminUser->save();
-
     // Uninstall a module.
     $edit = [];
     $edit['uninstall[taxonomy]'] = TRUE;
-    $this->drupalGet('admin/modules/uninstall');
-    $this->submitForm($edit, 'Uninstall');
+    $this->drupalPostForm('admin/modules/uninstall', $edit, t('Uninstall'));
     // Confirm the uninstall form.
-    $this->submitForm([], 'Uninstall');
+    $this->drupalPostForm(NULL, [], t('Uninstall'));
     $this->rebuildContainer();
 
     // Assert that the subtrees hash has been altered because the subtrees
@@ -141,8 +129,7 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     // Enable a module.
     $edit = [];
     $edit['modules[taxonomy][enable]'] = TRUE;
-    $this->drupalGet('admin/modules');
-    $this->submitForm($edit, 'Install');
+    $this->drupalPostForm('admin/modules', $edit, t('Install'));
     $this->rebuildContainer();
 
     // Assert that the subtrees hash has been altered because the subtrees
@@ -154,16 +141,15 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
    * Tests toolbar cache tags implementation.
    */
   public function testMenuLinkUpdateSubtreesHashCacheClear() {
-    // The ID of (any) admin menu link.
+    // The ID of a (any) admin menu link.
     $admin_menu_link_id = 'system.admin_config_development';
 
     // Disable the link.
     $edit = [];
     $edit['enabled'] = FALSE;
-    $this->drupalGet("admin/structure/menu/link/" . $admin_menu_link_id . "/edit");
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('The menu link has been saved.');
+    $this->drupalPostForm("admin/structure/menu/link/" . $admin_menu_link_id . "/edit", $edit, t('Save'));
+    $this->assertResponse(200);
+    $this->assertText('The menu link has been saved.');
 
     // Assert that the subtrees hash has been altered because the subtrees
     // structure changed.
@@ -182,8 +168,7 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
 
     $edit = [];
     $edit[$rid . '[administer taxonomy]'] = FALSE;
-    $this->drupalGet('admin/people/permissions');
-    $this->submitForm($edit, 'Save permissions');
+    $this->drupalPostForm('admin/people/permissions', $edit, t('Save permissions'));
 
     // Assert that the subtrees hash has been altered because the subtrees
     // structure changed.
@@ -193,29 +178,28 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     // Get the hash for a second user.
     $this->drupalLogin($this->adminUser2);
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Assert that the toolbar is present in the HTML.
-    $this->assertSession()->responseContains('id="toolbar-administration"');
+    $this->assertRaw('id="toolbar-administration"');
 
     $admin_user_2_hash = $this->getSubtreesHash();
 
     // Log in the first admin user again.
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Assert that the toolbar is present in the HTML.
-    $this->assertSession()->responseContains('id="toolbar-administration"');
+    $this->assertRaw('id="toolbar-administration"');
 
     $this->hash = $this->getSubtreesHash();
 
     $rid = $this->drupalCreateRole(['administer content types']);
 
     // Assign the role to the user.
-    $this->drupalGet('user/' . $this->adminUser->id() . '/edit');
-    $this->submitForm(["roles[{$rid}]" => $rid], 'Save');
-    $this->assertSession()->pageTextContains('The changes have been saved.');
+    $this->drupalPostForm('user/' . $this->adminUser->id() . '/edit', ["roles[$rid]" => $rid], t('Save'));
+    $this->assertText(t('The changes have been saved.'));
 
     // Assert that the subtrees hash has been altered because the subtrees
     // structure changed.
@@ -227,13 +211,13 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
 
     // Request a new page to refresh the drupalSettings object.
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $new_subtree_hash = $this->getSubtreesHash();
 
     // Assert that the old admin menu subtree hash and the new admin menu
     // subtree hash are the same.
     $this->assertNotEmpty($new_subtree_hash, 'A valid hash value for the admin menu subtrees was created.');
-    $this->assertEquals($admin_user_2_hash, $new_subtree_hash, 'The user-specific subtree menu hash has not been updated.');
+    $this->assertEqual($admin_user_2_hash, $new_subtree_hash, 'The user-specific subtree menu hash has not been updated.');
   }
 
   /**
@@ -251,13 +235,12 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     // Get the subtree hash for adminUser2 to check later that it has not
     // changed. Request a new page to refresh the drupalSettings object.
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $admin_user_2_hash = $this->getSubtreesHash();
 
     // Assign the role to the user.
-    $this->drupalGet('user/' . $admin_user_id . '/edit');
-    $this->submitForm(["roles[{$rid}]" => $rid], 'Save');
-    $this->assertSession()->pageTextContains('The changes have been saved.');
+    $this->drupalPostForm('user/' . $admin_user_id . '/edit', ["roles[$rid]" => $rid], t('Save'));
+    $this->assertText(t('The changes have been saved.'));
 
     // Log in adminUser and assert that the subtrees hash has changed.
     $this->drupalLogin($this->adminUser);
@@ -270,7 +253,7 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     // Assert that the old adminUser subtree hash and the new adminUser
     // subtree hash are the same.
     $this->assertNotEmpty($new_subtree_hash, 'A valid hash value for the admin menu subtrees was created.');
-    $this->assertEquals($new_subtree_hash, $admin_user_2_hash, 'The user-specific subtree menu hash has not been updated.');
+    $this->assertEqual($admin_user_2_hash, $new_subtree_hash, 'The user-specific subtree menu hash has not been updated.');
   }
 
   /**
@@ -279,10 +262,7 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
   public function testLocaleTranslationSubtreesHashCacheClear() {
     $admin_user = $this->adminUser;
     // User to translate and delete string.
-    $translate_user = $this->drupalCreateUser([
-      'translate interface',
-      'access administration pages',
-    ]);
+    $translate_user = $this->drupalCreateUser(['translate interface', 'access administration pages']);
 
     // Create a new language with the langcode 'xx'.
     $langcode = 'xx';
@@ -299,18 +279,16 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
       'label' => $name,
       'direction' => LanguageInterface::DIRECTION_LTR,
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add custom language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add custom language'));
     t($name, [], ['langcode' => $langcode]);
     // Reset locale cache.
     $this->container->get('string_translation')->reset();
-    $this->assertSession()->responseContains('"edit-languages-' . $langcode . '-weight"');
-    // Verify that the test language was added.
-    $this->assertSession()->pageTextContains($name);
+    $this->assertRaw('"edit-languages-' . $langcode . '-weight"', 'Language code found.');
+    $this->assertText(t($name), 'Test language added.');
 
     // Have the adminUser request a page in the new language.
     $this->drupalGet($langcode . '/test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Get a baseline hash for the admin menu subtrees before translating one
     // of the menu link items.
@@ -328,24 +306,20 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
       'langcode' => $langcode,
       'translation' => 'untranslated',
     ];
-    $this->drupalGet('admin/config/regional/translate');
-    $this->submitForm($search, 'Filter');
-    $this->assertSession()->pageTextNotContains('No strings available');
-    // Verify that search found the string as untranslated.
-    $this->assertSession()->pageTextContains($name);
+    $this->drupalPostForm('admin/config/regional/translate', $search, t('Filter'));
+    $this->assertNoText(t('No strings available'));
+    $this->assertText($name, 'Search found the string as untranslated.');
 
     // Assume this is the only result.
     // Translate the string to a random string.
-    $textarea = $this->assertSession()->elementExists('xpath', '//textarea');
+    $textarea = current($this->xpath('//textarea'));
     $lid = (string) $textarea->getAttribute('name');
     $edit = [
       $lid => $translation,
     ];
-    $this->drupalGet('admin/config/regional/translate');
-    $this->submitForm($edit, 'Save translations');
-    $this->assertSession()->pageTextContains('The strings have been saved.');
-    // Verify that the user is redirected to the correct page.
-    $this->assertSession()->addressEquals(Url::fromRoute('locale.translate_page'));
+    $this->drupalPostForm('admin/config/regional/translate', $edit, t('Save translations'));
+    $this->assertText(t('The strings have been saved.'), 'The strings have been saved.');
+    $this->assertUrl(Url::fromRoute('locale.translate_page', [], ['absolute' => TRUE])->toString(), [], 'Correct page redirection.');
     $this->drupalLogout();
 
     // Log in the adminUser. Check the admin menu subtrees hash now that one
@@ -354,13 +328,13 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     $this->drupalLogin($admin_user);
     // Have the adminUser request a page in the new language.
     $this->drupalGet($langcode . '/test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $new_subtree_hash = $this->getSubtreesHash();
 
     // Assert that the old admin menu subtrees hash and the new admin menu
     // subtrees hash are different.
     $this->assertNotEmpty($new_subtree_hash, 'A valid hash value for the admin menu subtrees was created.');
-    $this->assertNotEquals($original_subtree_hash, $new_subtree_hash, 'The user-specific subtree menu hash has been updated.');
+    $this->assertNotEqual($original_subtree_hash, $new_subtree_hash, 'The user-specific subtree menu hash has been updated.');
   }
 
   /**
@@ -374,12 +348,12 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
 
     $this->drupalGet('toolbar/subtrees/' . $subtrees_hash, ['query' => [MainContentViewSubscriber::WRAPPER_FORMAT => 'drupal_ajax']], ['X-Requested-With: XMLHttpRequest']);
     $ajax_result = json_decode($this->getSession()->getPage()->getContent(), TRUE);
-    $this->assertEquals('setToolbarSubtrees', $ajax_result[0]['command'], 'Subtrees response uses the correct command.');
-    $this->assertEquals(['system-admin_content', 'system-admin_structure', 'system-themes_page', 'system-modules_list', 'system-admin_config', 'entity-user-collection', 'front'], array_keys($ajax_result[0]['subtrees']), 'Correct subtrees returned.');
+    $this->assertEqual($ajax_result[0]['command'], 'setToolbarSubtrees', 'Subtrees response uses the correct command.');
+    $this->assertEqual(array_keys($ajax_result[0]['subtrees']), ['system-admin_content', 'system-admin_structure', 'system-themes_page', 'system-modules_list', 'system-admin_config', 'entity-user-collection', 'front'], 'Correct subtrees returned.');
   }
 
   /**
-   * Tests that subtrees hashes vary by the language of the page.
+   * Test that subtrees hashes vary by the language of the page.
    */
   public function testLanguageSwitching() {
     // Create a new language with the langcode 'xx'.
@@ -399,11 +373,11 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
     // Assert that the old admin menu subtree hash and the new admin menu
     // subtree hash are different.
     $this->assertNotEmpty($new_subtree_hash, 'A valid hash value for the admin menu subtrees was created.');
-    $this->assertNotEquals($this->hash, $new_subtree_hash, 'The user-specific subtree menu hash has been updated.');
+    $this->assertNotEqual($this->hash, $new_subtree_hash, 'The user-specific subtree menu hash has been updated.');
   }
 
   /**
-   * Tests that back to site link exists on admin pages, not on content pages.
+   * Test that back to site link exists on admin pages, not on content pages.
    */
   public function testBackToSiteLink() {
     // Back to site link should exist in the markup.
@@ -422,18 +396,17 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
       'menu_parent' => 'admin:system.admin',
       'description[0][value]' => 'External URL & escaped',
     ];
-    $this->drupalGet('admin/structure/menu/manage/admin/add');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('admin/structure/menu/manage/admin/add', $edit, 'Save');
 
     // Assert that the new menu link is shown on the menu link listing.
     $this->drupalGet('admin/structure/menu/manage/admin');
-    $this->assertSession()->pageTextContains('External URL');
+    $this->assertText('External URL');
 
     // Assert that the new menu link is shown in the toolbar on a regular page.
     $this->drupalGet(Url::fromRoute('<front>'));
-    $this->assertSession()->pageTextContains('External URL');
+    $this->assertText('External URL');
     // Ensure the description is escaped as expected.
-    $this->assertSession()->responseContains('title="External URL &amp; escaped"');
+    $this->assertRaw('title="External URL &amp; escaped"');
   }
 
   /**
@@ -453,19 +426,17 @@ class ToolbarAdminMenuTest extends BrowserTestBase {
   /**
    * Asserts the subtrees hash on a fresh page GET is different from the hash
    * from the previous page GET.
-   *
-   * @internal
    */
-  private function assertDifferentHash(): void {
+  private function assertDifferentHash() {
     // Request a new page to refresh the drupalSettings object.
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $new_subtree_hash = $this->getSubtreesHash();
 
     // Assert that the old admin menu subtree hash and the new admin menu
     // subtree hash are different.
     $this->assertNotEmpty($new_subtree_hash, 'A valid hash value for the admin menu subtrees was created.');
-    $this->assertNotEquals($this->hash, $new_subtree_hash, 'The user-specific subtree menu hash has been updated.');
+    $this->assertNotEqual($this->hash, $new_subtree_hash, 'The user-specific subtree menu hash has been updated.');
 
     // Save the new subtree hash as the original.
     $this->hash = $new_subtree_hash;

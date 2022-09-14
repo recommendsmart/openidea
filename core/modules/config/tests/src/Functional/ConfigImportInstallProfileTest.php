@@ -23,7 +23,7 @@ class ConfigImportInstallProfileTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['config'];
+  public static $modules = ['config'];
 
   /**
    * {@inheritdoc}
@@ -37,7 +37,7 @@ class ConfigImportInstallProfileTest extends BrowserTestBase {
    */
   protected $webUser;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->webUser = $this->drupalCreateUser(['synchronize configuration']);
@@ -59,10 +59,9 @@ class ConfigImportInstallProfileTest extends BrowserTestBase {
     unset($core['module']['testing_config_import']);
     $sync->write('core.extension', $core);
 
-    $this->drupalGet('admin/config/development/configuration');
-    $this->submitForm([], 'Import all');
-    $this->assertSession()->pageTextContains('The configuration cannot be imported because it failed validation for the following reasons:');
-    $this->assertSession()->pageTextContains('Unable to uninstall the Testing config import profile since it is the install profile.');
+    $this->drupalPostForm('admin/config/development/configuration', [], t('Import all'));
+    $this->assertText('The configuration cannot be imported because it failed validation for the following reasons:');
+    $this->assertText('Unable to uninstall the Testing config import profile since it is the install profile.');
 
     // Uninstall dependencies of testing_config_import.
     $core['module']['testing_config_import'] = 0;
@@ -75,9 +74,8 @@ class ConfigImportInstallProfileTest extends BrowserTestBase {
     $theme = $sync->read('system.theme');
     $theme['default'] = 'classy';
     $sync->write('system.theme', $theme);
-    $this->drupalGet('admin/config/development/configuration');
-    $this->submitForm([], 'Import all');
-    $this->assertSession()->pageTextContains('The configuration was imported successfully.');
+    $this->drupalPostForm('admin/config/development/configuration', [], t('Import all'));
+    $this->assertText('The configuration was imported successfully.');
     $this->rebuildContainer();
     $this->assertFalse(\Drupal::moduleHandler()->moduleExists('syslog'), 'The syslog module has been uninstalled.');
     $this->assertFalse(\Drupal::service('theme_handler')->themeExists('stark'), 'The stark theme has been uninstalled.');

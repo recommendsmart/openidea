@@ -12,7 +12,7 @@ use Drupal\views\Views;
  */
 class HandlerAliasTest extends ViewsKernelTestBase {
 
-  protected static $modules = ['user'];
+  public static $modules = ['user'];
 
   /**
    * Views used by this test.
@@ -21,7 +21,7 @@ class HandlerAliasTest extends ViewsKernelTestBase {
    */
   public static $testViews = ['test_filter', 'test_alias'];
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp();
 
     $this->installEntitySchema('user');
@@ -61,11 +61,11 @@ class HandlerAliasTest extends ViewsKernelTestBase {
     $filter = $view->filter['test_filter'];
 
     // Check the definition values are present.
-    $this->assertSame('views_test_data', $filter->definition['real table']);
-    $this->assertSame('name', $filter->definition['real field']);
+    $this->assertIdentical($filter->definition['real table'], 'views_test_data');
+    $this->assertIdentical($filter->definition['real field'], 'name');
 
-    $this->assertSame('views_test_data', $filter->table);
-    $this->assertSame('name', $filter->realField);
+    $this->assertIdentical($filter->table, 'views_test_data');
+    $this->assertIdentical($filter->realField, 'name');
 
     // Test an existing user uid field.
     $view = Views::getView('test_alias');
@@ -74,11 +74,11 @@ class HandlerAliasTest extends ViewsKernelTestBase {
 
     $filter = $view->filter['uid_raw'];
 
-    $this->assertSame('uid', $filter->definition['real field']);
+    $this->assertIdentical($filter->definition['real field'], 'uid');
 
-    $this->assertSame('uid_raw', $filter->field);
-    $this->assertSame('users_field_data', $filter->table);
-    $this->assertSame('uid', $filter->realField);
+    $this->assertIdentical($filter->field, 'uid_raw');
+    $this->assertIdentical($filter->table, 'users_field_data');
+    $this->assertIdentical($filter->realField, 'uid');
   }
 
 }

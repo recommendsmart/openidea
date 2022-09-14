@@ -22,6 +22,13 @@ class AliasManagerTest extends UnitTestCase {
   protected $aliasManager;
 
   /**
+   * Alias storage.
+   *
+   * @var \Drupal\Core\Path\AliasStorageInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $aliasStorage;
+
+  /**
    * Alias repository.
    *
    * @var \Drupal\path_alias\AliasRepositoryInterface|\PHPUnit\Framework\MockObject\MockObject
@@ -66,7 +73,7 @@ class AliasManagerTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->aliasRepository = $this->createMock(AliasRepositoryInterface::class);
@@ -108,7 +115,7 @@ class AliasManagerTest extends UnitTestCase {
    *
    * @covers ::getPathByAlias
    */
-  public function testGetPathByAliasMatch() {
+  public function testGetPathByAliasNatch() {
     $alias = $this->randomMachineName();
     $path = $this->randomMachineName();
 
@@ -463,6 +470,8 @@ class AliasManagerTest extends UnitTestCase {
     $this->assertEquals($path, $this->aliasManager->getPathByAlias($alias, $language->getId()));
 
     // Clear specific source.
+    $this->cache->expects($this->exactly(2))
+      ->method('delete');
     $this->aliasManager->cacheClear($path);
 
     // Ensure cache has been cleared (this will be the 2nd call to

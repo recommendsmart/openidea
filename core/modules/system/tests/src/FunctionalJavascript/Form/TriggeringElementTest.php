@@ -62,8 +62,7 @@ class TriggeringElementTest extends WebDriverTestBase {
     // Ensure submitting a form with buttons of different types results in the
     // triggering element being set to the first button, regardless of type. For
     // the FAPI 'button' type, this should result in the submit handler not
-    // executing. The types are 's' (submit), 'b' (button), and 'i'
-    // (image_button).
+    // executing. The types are 's'(ubmit), 'b'(utton), and 'i'(mage_button).
     $this->drupalGet($path . '/s/b/i');
     $this->getSession()->getDriver()->submitForm('//form[@id="' . $form_html_id . '"]');
     $assert_session->pageTextContains('The clicked button is button1.');
@@ -95,7 +94,7 @@ class TriggeringElementTest extends WebDriverTestBase {
 
     // Submit the form with 'button1=button1' in the POST data, which someone
     // trying to get around security safeguards could easily do. We have to do
-    // a little trickery here, to work around the safeguards in submitForm()
+    // a little trickery here, to work around the safeguards in drupalPostForm()
     // by renaming the text field and value that is in the form to 'button1',
     // we can get the data we want into \Drupal::request()->request.
     $page = $this->getSession()->getPage();

@@ -6,8 +6,6 @@ use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
-// cspell:ignore imagefield
-
 /**
  * @MigrateProcessPlugin(
  *   id = "d6_field_instance_defaults"
@@ -21,7 +19,7 @@ class FieldInstanceDefaults extends ProcessPluginBase {
    * Set the field instance defaults.
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    [$widget_type, $widget_settings] = $value;
+    list($widget_type, $widget_settings) = $value;
     $default = [];
 
     switch ($widget_type) {
@@ -54,7 +52,7 @@ class FieldInstanceDefaults extends ProcessPluginBase {
       case 'link':
         if (!empty($widget_settings['default_value'][0]['url'])) {
           $default['title'] = $widget_settings['default_value'][0]['title'];
-          $default['uri'] = $widget_settings['default_value'][0]['url'];
+          $default['url'] = $widget_settings['default_value'][0]['url'];
           $default['options'] = ['attributes' => []];
         }
         break;

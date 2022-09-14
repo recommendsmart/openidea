@@ -21,7 +21,7 @@ class GlossaryTest extends ViewTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
@@ -62,7 +62,7 @@ class GlossaryTest extends ViewTestBase {
 
     // Check that the amount of nodes per char.
     foreach ($view->result as $item) {
-      $this->assertEquals($nodes_per_char[$item->title_truncated], $item->num_records);
+      $this->assertEqual($nodes_per_char[$item->title_truncated], $item->num_records);
     }
 
     // Enable the glossary to be displayed.
@@ -110,17 +110,18 @@ class GlossaryTest extends ViewTestBase {
 
     // Check the actual page response.
     $this->drupalGet($url);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     foreach ($nodes_per_char as $char => $count) {
       $href = Url::fromRoute('view.glossary.page_1', ['arg_0' => $char])->toString();
       $label = mb_strtoupper($char);
       // Get the summary link for a certain character. Filter by label and href
       // to ensure that both of them are correct.
-      $result = $this->assertSession()->elementExists('xpath', "//a[contains(@href, '{$href}') and normalize-space(text())='{$label}']/..");
+      $result = $this->xpath('//a[contains(@href, :href) and normalize-space(text())=:label]/..', [':href' => $href, ':label' => $label]);
+      $this->assertNotEmpty(count($result));
       // The rendered output looks like "<a href=''>X</a> | (count)" so let's
       // figure out the int.
-      $result_count = explode(' ', trim(str_replace(['|', '(', ')'], '', $result->getText())))[1];
-      $this->assertEquals($count, $result_count, 'The expected number got rendered.');
+      $result_count = explode(' ', trim(str_replace(['|', '(', ')'], '', $result[0]->getText())))[1];
+      $this->assertEqual($result_count, $count, 'The expected number got rendered.');
     }
   }
 

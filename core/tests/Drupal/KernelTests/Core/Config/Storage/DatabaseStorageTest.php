@@ -15,7 +15,7 @@ class DatabaseStorageTest extends ConfigStorageTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->storage = new DatabaseStorage($this->container->get('database'), 'config');
@@ -26,7 +26,7 @@ class DatabaseStorageTest extends ConfigStorageTestBase {
   }
 
   protected function read($name) {
-    $data = Database::getConnection()->select('config', 'c')->fields('c', ['data'])->condition('name', $name)->execute()->fetchField();
+    $data = Database::getConnection()->query('SELECT data FROM {config} WHERE name = :name', [':name' => $name])->fetchField();
     return unserialize($data);
   }
 

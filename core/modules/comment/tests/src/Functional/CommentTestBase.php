@@ -24,7 +24,7 @@ abstract class CommentTestBase extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'comment',
     'node',
@@ -139,7 +139,7 @@ abstract class CommentTestBase extends BrowserTestBase {
       $edit['subject[0][value]'] = $subject;
     }
     else {
-      $this->assertSession()->fieldNotExists('subject[0][value]');
+      $this->assertNoFieldByName('subject[0][value]', '', 'Subject field not found.');
     }
 
     if ($contact !== NULL && is_array($contact)) {
@@ -148,20 +148,20 @@ abstract class CommentTestBase extends BrowserTestBase {
     switch ($preview_mode) {
       case DRUPAL_REQUIRED:
         // Preview required so no save button should be found.
-        $this->assertSession()->buttonNotExists('Save');
-        $this->submitForm($edit, 'Preview');
+        $this->assertNoFieldByName('op', t('Save'), 'Save button not found.');
+        $this->drupalPostForm(NULL, $edit, t('Preview'));
         // Don't break here so that we can test post-preview field presence and
         // function below.
       case DRUPAL_OPTIONAL:
-        $this->assertSession()->buttonExists('Preview');
-        $this->assertSession()->buttonExists('Save');
-        $this->submitForm($edit, 'Save');
+        $this->assertFieldByName('op', t('Preview'), 'Preview button found.');
+        $this->assertFieldByName('op', t('Save'), 'Save button found.');
+        $this->drupalPostForm(NULL, $edit, t('Save'));
         break;
 
       case DRUPAL_DISABLED:
-        $this->assertSession()->buttonNotExists('Preview');
-        $this->assertSession()->buttonExists('Save');
-        $this->submitForm($edit, 'Save');
+        $this->assertNoFieldByName('op', t('Preview'), 'Preview button not found.');
+        $this->assertFieldByName('op', t('Save'), 'Save button found.');
+        $this->drupalPostForm(NULL, $edit, t('Save'));
         break;
     }
     $match = [];
@@ -172,11 +172,10 @@ abstract class CommentTestBase extends BrowserTestBase {
     if ($contact !== TRUE) {
       // If true then attempting to find error message.
       if ($subject) {
-        $this->assertSession()->pageTextContains($subject);
+        $this->assertText($subject, 'Comment subject posted.');
       }
-      $this->assertSession()->pageTextContains($comment);
-      // Check the comment ID was extracted.
-      $this->assertArrayHasKey(1, $match);
+      $this->assertText($comment, 'Comment body posted.');
+      $this->assertTrue((!empty($match) && !empty($match[1])), 'Comment id found.');
     }
 
     if (isset($match[1])) {
@@ -227,9 +226,8 @@ abstract class CommentTestBase extends BrowserTestBase {
    *   Comment to delete.
    */
   public function deleteComment(CommentInterface $comment) {
-    $this->drupalGet('comment/' . $comment->id() . '/delete');
-    $this->submitForm([], 'Delete');
-    $this->assertSession()->pageTextContains('The comment and all its replies have been deleted.');
+    $this->drupalPostForm('comment/' . $comment->id() . '/delete', [], t('Delete'));
+    $this->assertText(t('The comment and all its replies have been deleted.'), 'Comment deleted.');
   }
 
   /**
@@ -362,15 +360,14 @@ abstract class CommentTestBase extends BrowserTestBase {
     $edit = [];
     $edit['operation'] = $operation;
     $edit['comments[' . $comment->id() . ']'] = TRUE;
-    $this->drupalGet('admin/content/comment' . ($approval ? '/approval' : ''));
-    $this->submitForm($edit, 'Update');
+    $this->drupalPostForm('admin/content/comment' . ($approval ? '/approval' : ''), $edit, t('Update'));
 
     if ($operation == 'delete') {
-      $this->submitForm([], 'Delete');
-      $this->assertSession()->pageTextContains('Deleted 1 comment.');
+      $this->drupalPostForm(NULL, [], t('Delete'));
+      $this->assertRaw(\Drupal::translation()->formatPlural(1, 'Deleted 1 comment.', 'Deleted @count comments.'), new FormattableMarkup('Operation "@operation" was performed on comment.', ['@operation' => $operation]));
     }
     else {
-      $this->assertSession()->pageTextContains('The update has been performed.');
+      $this->assertText(t('The update has been performed.'), new FormattableMarkup('Operation "@operation" was performed on comment.', ['@operation' => $operation]));
     }
   }
 
@@ -391,7 +388,7 @@ abstract class CommentTestBase extends BrowserTestBase {
   }
 
   /**
-   * Creates a comment type (bundle).
+   * Creates a comment comment type (bundle).
    *
    * @param string $label
    *   The comment type label.

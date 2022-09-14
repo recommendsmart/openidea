@@ -24,7 +24,7 @@ class FieldDropButtonTest extends ViewTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
@@ -34,14 +34,10 @@ class FieldDropButtonTest extends ViewTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
-    $admin_user = $this->drupalCreateUser([
-      'access content overview',
-      'administer nodes',
-      'bypass node access',
-    ]);
+    $admin_user = $this->drupalCreateUser(['access content overview', 'administer nodes', 'bypass node access']);
     $this->drupalLogin($admin_user);
   }
 
@@ -57,19 +53,19 @@ class FieldDropButtonTest extends ViewTestBase {
 
     $this->drupalGet('test-dropbutton');
     foreach ($nodes as $node) {
-      // Test that only one node title link was found.
-      $this->assertSession()->elementsCount('xpath', "//ul[contains(@class, dropbutton)]/li/a[contains(@href, '/node/{$node->id()}') and text()='{$node->label()}']", 1);
-      // Test that only one custom link was found.
-      $this->assertSession()->elementsCount('xpath', "//ul[contains(@class, dropbutton)]/li/a[contains(@href, '/node/{$node->id()}') and text()='Custom Text']", 1);
+      $result = $this->xpath('//ul[contains(@class, dropbutton)]/li/a[contains(@href, :path) and text()=:title]', [':path' => '/node/' . $node->id(), ':title' => $node->label()]);
+      $this->assertEqual(count($result), 1, 'Just one node title link was found.');
+      $result = $this->xpath('//ul[contains(@class, dropbutton)]/li/a[contains(@href, :path) and text()=:title]', [':path' => '/node/' . $node->id(), ':title' => 'Custom Text']);
+      $this->assertEqual(count($result), 1, 'Just one custom link was found.');
     }
 
     // Check if the dropbutton.js library is available.
     $this->drupalGet('admin/content');
-    $this->assertSession()->responseContains('dropbutton.js');
+    $this->assertRaw('dropbutton.js');
     // Check if the dropbutton.js library is available on a cached page to
     // ensure that bubbleable metadata is not lost in the views render workflow.
     $this->drupalGet('admin/content');
-    $this->assertSession()->responseContains('dropbutton.js');
+    $this->assertRaw('dropbutton.js');
   }
 
 }

@@ -27,7 +27,7 @@ class CounterTest extends UnitTestCase {
    *
    * @var \Drupal\views\ViewExecutable
    */
-  protected $view;
+  protected  $view;
 
   /**
    * The display plugin instance.
@@ -54,7 +54,7 @@ class CounterTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Setup basic stuff like the view and the display.
@@ -79,7 +79,7 @@ class CounterTest extends UnitTestCase {
 
     $this->pager = $this->getMockBuilder('Drupal\views\Plugin\views\pager\Full')
       ->disableOriginalConstructor()
-      ->onlyMethods([])
+      ->setMethods(NULL)
       ->getMock();
 
     $this->view->display_handler = $this->display;

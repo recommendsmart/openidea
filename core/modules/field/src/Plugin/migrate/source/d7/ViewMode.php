@@ -3,12 +3,7 @@
 namespace Drupal\field\Plugin\migrate\source\d7;
 
 /**
- * Drupal 7 view mode source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * The view mode source class.
  *
  * @MigrateSource(
  *   id = "d7_view_mode",

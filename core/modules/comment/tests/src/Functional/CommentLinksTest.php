@@ -5,7 +5,6 @@ namespace Drupal\Tests\comment\Functional;
 use Drupal\comment\Plugin\Field\FieldType\CommentItemInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\comment\CommentInterface;
-use Drupal\comment\CommentManagerInterface;
 use Drupal\user\RoleInterface;
 use Drupal\comment\Entity\Comment;
 
@@ -37,7 +36,7 @@ class CommentLinksTest extends CommentTestBase {
    *
    * @todo Remove this dependency.
    */
-  protected static $modules = ['views'];
+  public static $modules = ['views'];
 
   /**
    * {@inheritdoc}
@@ -77,16 +76,6 @@ class CommentLinksTest extends CommentTestBase {
     $comment->save();
     $this->comment = $comment;
 
-    // Tests that reply link is not visible when threading is disabled.
-    $this->drupalLogin($this->webUser);
-    $this->setCommentSettings('default_mode', CommentManagerInterface::COMMENT_MODE_FLAT, 'Comment paging changed.');
-    $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->linkNotExists('Reply');
-    // Tests that reply link is visible when threading is enabled.
-    $this->setCommentSettings('default_mode', CommentManagerInterface::COMMENT_MODE_THREADED, 'Comment paging changed.');
-    $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->linkExists('Reply');
-
     // Change comment settings.
     $this->setCommentSettings('form_location', CommentItemInterface::FORM_BELOW, 'Set comment form location');
     $this->setCommentAnonymous(TRUE);
@@ -112,9 +101,9 @@ class CommentLinksTest extends CommentTestBase {
       // In teaser view, a link containing the comment count is always
       // expected.
       if ($path == 'node') {
-        $this->assertSession()->linkExists('1 comment');
+        $this->assertLink(t('1 comment'));
       }
-      $this->assertSession()->linkExists('Add new comment');
+      $this->assertLink('Add new comment');
     }
 
     $display_repository = $this->container->get('entity_display.repository');
@@ -127,7 +116,7 @@ class CommentLinksTest extends CommentTestBase {
     $element = $this->cssSelect('article.js-comment > div');
     // Get last child element.
     $element = end($element);
-    $this->assertSame('div', $element->getTagName(), 'Last element is comment body.');
+    $this->assertIdentical($element->getTagName(), 'div', 'Last element is comment body.');
 
     // Change weight to make links go after comment body.
     $display_repository->getViewDisplay('comment', 'comment')
@@ -144,21 +133,21 @@ class CommentLinksTest extends CommentTestBase {
       ->removeComponent('links')
       ->save();
     $this->drupalGet($this->node->toUrl());
-    $this->assertSession()->linkNotExists('1 comment');
-    $this->assertSession()->linkNotExists('Add new comment');
+    $this->assertNoLink('1 comment');
+    $this->assertNoLink('Add new comment');
 
     // Visit the full node, make sure there are links for the comment.
     $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->pageTextContains($comment->getSubject());
-    $this->assertSession()->linkExists('Reply');
+    $this->assertText($comment->getSubject());
+    $this->assertLink('Reply');
 
     // Make sure we can hide comment links.
     $display_repository->getViewDisplay('comment', 'comment')
       ->removeComponent('links')
       ->save();
     $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->pageTextContains($comment->getSubject());
-    $this->assertSession()->linkNotExists('Reply');
+    $this->assertText($comment->getSubject());
+    $this->assertNoLink('Reply');
   }
 
 }

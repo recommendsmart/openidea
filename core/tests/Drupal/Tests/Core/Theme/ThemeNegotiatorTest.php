@@ -46,7 +46,7 @@ class ThemeNegotiatorTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->themeAccessCheck = $this->getMockBuilder('\Drupal\Core\Theme\ThemeAccessCheck')
       ->disableOriginalConstructor()
       ->getMock();
@@ -153,12 +153,15 @@ class ThemeNegotiatorTest extends UnitTestCase {
       $this->container->set($id, $negotiator);
     }
 
-    $this->themeAccessCheck->expects($this->exactly(2))
+    $this->themeAccessCheck->expects($this->at(0))
       ->method('checkAccess')
-      ->willReturnMap([
-        ['example_test', FALSE],
-        ['example_test2', TRUE],
-      ]);
+      ->with('example_test')
+      ->will($this->returnValue(FALSE));
+
+    $this->themeAccessCheck->expects($this->at(1))
+      ->method('checkAccess')
+      ->with('example_test2')
+      ->will($this->returnValue(TRUE));
 
     $route_match = new RouteMatch('test_route', new Route('/test-route'), [], []);
     $theme = $this->createThemeNegotiator(array_keys($negotiators))->determineActiveTheme($route_match);

@@ -19,9 +19,9 @@ class BundleConstraintValidatorTest extends KernelTestBase {
    */
   protected $typedData;
 
-  protected static $modules = ['node', 'field', 'text', 'user'];
+  public static $modules = ['node', 'field', 'text', 'user'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->typedData = $this->container->get('typed_data_manager');
@@ -42,10 +42,8 @@ class BundleConstraintValidatorTest extends KernelTestBase {
    *
    * @param string|array $bundle
    *   Bundle/bundles to use as constraint option.
-   *
-   * @internal
    */
-  protected function assertValidation($bundle): void {
+  protected function assertValidation($bundle) {
     // Create a typed data definition with a Bundle constraint.
     $definition = DataDefinition::create('entity_reference')
       ->addConstraint('Bundle', $bundle);
@@ -55,20 +53,20 @@ class BundleConstraintValidatorTest extends KernelTestBase {
 
     $typed_data = $this->typedData->create($definition, $node);
     $violations = $typed_data->validate();
-    $this->assertEquals(0, $violations->count(), 'Validation passed for correct value.');
+    $this->assertEqual($violations->count(), 0, 'Validation passed for correct value.');
 
     // Test the validation when an invalid value is passed.
     $page_node = $this->container->get('entity_type.manager')->getStorage('node')->create(['type' => 'baz']);
 
     $typed_data = $this->typedData->create($definition, $page_node);
     $violations = $typed_data->validate();
-    $this->assertEquals(1, $violations->count(), 'Validation failed for incorrect value.');
+    $this->assertEqual($violations->count(), 1, 'Validation failed for incorrect value.');
 
     // Make sure the information provided by a violation is correct.
     $violation = $violations[0];
-    $this->assertEquals(t('The entity must be of bundle %bundle.', ['%bundle' => implode(', ', (array) $bundle)]), $violation->getMessage(), 'The message for invalid value is correct.');
-    $this->assertEquals($typed_data, $violation->getRoot(), 'Violation root is correct.');
-    $this->assertEquals($page_node, $violation->getInvalidValue(), 'The invalid value is set correctly in the violation.');
+    $this->assertEqual($violation->getMessage(), t('The entity must be of bundle %bundle.', ['%bundle' => implode(', ', (array) $bundle)]), 'The message for invalid value is correct.');
+    $this->assertEqual($violation->getRoot(), $typed_data, 'Violation root is correct.');
+    $this->assertEqual($violation->getInvalidValue(), $page_node, 'The invalid value is set correctly in the violation.');
   }
 
 }

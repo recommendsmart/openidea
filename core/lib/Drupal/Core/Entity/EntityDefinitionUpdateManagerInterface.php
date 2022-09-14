@@ -19,9 +19,9 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  * specified by the current codebase. It also has create/update/delete methods
  * to bring the former up to date with the latter.
  *
- * However, it is not the responsibility of entity last installed schema repository
- * to decide how to report the differences or when to apply each update. This
- * interface is for managing that.
+ * However, it is not the responsibility of the entity manager to decide how to
+ * report the differences or when to apply each update. This interface is for
+ * managing that.
  *
  * This interface also provides methods to retrieve instances of the definitions
  * to be updated ready to be manipulated. In fact when definitions change in
@@ -98,6 +98,26 @@ interface EntityDefinitionUpdateManagerInterface {
   public function getChangeList();
 
   /**
+   * Applies all the detected valid changes.
+   *
+   * Use this with care, as it will apply updates for any module, which will
+   * lead to unpredictable results.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   *   This exception is thrown if a change cannot be applied without
+   *   unacceptable data loss. In such a case, the site administrator needs to
+   *   apply some other process, such as a custom update function or a
+   *   migration via the Migrate module.
+   *
+   * @deprecated in drupal:8.7.0 and is removed from drupal:9.0.0. Use
+   *    \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface::getChangeList()
+   *    and execute each entity type and field storage update manually instead.
+   *
+   * @see https://www.drupal.org/node/3034742
+   */
+  public function applyUpdates();
+
+  /**
    * Returns an entity type definition ready to be manipulated.
    *
    * When needing to apply updates to existing entity type definitions, this
@@ -107,8 +127,8 @@ interface EntityDefinitionUpdateManagerInterface {
    * @param string $entity_type_id
    *   The entity type identifier.
    *
-   * @return \Drupal\Core\Entity\EntityTypeInterface|null
-   *   The entity type definition. Or NULL if not found.
+   * @return \Drupal\Core\Entity\EntityTypeInterface
+   *   The entity type definition.
    */
   public function getEntityType($entity_type_id);
 

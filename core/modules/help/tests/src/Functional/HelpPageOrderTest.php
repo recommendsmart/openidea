@@ -34,7 +34,7 @@ class HelpPageOrderTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create and log in user.
@@ -56,7 +56,7 @@ class HelpPageOrderTest extends BrowserTestBase {
     $page_text = $this->getTextContent();
     foreach ($this->stringOrder as $item) {
       $new_pos = strpos($page_text, $item, $pos);
-      $this->assertGreaterThan($pos, $new_pos, "Order of $item is not correct on help page");
+      $this->assertTrue($new_pos > $pos, 'Order of ' . $item . ' is correct on help page');
       $pos = $new_pos;
     }
   }

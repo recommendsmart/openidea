@@ -10,6 +10,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -26,7 +27,7 @@ use Symfony\Component\HttpFoundation\Request;
  *   }
  * )
  */
-class TimestampAgoFormatter extends FormatterBase {
+class TimestampAgoFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
    * The date formatter service.

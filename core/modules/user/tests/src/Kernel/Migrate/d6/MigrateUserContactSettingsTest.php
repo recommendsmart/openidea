@@ -14,12 +14,12 @@ class MigrateUserContactSettingsTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['contact'];
+  public static $modules = ['contact'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->migrateUsers(FALSE);
     $this->installSchema('user', ['users_data']);
@@ -34,15 +34,15 @@ class MigrateUserContactSettingsTest extends MigrateDrupal6TestBase {
     $module = $key = 'contact';
     $uid = 2;
     $setting = $user_data->get($module, $uid, $key);
-    $this->assertSame('1', $setting);
+    $this->assertIdentical('1', $setting);
 
     $uid = 8;
     $setting = $user_data->get($module, $uid, $key);
-    $this->assertSame('0', $setting);
+    $this->assertIdentical('0', $setting);
 
     $uid = 15;
     $setting = $user_data->get($module, $uid, $key);
-    $this->assertNull($setting);
+    $this->assertIdentical(NULL, $setting);
   }
 
 }

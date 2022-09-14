@@ -19,20 +19,13 @@ interface ConditionAggregateInterface extends \Countable {
    * Adds a condition.
    *
    * @param string|ConditionAggregateInterface $field
-   *   The field.
    * @param string $function
-   *   (optional) The function.
    * @param mixed $value
-   *   (optional) The value.
    * @param string $operator
-   *   (optional) The operator.
    * @param string $langcode
-   *   (optional) For which language the entity should be prepared, defaults to
-   *   the current content language.
    *
    * @return $this
    *   The called object.
-   *
    * @see \Drupal\Core\Entity\Query\QueryInterface::condition()
    */
   public function condition($field, $function = NULL, $value = NULL, $operator = NULL, $langcode = NULL);
@@ -40,16 +33,9 @@ interface ConditionAggregateInterface extends \Countable {
   /**
    * Queries for the existence of a field.
    *
-   * @param string $field
-   *   The field to query for existence.
-   * @param string $function
-   *   The function.
+   * @param $field
    * @param string $langcode
-   *   (optional) For which language the entity should be prepared, defaults to
-   *   the current content language.
-   *
-   * @return \Drupal\Core\Entity\Query\ConditionInterface
-   *
+   * @return ConditionInterface
    * @see \Drupal\Core\Entity\Query\QueryInterface::exists()
    */
   public function exists($field, $function, $langcode = NULL);
@@ -58,15 +44,7 @@ interface ConditionAggregateInterface extends \Countable {
    * Queries for the nonexistence of a field.
    *
    * @param string $field
-   *   The field to query for nonexistence.
-   * @param string $function
-   *   The function.
-   * @param string $langcode
-   *   (optional) For which language the entity should be prepared, defaults to
-   *   the current content language.
-   *
-   * @return \Drupal\Core\Entity\Query\ConditionInterface
-   *
+   * @return ConditionInterface
    * @see \Drupal\Core\Entity\Query\QueryInterface::notExists()
    */
   public function notExists($field, $function, $langcode = NULL);

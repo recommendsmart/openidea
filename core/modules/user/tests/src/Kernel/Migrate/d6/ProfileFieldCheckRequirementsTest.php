@@ -15,13 +15,13 @@ class ProfileFieldCheckRequirementsTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp(): void {
+  public function setup() {
     parent::setUp();
     $this->sourceDatabase->schema()->dropTable('profile_fields');
   }
 
   /**
-   * Tests exception is thrown when profile_fields tables do not exist.
+   * Tests exception in thrown when profile_fields tables does not exist.
    */
   public function testCheckRequirements() {
     $this->expectException(RequirementsException::class);

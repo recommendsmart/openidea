@@ -18,11 +18,11 @@ class LocaleConfigurableLanguageManagerTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['language', 'locale'];
+  public static $modules = ['language', 'locale'];
 
   public function testGetLanguages() {
     $this->installSchema('locale', ['locales_source', 'locales_target', 'locales_location']);
-    $default_language = ConfigurableLanguage::create(['label' => $this->randomMachineName(), 'id' => 'default', 'weight' => 0]);
+    $default_language = new ConfigurableLanguage(['label' => $this->randomMachineName(), 'id' => 'default', 'weight' => 0], 'configurable_language');
     $default_language->save();
 
     // Set new default language.
@@ -30,16 +30,16 @@ class LocaleConfigurableLanguageManagerTest extends KernelTestBase {
     \Drupal::service('string_translation')->setDefaultLangcode($default_language->getId());
 
     $languages = \Drupal::service('language_manager')->getLanguages(LanguageInterface::STATE_ALL);
-    $this->assertEquals(['default', 'und', 'zxx'], array_keys($languages));
+    $this->assertEqual(['default', 'und', 'zxx'], array_keys($languages));
 
-    $configurableLanguage = ConfigurableLanguage::create(['label' => $this->randomMachineName(), 'id' => 'test', 'weight' => 1]);
+    $configurableLanguage = new ConfigurableLanguage(['label' => $this->randomMachineName(), 'id' => 'test', 'weight' => 1], 'configurable_language');
     // Simulate a configuration sync by setting the flag otherwise the locked
     // language weights would be updated whilst saving.
     // @see \Drupal\language\Entity\ConfigurableLanguage::postSave()
     $configurableLanguage->setSyncing(TRUE)->save();
 
     $languages = \Drupal::service('language_manager')->getLanguages(LanguageInterface::STATE_ALL);
-    $this->assertEquals(['default', 'test', 'und', 'zxx'], array_keys($languages));
+    $this->assertEqual(['default', 'test', 'und', 'zxx'], array_keys($languages));
   }
 
 }

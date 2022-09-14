@@ -28,7 +28,7 @@ class LayoutBuilderSectionStorageTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->createContentType(['type' => 'bundle_with_section_field']);
@@ -63,8 +63,7 @@ class LayoutBuilderSectionStorageTest extends BrowserTestBase {
     $assert_session->pageTextNotContains('Test block title');
 
     // Enable Layout Builder.
-    $this->drupalGet('admin/structure/types/manage/bundle_with_section_field/display/default');
-    $this->submitForm(['layout[enabled]' => TRUE], 'Save');
+    $this->drupalPostForm('admin/structure/types/manage/bundle_with_section_field/display/default', ['layout[enabled]' => TRUE], 'Save');
 
     // Add a block to the defaults.
     $page->clickLink('Manage layout');
@@ -86,8 +85,7 @@ class LayoutBuilderSectionStorageTest extends BrowserTestBase {
     $assert_session->pageTextContains('Test block title');
 
     // Disabling defaults does not prevent the section storage from running.
-    $this->drupalGet('admin/structure/types/manage/bundle_with_section_field/display/default');
-    $this->submitForm(['layout[enabled]' => FALSE], 'Save');
+    $this->drupalPostForm('admin/structure/types/manage/bundle_with_section_field/display/default', ['layout[enabled]' => FALSE], 'Save');
     $page->pressButton('Confirm');
     $assert_session->pageTextContains('Layout Builder has been disabled');
     $this->drupalGet('node/1');

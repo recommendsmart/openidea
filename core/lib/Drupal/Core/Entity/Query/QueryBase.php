@@ -2,6 +2,7 @@
 
 namespace Drupal\Core\Entity\Query;
 
+use Drupal\Core\Database\Query\PagerSelectExtender;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Utility\TableSort;
 
@@ -60,7 +61,7 @@ abstract class QueryBase implements QueryInterface {
   protected $groupBy = [];
 
   /**
-   * Aggregate Conditions.
+   * Aggregate Conditions
    *
    * @var \Drupal\Core\Entity\Query\ConditionAggregateInterface
    */
@@ -95,11 +96,11 @@ abstract class QueryBase implements QueryInterface {
   protected $alterTags;
 
   /**
-   * Whether access check is requested or not.
+   * Whether access check is requested or not. Defaults to TRUE.
    *
-   * @var bool|null
+   * @var bool
    */
-  protected $accessCheck;
+  protected $accessCheck = TRUE;
 
   /**
    * Flag indicating whether to query the current revision or all revisions.
@@ -288,7 +289,10 @@ abstract class QueryBase implements QueryInterface {
     // Even when not using SQL, storing the element PagerSelectExtender is as
     // good as anywhere else.
     if (!isset($element)) {
-      $element = \Drupal::service('pager.manager')->getMaxPagerElementId() + 1;
+      $element = PagerSelectExtender::$maxElement++;
+    }
+    elseif ($element >= PagerSelectExtender::$maxElement) {
+      PagerSelectExtender::$maxElement = $element + 1;
     }
 
     $this->pager = [
@@ -330,7 +334,7 @@ abstract class QueryBase implements QueryInterface {
     $direction = TableSort::getSort($headers, \Drupal::request());
     foreach ($headers as $header) {
       if (is_array($header) && ($header['data'] == $order['name'])) {
-        $this->sort($header['specifier'], $direction, $header['langcode'] ?? NULL);
+        $this->sort($header['specifier'], $direction, isset($header['langcode']) ? $header['langcode'] : NULL);
       }
     }
 
@@ -385,7 +389,7 @@ abstract class QueryBase implements QueryInterface {
    * {@inheritdoc}
    */
   public function getMetaData($key) {
-    return $this->alterMetaData[$key] ?? NULL;
+    return isset($this->alterMetaData[$key]) ? $this->alterMetaData[$key] : NULL;
   }
 
   /**
@@ -457,7 +461,7 @@ abstract class QueryBase implements QueryInterface {
    *   The alias for the field.
    */
   protected function getAggregationAlias($field, $function) {
-    return strtolower(str_replace([':', '.'], '__', $field) . '_' . $function);
+    return strtolower($field . '_' . $function);
   }
 
   /**

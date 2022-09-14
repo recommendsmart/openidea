@@ -59,12 +59,12 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['entity_reference_test', 'entity_test_update'];
+  public static $modules = ['entity_reference_test', 'entity_test_update'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('entity_test_rev');
@@ -98,13 +98,13 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       ->create(['type' => $this->bundle]);
     $entity->{$this->fieldName}->target_id = $referenced_entity->id();
     $violations = $entity->{$this->fieldName}->validate();
-    $this->assertEquals(0, $violations->count(), 'Validation passes.');
+    $this->assertEqual($violations->count(), 0, 'Validation passes.');
 
     // Test an invalid reference.
     $entity->{$this->fieldName}->target_id = 9999;
     $violations = $entity->{$this->fieldName}->validate();
-    $this->assertEquals(1, $violations->count(), 'Validation throws a violation.');
-    $this->assertEquals(t('The referenced entity (%type: %id) does not exist.', ['%type' => $this->referencedEntityType, '%id' => 9999]), $violations[0]->getMessage());
+    $this->assertEqual($violations->count(), 1, 'Validation throws a violation.');
+    $this->assertEqual($violations[0]->getMessage(), t('The referenced entity (%type: %id) does not exist.', ['%type' => $this->referencedEntityType, '%id' => 9999]));
 
     // Test a non-referenceable bundle.
     entity_test_create_bundle('non_referenceable', NULL, $this->referencedEntityType);
@@ -114,8 +114,8 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
     $referenced_entity->save();
     $entity->{$this->fieldName}->target_id = $referenced_entity->id();
     $violations = $entity->{$this->fieldName}->validate();
-    $this->assertEquals(1, $violations->count(), 'Validation throws a violation.');
-    $this->assertEquals(t('This entity (%type: %id) cannot be referenced.', ['%type' => $this->referencedEntityType, '%id' => $referenced_entity->id()]), $violations[0]->getMessage());
+    $this->assertEqual($violations->count(), 1, 'Validation throws a violation.');
+    $this->assertEqual($violations[0]->getMessage(), t('This entity (%type: %id) cannot be referenced.', ['%type' => $this->referencedEntityType, '%id' => $referenced_entity->id()]));
   }
 
   /**
@@ -174,12 +174,12 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
         if (!$target_entity->isNew()) {
           // There must be an entity in the loaded set having the same id for
           // the same delta.
-          $this->assertEquals($entities[$delta]->id(), $target_entity->id());
+          $this->assertEqual($target_entity->id(), $entities[$delta]->id());
         }
         else {
           // For entities that were not yet saved, there must an entity in the
           // loaded set having the same label for the same delta.
-          $this->assertEquals($entities[$delta]->label(), $target_entity->label());
+          $this->assertEqual($target_entity->label(), $entities[$delta]->label());
         }
       }
       else {
@@ -223,7 +223,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
 
     // Load the target entities using EntityReferenceField::referencedEntities().
     $entities = $entity->{$field_name}->referencedEntities();
-    $this->assertEquals($target_entity->id(), $entities[0]->id());
+    $this->assertEqual($entities[0]->id(), $target_entity->id());
 
     // Test that a string ID works as a default value and the field's config
     // schema is correct.
@@ -237,7 +237,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       ->getStorage($this->entityType)
       ->create(['type' => $this->bundle]);
     $entities = $entity->{$field_name}->referencedEntities();
-    $this->assertEquals($target_entity->id(), $entities[0]->id());
+    $this->assertEqual($entities[0]->id(), $target_entity->id());
   }
 
   /**
@@ -273,7 +273,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       $this->fail($message);
     }
     catch (\InvalidArgumentException $e) {
-      // Expected exception; just continue testing.
+      $this->pass($message);
     }
     $this->assertUserAutocreate($entity, function (EntityInterface $entity, UserInterface $user) {
       $entity->user_id = $user;
@@ -307,7 +307,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       $this->fail($message);
     }
     catch (\InvalidArgumentException $e) {
-      // Expected exception; just continue testing.
+      $this->pass($message);
     }
     $this->assertUserRoleAutocreate($entity, function (EntityInterface $entity, RoleInterface $role) {
       $entity->user_role = $role;
@@ -323,7 +323,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
     $entity->user_id = $user;
     $user->save();
     $entity->save();
-    $this->assertEquals($user->id(), $entity->user_id->target_id);
+    $this->assertEqual($entity->user_id->target_id, $user->id());
   }
 
   /**
@@ -331,12 +331,13 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The referencing entity.
-   * @param callable $setter_callback
+   * @param $setter_callback
    *   A callback setting the target entity on the referencing entity.
    *
-   * @internal
+   * @return bool
+   *   TRUE if the user was autocreated, FALSE otherwise.
    */
-  protected function assertUserAutocreate(EntityInterface $entity, callable $setter_callback): void {
+  protected function assertUserAutocreate(EntityInterface $entity, $setter_callback) {
     $storage = $this->entityTypeManager->getStorage('user');
     $user_id = $this->generateRandomEntityId();
     $user = $storage->create(['uid' => $user_id, 'name' => $this->randomString()]);
@@ -344,7 +345,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
     $entity->save();
     $storage->resetCache();
     $user = User::load($user_id);
-    $this->assertEquals($entity->user_id->target_id, $user->id());
+    return $this->assertEqual($entity->user_id->target_id, $user->id());
   }
 
   /**
@@ -352,12 +353,13 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The referencing entity.
-   * @param callable $setter_callback
+   * @param $setter_callback
    *   A callback setting the target entity on the referencing entity.
    *
-   * @internal
+   * @return bool
+   *   TRUE if the user was autocreated, FALSE otherwise.
    */
-  protected function assertUserRoleAutocreate(EntityInterface $entity, callable $setter_callback): void {
+  protected function assertUserRoleAutocreate(EntityInterface $entity, $setter_callback) {
     $storage = $this->entityTypeManager->getStorage('user_role');
     $role_id = $this->generateRandomEntityId(TRUE);
     $role = $storage->create(['id' => $role_id, 'label' => $this->randomString()]);
@@ -365,7 +367,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
     $entity->save();
     $storage->resetCache();
     $role = Role::load($role_id);
-    $this->assertEquals($entity->user_role->target_id, $role->id());
+    return $this->assertEqual($entity->user_role->target_id, $role->id());
   }
 
   /**
@@ -392,7 +394,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
     $target_id = $this->generateRandomEntityId();
     $target = $storage->create(['id' => $target_id, 'name' => $this->randomString()]);
     $target->save();
-    $this->assertEquals($target_id, $target->id(), 'The target entity has a random identifier.');
+    $this->assertEqual($target_id, $target->id(), 'The target entity has a random identifier.');
 
     // Check that populating the reference with an existing target id does not
     // trigger a load operation.
@@ -402,6 +404,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
         ->getStorage($entity_type->id())
         ->create(['name' => $this->randomString()]);
       $entity->target_reference = $target_id;
+      $this->pass($message);
     }
     catch (EntityStorageException $e) {
       $this->fail($message);
@@ -415,7 +418,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       $this->fail($message);
     }
     catch (EntityStorageException $e) {
-      // Expected exception; just continue testing.
+      $this->pass($message);
     }
   }
 
@@ -435,7 +438,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       ],
     ]);
     $field_storage->save();
-    $this->assertEquals(['module' => ['entity_test', 'user']], $field_storage->getDependencies());
+    $this->assertEqual(['module' => ['entity_test', 'user']], $field_storage->getDependencies());
 
     $field = FieldConfig::create([
       'field_name' => $field_name,
@@ -447,7 +450,7 @@ class EntityReferenceFieldTest extends EntityKernelTestBase {
       ],
     ]);
     $field->save();
-    $this->assertEquals(['config' => ['field.storage.entity_test.user_reference_field'], 'module' => ['entity_test']], $field->getDependencies());
+    $this->assertEqual(['config' => ['field.storage.entity_test.user_reference_field'], 'module' => ['entity_test']], $field->getDependencies());
   }
 
 }

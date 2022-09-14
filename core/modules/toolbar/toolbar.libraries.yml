@@ -25,8 +25,9 @@ toolbar:
     - core/drupal.ajax
     - core/drupal.announce
     - core/backbone
-    - core/once
-    - core/jquery.once.bc
+    - core/matchmedia
+    - core/matchmedia.addListener
+    - core/jquery.once
     - core/drupal.displace
     - toolbar/toolbar.menu
 
@@ -40,8 +41,7 @@ toolbar.menu:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
 
 toolbar.escapeAdmin:
   version: VERSION
@@ -51,5 +51,4 @@ toolbar.escapeAdmin:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once

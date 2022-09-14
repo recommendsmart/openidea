@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url as UrlObject;
 
 /**
- * An abstract handler which provides a collection of links.
+ * A abstract handler which provides a collection of links.
  *
  * @ingroup views_field_handlers
  */

@@ -6,10 +6,10 @@ use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 
 /**
- * Defines the storage handler class for feed item entities.
+ * Controller class for aggregators items.
  *
- * This extends the base storage class, adding required special handling for
- * feed item entities.
+ * This extends the Drupal\Core\Entity\Sql\SqlContentEntityStorage class, adding
+ * required special handling for feed item entities.
  */
 class ItemStorage extends SqlContentEntityStorage implements ItemStorageInterface {
 
@@ -18,7 +18,6 @@ class ItemStorage extends SqlContentEntityStorage implements ItemStorageInterfac
    */
   public function getItemCount(FeedInterface $feed) {
     $query = \Drupal::entityQuery('aggregator_item')
-      ->accessCheck(FALSE)
       ->condition('fid', $feed->id())
       ->count();
 
@@ -54,8 +53,7 @@ class ItemStorage extends SqlContentEntityStorage implements ItemStorageInterfac
    *   An array of the feed items.
    */
   protected function executeFeedItemQuery(QueryInterface $query, $limit) {
-    $query->accessCheck(FALSE)
-      ->sort('timestamp', 'DESC')
+    $query->sort('timestamp', 'DESC')
       ->sort('iid', 'DESC');
     if (!empty($limit)) {
       $query->pager($limit);

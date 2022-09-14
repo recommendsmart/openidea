@@ -27,7 +27,7 @@ class LatestRevisionCheckTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Initialize Drupal container since the cache context manager is needed.
@@ -39,7 +39,7 @@ class LatestRevisionCheckTest extends UnitTestCase {
   }
 
   /**
-   * Tests the access check of the LatestRevisionCheck service.
+   * Test the access check of the LatestRevisionCheck service.
    *
    * @param string $entity_class
    *   The class of the entity to mock.

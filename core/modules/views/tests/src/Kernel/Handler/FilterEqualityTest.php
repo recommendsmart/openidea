@@ -12,7 +12,7 @@ use Drupal\views\Views;
  */
 class FilterEqualityTest extends ViewsKernelTestBase {
 
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
 
   /**
    * Views used by this test.
@@ -71,6 +71,7 @@ class FilterEqualityTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
     $resultset = [
@@ -125,6 +126,7 @@ class FilterEqualityTest extends ViewsKernelTestBase {
     $view->setDisplay('page_1');
     $view->displayHandlers->get('page_1')->overrideOption('filters', $filters);
     $view->save();
+    $this->container->get('router.builder')->rebuild();
 
     $this->executeView($view);
     $resultset = [

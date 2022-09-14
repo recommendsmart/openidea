@@ -32,17 +32,16 @@ class MenuTest extends WizardTestBase {
     $view['page[title]'] = $this->randomMachineName(16);
     $view['page[path]'] = $this->randomMachineName(16);
     $view['page[link]'] = 1;
-    $view['page[link_properties][parent]'] = 'main:';
+    $view['page[link_properties][menu_name]'] = 'main';
     $view['page[link_properties][title]'] = $this->randomMachineName(16);
-    $this->drupalGet('admin/structure/views/add');
-    $this->submitForm($view, 'Save and edit');
+    $this->drupalPostForm('admin/structure/views/add', $view, t('Save and edit'));
 
     // Make sure there is a link to the view from the front page (where we
     // expect the main menu to display).
     $this->drupalGet('');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkExists($view['page[link_properties][title]']);
-    $this->assertSession()->linkByHrefExists(Url::fromUri('base:' . $view['page[path]'])->toString());
+    $this->assertResponse(200);
+    $this->assertLink($view['page[link_properties][title]']);
+    $this->assertLinkByHref(Url::fromUri('base:' . $view['page[path]'])->toString());
 
     // Make sure the link is associated with the main menu.
     /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
@@ -50,9 +49,9 @@ class MenuTest extends WizardTestBase {
     /** @var \Drupal\Core\Menu\MenuLinkInterface $link */
     $link = $menu_link_manager->createInstance('views_view:views.' . $view['id'] . '.page_1');
     $url = $link->getUrlObject();
-    $this->assertEquals('view.' . $view['id'] . '.page_1', $url->getRouteName(), new FormattableMarkup('Found a link to %path in the main menu', ['%path' => $view['page[path]']]));
+    $this->assertEqual($url->getRouteName(), 'view.' . $view['id'] . '.page_1', new FormattableMarkup('Found a link to %path in the main menu', ['%path' => $view['page[path]']]));
     $metadata = $link->getMetaData();
-    $this->assertEquals(['view_id' => $view['id'], 'display_id' => 'page_1'], $metadata);
+    $this->assertEqual(['view_id' => $view['id'], 'display_id' => 'page_1'], $metadata);
   }
 
 }

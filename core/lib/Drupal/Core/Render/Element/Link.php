@@ -13,7 +13,7 @@ use Drupal\Core\Url as CoreUrl;
  *
  * Properties:
  * - #title: The link text.
- * - #url: \Drupal\Core\Url object containing URL information pointing to an
+ * - #url: \Drupal\Core\Url object containing URL information pointing to a
  *   internal or external link. See \Drupal\Core\Utility\LinkGeneratorInterface.
  *
  * Usage example:
@@ -33,7 +33,7 @@ class Link extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#pre_render' => [
         [$class, 'preRenderLink'],
@@ -69,7 +69,7 @@ class Link extends RenderElement {
     }
 
     // This #pre_render callback can be invoked from inside or outside of a Form
-    // API context, and depending on that, an HTML ID may be already set in
+    // API context, and depending on that, a HTML ID may be already set in
     // different locations. #options should have precedence over Form API's #id.
     // #attributes have been taken over into #options above already.
     if (isset($element['#options']['attributes']['id'])) {
@@ -111,10 +111,9 @@ class Link extends RenderElement {
    *
    * The purpose of this is to allow links to be logically grouped into related
    * categories, so that each child group can be rendered as its own list of
-   * links if RendererInterface::render() is called on it, but
-   * calling RendererInterface::render() on the parent element will
-   * still produce a single list containing all the remaining links, regardless
-   * of what group they were in.
+   * links if drupal_render() is called on it, but calling drupal_render() on
+   * the parent element will still produce a single list containing all the
+   * remaining links, regardless of what group they were in.
    *
    * A typical example comes from node links, which are stored in a renderable
    * array similar to this:

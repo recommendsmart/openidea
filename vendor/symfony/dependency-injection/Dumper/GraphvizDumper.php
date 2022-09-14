@@ -32,11 +32,10 @@ class GraphvizDumper extends Dumper
 {
     private $nodes;
     private $edges;
-    // All values should be strings
     private $options = [
             'graph' => ['ratio' => 'compress'],
-            'node' => ['fontsize' => '11', 'fontname' => 'Arial', 'shape' => 'record'],
-            'edge' => ['fontsize' => '9', 'fontname' => 'Arial', 'color' => 'grey', 'arrowhead' => 'open', 'arrowsize' => '0.5'],
+            'node' => ['fontsize' => 11, 'fontname' => 'Arial', 'shape' => 'record'],
+            'edge' => ['fontsize' => 9, 'fontname' => 'Arial', 'color' => 'grey', 'arrowhead' => 'open', 'arrowsize' => 0.5],
             'node.instance' => ['fillcolor' => '#9999ff', 'style' => 'filled'],
             'node.definition' => ['fillcolor' => '#eeeeee'],
             'node.missing' => ['fillcolor' => '#ff9999', 'style' => 'filled'],
@@ -84,7 +83,12 @@ class GraphvizDumper extends Dumper
         return $this->container->resolveEnvPlaceholders($this->startDot().$this->addNodes().$this->addEdges().$this->endDot(), '__ENV_%s__');
     }
 
-    private function addNodes(): string
+    /**
+     * Returns all nodes.
+     *
+     * @return string A string representation of all nodes
+     */
+    private function addNodes()
     {
         $code = '';
         foreach ($this->nodes as $id => $node) {
@@ -96,7 +100,12 @@ class GraphvizDumper extends Dumper
         return $code;
     }
 
-    private function addEdges(): string
+    /**
+     * Returns all edges.
+     *
+     * @return string A string representation of all edges
+     */
+    private function addEdges()
     {
         $code = '';
         foreach ($this->edges as $id => $edges) {
@@ -110,8 +119,15 @@ class GraphvizDumper extends Dumper
 
     /**
      * Finds all edges belonging to a specific service id.
+     *
+     * @param string $id        The service id used to find edges
+     * @param array  $arguments An array of arguments
+     * @param bool   $required
+     * @param string $name
+     *
+     * @return array An array of edges
      */
-    private function findEdges(string $id, array $arguments, bool $required, string $name, bool $lazy = false): array
+    private function findEdges($id, array $arguments, $required, $name, $lazy = false)
     {
         $edges = [];
         foreach ($arguments as $argument) {
@@ -149,7 +165,12 @@ class GraphvizDumper extends Dumper
         return $edges;
     }
 
-    private function findNodes(): array
+    /**
+     * Finds all nodes.
+     *
+     * @return array An array of all nodes
+     */
+    private function findNodes()
     {
         $nodes = [];
 
@@ -184,7 +205,7 @@ class GraphvizDumper extends Dumper
         return $nodes;
     }
 
-    private function cloneContainer(): ContainerBuilder
+    private function cloneContainer()
     {
         $parameterBag = new ParameterBag($this->container->getParameterBag()->all());
 
@@ -199,7 +220,12 @@ class GraphvizDumper extends Dumper
         return $container;
     }
 
-    private function startDot(): string
+    /**
+     * Returns the start dot.
+     *
+     * @return string The string representation of a start dot
+     */
+    private function startDot()
     {
         return sprintf("digraph sc {\n  %s\n  node [%s];\n  edge [%s];\n\n",
             $this->addOptions($this->options['graph']),
@@ -208,12 +234,24 @@ class GraphvizDumper extends Dumper
         );
     }
 
-    private function endDot(): string
+    /**
+     * Returns the end dot.
+     *
+     * @return string
+     */
+    private function endDot()
     {
         return "}\n";
     }
 
-    private function addAttributes(array $attributes): string
+    /**
+     * Adds attributes.
+     *
+     * @param array $attributes An array of attributes
+     *
+     * @return string A comma separated list of attributes
+     */
+    private function addAttributes(array $attributes)
     {
         $code = [];
         foreach ($attributes as $k => $v) {
@@ -223,7 +261,14 @@ class GraphvizDumper extends Dumper
         return $code ? ', '.implode(', ', $code) : '';
     }
 
-    private function addOptions(array $options): string
+    /**
+     * Adds options.
+     *
+     * @param array $options An array of options
+     *
+     * @return string A space separated list of options
+     */
+    private function addOptions(array $options)
     {
         $code = [];
         foreach ($options as $k => $v) {
@@ -233,12 +278,26 @@ class GraphvizDumper extends Dumper
         return implode(' ', $code);
     }
 
-    private function dotize(string $id): string
+    /**
+     * Dotizes an identifier.
+     *
+     * @param string $id The identifier to dotize
+     *
+     * @return string A dotized string
+     */
+    private function dotize($id)
     {
-        return preg_replace('/\W/i', '_', $id);
+        return strtolower(preg_replace('/\W/i', '_', $id));
     }
 
-    private function getAliases(string $id): array
+    /**
+     * Compiles an array of aliases for a specified service id.
+     *
+     * @param string $id A service id
+     *
+     * @return array An array of aliases
+     */
+    private function getAliases($id)
     {
         $aliases = [];
         foreach ($this->container->getAliases() as $alias => $origin) {

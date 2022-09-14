@@ -16,7 +16,7 @@ class NodeViewLanguageTest extends NodeTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'datetime', 'language'];
+  public static $modules = ['node', 'datetime', 'language'];
 
   /**
    * {@inheritdoc}
@@ -40,7 +40,7 @@ class NodeViewLanguageTest extends NodeTestBase {
     $node = $this->drupalCreateNode(['langcode' => 'es']);
 
     $this->drupalGet($node->toUrl());
-    $this->assertSession()->pageTextContains('Spanish');
+    $this->assertText('Spanish', 'The language field is displayed properly.');
   }
 
 }

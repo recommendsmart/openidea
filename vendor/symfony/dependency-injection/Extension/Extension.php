@@ -65,8 +65,8 @@ abstract class Extension implements ExtensionInterface, ConfigurationExtensionIn
      */
     public function getAlias()
     {
-        $className = static::class;
-        if (!str_ends_with($className, 'Extension')) {
+        $className = \get_class($this);
+        if ('Extension' != substr($className, -9)) {
             throw new BadMethodCallException('This extension does not follow the naming convention; you must overwrite the getAlias() method.');
         }
         $classBaseName = substr(strrchr($className, '\\'), 1, -9);
@@ -79,34 +79,18 @@ abstract class Extension implements ExtensionInterface, ConfigurationExtensionIn
      */
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
-        $class = static::class;
-
-        if (str_contains($class, "\0")) {
-            return null; // ignore anonymous classes
-        }
-
+        $class = \get_class($this);
         $class = substr_replace($class, '\Configuration', strrpos($class, '\\'));
         $class = $container->getReflectionClass($class);
+        $constructor = $class ? $class->getConstructor() : null;
 
-        if (!$class) {
-            return null;
-        }
-
-        if (!$class->implementsInterface(ConfigurationInterface::class)) {
-            @trigger_error(sprintf('Not implementing "%s" in the extension configuration class "%s" is deprecated since Symfony 4.1.', ConfigurationInterface::class, $class->getName()), \E_USER_DEPRECATED);
-            //throw new LogicException(sprintf('The extension configuration class "%s" must implement "%s".', $class->getName(), ConfigurationInterface::class));
-
-            return null;
-        }
-
-        if (!($constructor = $class->getConstructor()) || !$constructor->getNumberOfRequiredParameters()) {
-            return $class->newInstance();
-        }
-
-        return null;
+        return $class && (!$constructor || !$constructor->getNumberOfRequiredParameters()) ? $class->newInstance() : null;
     }
 
-    final protected function processConfiguration(ConfigurationInterface $configuration, array $configs): array
+    /**
+     * @return array
+     */
+    final protected function processConfiguration(ConfigurationInterface $configuration, array $configs)
     {
         $processor = new Processor();
 
@@ -116,7 +100,7 @@ abstract class Extension implements ExtensionInterface, ConfigurationExtensionIn
     /**
      * @internal
      */
-    final public function getProcessedConfigs(): array
+    final public function getProcessedConfigs()
     {
         try {
             return $this->processedConfigs;

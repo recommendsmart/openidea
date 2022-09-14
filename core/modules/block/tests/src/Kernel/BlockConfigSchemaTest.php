@@ -18,7 +18,7 @@ class BlockConfigSchemaTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'aggregator',
     'book',
@@ -51,7 +51,7 @@ class BlockConfigSchemaTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->typedConfig = \Drupal::service('config.typed');
@@ -85,7 +85,7 @@ class BlockConfigSchemaTest extends KernelTestBase {
       $block->save();
 
       $config = $this->config("block.block.$id");
-      $this->assertEquals($id, $config->get('id'));
+      $this->assertEqual($config->get('id'), $id);
       $this->assertConfigSchema($this->typedConfig, $config->getName(), $config->get());
     }
   }

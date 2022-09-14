@@ -34,7 +34,7 @@ class DependentAccessTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->account = $this->prophesize(AccountInterface::class)->reveal();
     $this->forbidden = $this->createAccessibleDouble(AccessResult::forbidden('Because I said so'));
@@ -42,7 +42,7 @@ class DependentAccessTest extends UnitTestCase {
   }
 
   /**
-   * Tests that the previous dependency is replaced when using set.
+   * Test that the previous dependency is replaced when using set.
    *
    * @covers ::setAccessDependency
    *
@@ -64,7 +64,7 @@ class DependentAccessTest extends UnitTestCase {
     // Calling setAccessDependency() replaces the existing dependency.
     $testRefinable->setAccessDependency($this->neutral);
     $dependency = $testRefinable->getAccessDependency();
-    $this->assertNotInstanceOf(AccessGroupAnd::class, $dependency);
+    $this->assertFalse($dependency instanceof AccessGroupAnd);
     $accessResult = $dependency->access('view', $this->account, TRUE);
     $this->assertTrue($accessResult->isNeutral());
     $this->assertEquals('I have no opinion', $accessResult->getReason());
@@ -92,7 +92,7 @@ class DependentAccessTest extends UnitTestCase {
     /** @var \Drupal\block_content\Access\AccessGroupAnd $dependency */
     $dependency = $testRefinable->getAccessDependency();
     // Ensure the new dependency create a new AND group when merged.
-    $this->assertInstanceOf(AccessGroupAnd::class, $dependency);
+    $this->assertTrue($dependency instanceof AccessGroupAnd);
     $dependencies = $dependency->getDependencies();
     $accessResultForbidden = $dependencies[0]->access('view', $this->account, TRUE);
     $this->assertTrue($accessResultForbidden->isForbidden());
@@ -123,7 +123,7 @@ class DependentAccessTest extends UnitTestCase {
     $dependency = $testRefinable->getAccessDependency();
 
     // Ensure the new dependency is merged with the existing group.
-    $this->assertInstanceOf(AccessGroupAnd::class, $dependency);
+    $this->assertTrue($dependency instanceof AccessGroupAnd);
     $dependencies = $dependency->getDependencies();
     $accessResultForbidden = $dependencies[0]->access('view', $this->account, TRUE);
     $this->assertTrue($accessResultForbidden->isForbidden());
@@ -134,7 +134,7 @@ class DependentAccessTest extends UnitTestCase {
   }
 
   /**
-   * Data provider for all test methods.
+   * Dataprovider for all test methods.
    *
    * Provides test cases for calling setAccessDependency() or
    * mergeAccessDependency() first. A call to either should behave the same on a

@@ -3,9 +3,11 @@
 namespace Drupal\Core\TypedData\Validation;
 
 use Drupal\Core\TypedData\TypedDataInterface;
+use Symfony\Component\Validator\Exception\BadMethodCallException;
 use Symfony\Component\Validator\Mapping\CascadingStrategy;
 use Symfony\Component\Validator\Mapping\MetadataInterface;
 use Symfony\Component\Validator\Mapping\TraversalStrategy;
+use Symfony\Component\Validator\ValidationVisitorInterface;
 
 /**
  * Validator metadata for typed data objects.
@@ -34,28 +36,35 @@ class TypedDataMetadata implements MetadataInterface {
   /**
    * {@inheritdoc}
    */
-  public function findConstraints($group): array {
+  public function accept(ValidationVisitorInterface $visitor, $typed_data, $group, $propertyPath) {
+    throw new BadMethodCallException('Not supported.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function findConstraints($group) {
     return $this->getConstraints();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConstraints(): array {
+  public function getConstraints() {
     return $this->typedData->getConstraints();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getTraversalStrategy(): int {
+  public function getTraversalStrategy() {
     return TraversalStrategy::NONE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCascadingStrategy(): int {
+  public function getCascadingStrategy() {
     // By default, never cascade into validating referenced data structures.
     return CascadingStrategy::NONE;
   }

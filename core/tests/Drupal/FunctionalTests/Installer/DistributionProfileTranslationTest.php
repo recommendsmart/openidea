@@ -50,9 +50,9 @@ class DistributionProfileTranslationTest extends InstallerTestBase {
       ],
     ];
     // File API functions are not available yet.
-    $path = $this->root . DIRECTORY_SEPARATOR . $this->siteDirectory . '/profiles/my_distro';
+    $path = $this->root . DIRECTORY_SEPARATOR . $this->siteDirectory . '/profiles/mydistro';
     mkdir($path, 0777, TRUE);
-    file_put_contents("$path/my_distro.info.yml", Yaml::encode($this->info));
+    file_put_contents("$path/mydistro.info.yml", Yaml::encode($this->info));
 
     // Place a custom local translation in the translations directory.
     mkdir($this->root . '/' . $this->siteDirectory . '/files/translations', 0777, TRUE);
@@ -80,19 +80,20 @@ class DistributionProfileTranslationTest extends InstallerTestBase {
   protected function setUpSettings() {
     // The language should have been automatically detected, all following
     // screens should be translated already.
-    $this->assertSession()->buttonExists('Save and continue de');
+    $elements = $this->xpath('//input[@type="submit"]/@value');
+    $this->assertEqual(current($elements)->getText(), 'Save and continue de');
     $this->translations['Save and continue'] = 'Save and continue de';
 
     // Check the language direction.
     $direction = current($this->xpath('/@dir'))->getText();
-    $this->assertEquals('ltr', $direction);
+    $this->assertEqual($direction, 'ltr');
 
     // Verify that the distribution name appears.
-    $this->assertSession()->pageTextContains($this->info['distribution']['name']);
+    $this->assertRaw($this->info['distribution']['name']);
     // Verify that the requested theme is used.
-    $this->assertSession()->responseContains($this->info['distribution']['install']['theme']);
+    $this->assertRaw($this->info['distribution']['install']['theme']);
     // Verify that the "Choose profile" step does not appear.
-    $this->assertSession()->pageTextNotContains('profile');
+    $this->assertNoText('profile');
 
     parent::setUpSettings();
   }
@@ -101,16 +102,16 @@ class DistributionProfileTranslationTest extends InstallerTestBase {
    * Confirms that the installation succeeded.
    */
   public function testInstalled() {
-    $this->assertSession()->addressEquals('user/1');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertUrl('user/1');
+    $this->assertResponse(200);
 
     // Confirm that we are logged-in after installation.
-    $this->assertSession()->pageTextContains($this->rootUser->getDisplayName());
+    $this->assertText($this->rootUser->getDisplayName());
 
     // Verify German was configured but not English.
     $this->drupalGet('admin/config/regional/language');
-    $this->assertSession()->pageTextContains('German');
-    $this->assertSession()->pageTextNotContains('English');
+    $this->assertText('German');
+    $this->assertNoText('English');
   }
 
   /**
@@ -118,7 +119,6 @@ class DistributionProfileTranslationTest extends InstallerTestBase {
    *
    * @param string $langcode
    *   The language code.
-   *
    * @return string
    *   Contents for the test .po file.
    */

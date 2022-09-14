@@ -5,8 +5,7 @@ drupal.color:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
     - core/jquery.farbtastic
     - color/drupal.color.preview
 
@@ -18,8 +17,7 @@ drupal.color.preview:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - core/once
-    - core/jquery.once.bc
+    - core/jquery.once
 
 admin:
   version: VERSION

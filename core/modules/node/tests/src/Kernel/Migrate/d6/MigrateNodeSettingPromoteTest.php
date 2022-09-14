@@ -10,12 +10,12 @@ use Drupal\Tests\migrate_drupal\Kernel\d6\MigrateDrupal6TestBase;
  */
 class MigrateNodeSettingPromoteTest extends MigrateDrupal6TestBase {
 
-  protected static $modules = ['node', 'text', 'menu_ui'];
+  public static $modules = ['node', 'text', 'menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['node']);
     $this->executeMigration('d6_node_type');
@@ -26,7 +26,7 @@ class MigrateNodeSettingPromoteTest extends MigrateDrupal6TestBase {
    * Tests migration of the promote checkbox's settings.
    */
   public function testMigration() {
-    $this->assertSame('Promoted to front page', BaseFieldOverride::load('node.article.promote')->label());
+    $this->assertIdentical('Promoted to front page', BaseFieldOverride::load('node.article.promote')->label());
   }
 
 }

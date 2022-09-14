@@ -81,13 +81,14 @@ COMPOUND
    */
   public function testGetTestListFromFile() {
     $parser = new TestFileParser();
-    $this->assertEquals(
+    $this->assertArrayEquals(
       ['Drupal\Tests\Core\Test\RunTests\TestFileParserTest'],
       $parser->getTestListFromFile(__FILE__)
     );
-    $this->assertEquals(
-      ['Drupal\KernelTests\Core\Datetime\Element\TimezoneTest'],
-      $parser->getTestListFromFile(__DIR__ . '/../../../../KernelTests/Core/Datetime/Element/TimezoneTest.php')
+    // This WebTestBase test will eventually move, so we'll need to update it.
+    $this->assertArrayEquals(
+      ['Drupal\simpletest\Tests\TimeZoneTest'],
+      $parser->getTestListFromFile(__DIR__ . '/../../../../../../modules/simpletest/src/Tests/TimeZoneTest.php')
     );
     // Not a test.
     $this->assertEmpty(

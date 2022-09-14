@@ -17,7 +17,7 @@ class MenuLinkContentFormTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'menu_link_content',
   ];
 
@@ -45,12 +45,9 @@ class MenuLinkContentFormTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-    $this->adminUser = $this->drupalCreateUser([
-      'administer menu',
-      'link to any page',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['administer menu', 'link to any page']);
     $this->basicUser = $this->drupalCreateUser(['administer menu']);
     $this->drupalLogin($this->adminUser);
   }
@@ -70,12 +67,12 @@ class MenuLinkContentFormTest extends BrowserTestBase {
     // The user should be able to edit a menu link to the page, even though
     // the user cannot access the page itself.
     $this->drupalGet('/admin/structure/menu/item/' . $menu_link->id() . '/edit');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     $this->drupalLogin($this->basicUser);
 
     $this->drupalGet('/admin/structure/menu/item/' . $menu_link->id() . '/edit');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
   }
 
   /**
@@ -83,16 +80,21 @@ class MenuLinkContentFormTest extends BrowserTestBase {
    */
   public function testMenuLinkContentForm() {
     $this->drupalGet('admin/structure/menu/manage/admin/add');
-    $option = $this->assertSession()->optionExists('edit-menu-parent', 'admin:');
-    $this->assertTrue($option->isSelected());
+    $element = $this->xpath('//select[@id = :id]/option[@selected]', [':id' => 'edit-menu-parent']);
+    $this->assertNotEmpty($element, 'A default menu parent was found.');
+    $this->assertEqual('admin:', $element[0]->getValue(), '<Administration> menu is the parent.');
     // Test that the field description is present.
-    $this->assertSession()->pageTextContains('The location this menu link points to.');
+    $this->assertRaw('The location this menu link points to.');
 
-    $this->submitForm([
-      'title[0][value]' => 'Front page',
-      'link[0][uri]' => '<front>',
-    ], 'Save');
-    $this->assertSession()->pageTextContains('The menu link has been saved.');
+    $this->drupalPostForm(
+      NULL,
+      [
+        'title[0][value]' => t('Front page'),
+        'link[0][uri]' => '<front>',
+      ],
+      t('Save')
+    );
+    $this->assertText(t('The menu link has been saved.'));
   }
 
   /**
@@ -100,11 +102,15 @@ class MenuLinkContentFormTest extends BrowserTestBase {
    */
   public function testMenuLinkContentFormValidation() {
     $this->drupalGet('admin/structure/menu/manage/admin/add');
-    $this->submitForm([
-      'title[0][value]' => 'Test page',
-      'link[0][uri]' => '<test>',
-    ], 'Save');
-    $this->assertSession()->pageTextContains('Manually entered paths should start with one of the following characters: / ? #');
+    $this->drupalPostForm(
+      NULL,
+      [
+        'title[0][value]' => t('Test page'),
+        'link[0][uri]' => '<test>',
+      ],
+      t('Save')
+    );
+    $this->assertText(t('Manually entered paths should start with one of the following characters: / ? #'));
   }
 
 }

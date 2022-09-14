@@ -42,6 +42,6 @@ display:
           table: file_managed
           plugin_id: standard
     display_plugin: default
-    display_title: Default
+    display_title: Master
     id: default
     position: 0

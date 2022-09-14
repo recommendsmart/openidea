@@ -3,7 +3,7 @@
  * Preview behaviors.
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   /**
    * Disables all non-relevant links in node previews.
    *
@@ -54,11 +54,9 @@
         }
       }
 
-      if (!context.querySelector('.node-preview-container')) {
-        return;
-      }
-      if (once('node-preview', 'html').length) {
-        $(document).on(
+      const $preview = $(context).once('node-preview');
+      if ($(context).find('.node-preview-container').length) {
+        $preview.on(
           'click.preview',
           'a:not([href^="#"], .node-preview-container a)',
           clickPreviewModal,
@@ -67,11 +65,11 @@
     },
     detach(context, settings, trigger) {
       if (trigger === 'unload') {
-        if (
-          context.querySelector('.node-preview-container') &&
-          once.remove('node-preview', 'html').length
-        ) {
-          $(document).off('click.preview');
+        const $preview = $(context)
+          .find('.content')
+          .removeOnce('node-preview');
+        if ($preview.length) {
+          $preview.off('click.preview');
         }
       }
     },
@@ -87,13 +85,11 @@
    */
   Drupal.behaviors.nodePreviewSwitchViewMode = {
     attach(context) {
-      const autosubmit = once(
-        'autosubmit',
-        '[data-drupal-autosubmit]',
-        context,
-      );
-      if (autosubmit.length) {
-        $(autosubmit).on('formUpdated.preview', function () {
+      const $autosubmit = $(context)
+        .find('[data-drupal-autosubmit]')
+        .once('autosubmit');
+      if ($autosubmit.length) {
+        $autosubmit.on('formUpdated.preview', function() {
           $(this.form).trigger('submit');
         });
       }
@@ -106,7 +102,7 @@
    * @return {string}
    *   Markup for the node preview modal.
    */
-  Drupal.theme.nodePreviewModal = function () {
+  Drupal.theme.nodePreviewModal = function() {
     return `<p>${Drupal.t(
       'Leaving the preview will cause unsaved changes to be lost. Are you sure you want to leave the preview?',
     )}</p><small class="description">${Drupal.t(

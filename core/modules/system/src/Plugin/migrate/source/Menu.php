@@ -5,12 +5,7 @@ namespace Drupal\system\Plugin\migrate\source;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 
 /**
- * Drupal 6/7 menu source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Menu source from database.
  *
  * @MigrateSource(
  *   id = "menu",
@@ -30,19 +25,11 @@ class Menu extends DrupalSqlBase {
    * {@inheritdoc}
    */
   public function fields() {
-    $fields = [
+    return [
       'menu_name' => $this->t('The menu name. Primary key.'),
       'title' => $this->t('The human-readable name of the menu.'),
       'description' => $this->t('A description of the menu'),
     ];
-
-    if ($this->database->schema()->fieldExists('menu_custom', 'language')) {
-      $fields += [
-        'language' => $this->t('Menu language.'),
-        'i8n_mode' => $this->t('Menu i18n mode.'),
-      ];
-    }
-    return $fields;
   }
 
   /**

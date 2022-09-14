@@ -4,7 +4,6 @@ namespace Drupal\Tests\file\Kernel;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\file\Entity\File;
-use Drupal\file\FileInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\user\Entity\User;
@@ -49,7 +48,7 @@ class FileManagedAccessTest extends KernelTestBase {
       'uid' => 1,
       'filename' => 'drupal.txt',
       'uri' => 'public://drupal.txt',
-      'status' => FileInterface::STATUS_PERMANENT,
+      'status' => FILE_STATUS_PERMANENT,
     ]);
     $file_public->save();
 
@@ -64,7 +63,7 @@ class FileManagedAccessTest extends KernelTestBase {
       'uid' => 1,
       'filename' => 'drupal.txt',
       'uri' => 'private://drupal.txt',
-      'status' => FileInterface::STATUS_PERMANENT,
+      'status' => FILE_STATUS_PERMANENT,
     ]);
     $file_private->save();
 

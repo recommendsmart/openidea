@@ -47,6 +47,8 @@ abstract class LocalStream implements StreamWrapperInterface {
   /**
    * Gets the path that the wrapper is responsible for.
    *
+   * @todo Review this method name in D8 per https://www.drupal.org/node/701358.
+   *
    * @return string
    *   String specifying the path.
    */
@@ -87,7 +89,7 @@ abstract class LocalStream implements StreamWrapperInterface {
       $uri = $this->uri;
     }
 
-    [, $target] = explode('://', $uri, 2);
+    list(, $target) = explode('://', $uri, 2);
 
     // Remove erroneous leading or trailing, forward-slashes and backslashes.
     return trim($target, '\/');
@@ -142,17 +144,25 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for fopen(), file_get_contents(), file_put_contents() etc.
+   *
+   * @param string $uri
+   *   A string containing the URI to the file to open.
+   * @param int $mode
+   *   The file mode ("r", "wb" etc.).
+   * @param int $options
+   *   A bit mask of STREAM_USE_PATH and STREAM_REPORT_ERRORS.
+   * @param string $opened_path
+   *   A string containing the path actually opened.
+   *
+   * @return bool
+   *   Returns TRUE if file was opened successfully.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-open.php
    */
   public function stream_open($uri, $mode, $options, &$opened_path) {
     $this->uri = $uri;
     $path = $this->getLocalPath();
-    if ($path === FALSE) {
-      if ($options & STREAM_REPORT_ERRORS) {
-        trigger_error('stream_open() filename cannot be empty', E_USER_WARNING);
-      }
-      return FALSE;
-    }
     $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($path, $mode) : @fopen($path, $mode);
 
     if ((bool) $this->handle && $options & STREAM_USE_PATH) {
@@ -163,7 +173,20 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for flock().
+   *
+   * @param int $operation
+   *   One of the following:
+   *   - LOCK_SH to acquire a shared lock (reader).
+   *   - LOCK_EX to acquire an exclusive lock (writer).
+   *   - LOCK_UN to release a lock (shared or exclusive).
+   *   - LOCK_NB if you don't want flock() to block while locking (not
+   *     supported on Windows).
+   *
+   * @return bool
+   *   Always returns TRUE at the present time.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-lock.php
    */
   public function stream_lock($operation) {
     if (in_array($operation, [LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB])) {
@@ -174,21 +197,42 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for fread(), file_get_contents() etc.
+   *
+   * @param int $count
+   *   Maximum number of bytes to be read.
+   *
+   * @return string|bool
+   *   The string that was read, or FALSE in case of an error.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-read.php
    */
   public function stream_read($count) {
     return fread($this->handle, $count);
   }
 
   /**
-   * {@inheritdoc}
+   * Support for fwrite(), file_put_contents() etc.
+   *
+   * @param string $data
+   *   The string to be written.
+   *
+   * @return int
+   *   The number of bytes written.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-write.php
    */
   public function stream_write($data) {
     return fwrite($this->handle, $data);
   }
 
   /**
-   * {@inheritdoc}
+   * Support for feof().
+   *
+   * @return bool
+   *   TRUE if end-of-file has been reached.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-eof.php
    */
   public function stream_eof() {
     return feof($this->handle);
@@ -204,28 +248,49 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for fflush().
+   *
+   * @return bool
+   *   TRUE if data was successfully stored (or there was no data to store).
+   *
+   * @see http://php.net/manual/streamwrapper.stream-flush.php
    */
   public function stream_flush() {
     return fflush($this->handle);
   }
 
   /**
-   * {@inheritdoc}
+   * Support for ftell().
+   *
+   * @return bool
+   *   The current offset in bytes from the beginning of file.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-tell.php
    */
   public function stream_tell() {
     return ftell($this->handle);
   }
 
   /**
-   * {@inheritdoc}
+   * Support for fstat().
+   *
+   * @return bool
+   *   An array with file status, or FALSE in case of an error - see fstat()
+   *   for a description of this array.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-stat.php
    */
   public function stream_stat() {
     return fstat($this->handle);
   }
 
   /**
-   * {@inheritdoc}
+   * Support for fclose().
+   *
+   * @return bool
+   *   TRUE if stream was successfully closed.
+   *
+   * @see http://php.net/manual/streamwrapper.stream-close.php
    */
   public function stream_close() {
     return fclose($this->handle);
@@ -297,7 +362,15 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for unlink().
+   *
+   * @param string $uri
+   *   A string containing the URI to the resource to delete.
+   *
+   * @return bool
+   *   TRUE if resource was successfully deleted.
+   *
+   * @see http://php.net/manual/streamwrapper.unlink.php
    */
   public function unlink($uri) {
     $this->uri = $uri;
@@ -305,17 +378,39 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for rename().
+   *
+   * @param string $from_uri
+   *   The URI to the file to rename.
+   * @param string $to_uri
+   *   The new URI for file.
+   *
+   * @return bool
+   *   TRUE if file was successfully renamed.
+   *
+   * @see http://php.net/manual/streamwrapper.rename.php
    */
   public function rename($from_uri, $to_uri) {
     return rename($this->getLocalPath($from_uri), $this->getLocalPath($to_uri));
   }
 
   /**
-   * {@inheritdoc}
+   * Gets the name of the directory from a given path.
+   *
+   * This method is usually accessed through
+   * \Drupal\Core\File\FileSystemInterface::dirname(), which wraps around the
+   * PHP dirname() function because it does not support stream wrappers.
+   *
+   * @param string $uri
+   *   A URI or path.
+   *
+   * @return string
+   *   A string containing the directory name.
+   *
+   * @see \Drupal\Core\File\FileSystemInterface::dirname()
    */
   public function dirname($uri = NULL) {
-    [$scheme] = explode('://', $uri, 2);
+    list($scheme) = explode('://', $uri, 2);
     $target = $this->getTarget($uri);
     $dirname = dirname($target);
 
@@ -327,7 +422,19 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for mkdir().
+   *
+   * @param string $uri
+   *   A string containing the URI to the directory to create.
+   * @param int $mode
+   *   Permission flags - see mkdir().
+   * @param int $options
+   *   A bit mask of STREAM_REPORT_ERRORS and STREAM_MKDIR_RECURSIVE.
+   *
+   * @return bool
+   *   TRUE if directory was successfully created.
+   *
+   * @see http://php.net/manual/streamwrapper.mkdir.php
    */
   public function mkdir($uri, $mode, $options) {
     $this->uri = $uri;
@@ -351,7 +458,17 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for rmdir().
+   *
+   * @param string $uri
+   *   A string containing the URI to the directory to delete.
+   * @param int $options
+   *   A bit mask of STREAM_REPORT_ERRORS.
+   *
+   * @return bool
+   *   TRUE if directory was successfully removed.
+   *
+   * @see http://php.net/manual/streamwrapper.rmdir.php
    */
   public function rmdir($uri, $options) {
     $this->uri = $uri;
@@ -366,7 +483,18 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for stat().
+   *
+   * @param string $uri
+   *   A string containing the URI to get information about.
+   * @param int $flags
+   *   A bit mask of STREAM_URL_STAT_LINK and STREAM_URL_STAT_QUIET.
+   *
+   * @return array
+   *   An array with file status, or FALSE in case of an error - see fstat()
+   *   for a description of this array.
+   *
+   * @see http://php.net/manual/streamwrapper.url-stat.php
    */
   public function url_stat($uri, $flags) {
     $this->uri = $uri;
@@ -382,7 +510,17 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for opendir().
+   *
+   * @param string $uri
+   *   A string containing the URI to the directory to open.
+   * @param int $options
+   *   Unknown (parameter is not documented in PHP Manual).
+   *
+   * @return bool
+   *   TRUE on success.
+   *
+   * @see http://php.net/manual/streamwrapper.dir-opendir.php
    */
   public function dir_opendir($uri, $options) {
     $this->uri = $uri;
@@ -392,14 +530,24 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for readdir().
+   *
+   * @return string
+   *   The next filename, or FALSE if there are no more files in the directory.
+   *
+   * @see http://php.net/manual/streamwrapper.dir-readdir.php
    */
   public function dir_readdir() {
     return readdir($this->handle);
   }
 
   /**
-   * {@inheritdoc}
+   * Support for rewinddir().
+   *
+   * @return bool
+   *   TRUE on success.
+   *
+   * @see http://php.net/manual/streamwrapper.dir-rewinddir.php
    */
   public function dir_rewinddir() {
     rewinddir($this->handle);
@@ -410,7 +558,12 @@ abstract class LocalStream implements StreamWrapperInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Support for closedir().
+   *
+   * @return bool
+   *   TRUE on success.
+   *
+   * @see http://php.net/manual/streamwrapper.dir-closedir.php
    */
   public function dir_closedir() {
     closedir($this->handle);

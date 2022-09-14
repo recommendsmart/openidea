@@ -3,7 +3,7 @@
 namespace Drupal\taxonomy;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\BundlePermissionHandlerTrait;
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\taxonomy\Entity\Vocabulary;
@@ -15,8 +15,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @see taxonomy.permissions.yml
  */
 class TaxonomyPermissions implements ContainerInjectionInterface {
-  use BundlePermissionHandlerTrait;
+
   use StringTranslationTrait;
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The entity type manager.
@@ -49,7 +55,11 @@ class TaxonomyPermissions implements ContainerInjectionInterface {
    *   Permissions array.
    */
   public function permissions() {
-    return $this->generatePermissions(Vocabulary::loadMultiple(), [$this, 'buildPermissions']);
+    $permissions = [];
+    foreach (Vocabulary::loadMultiple() as $vocabulary) {
+      $permissions += $this->buildPermissions($vocabulary);
+    }
+    return $permissions;
   }
 
   /**

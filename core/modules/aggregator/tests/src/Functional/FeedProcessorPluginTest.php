@@ -22,7 +22,7 @@ class FeedProcessorPluginTest extends AggregatorTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // Enable test plugins.
     $this->enableTestPlugins();
@@ -31,19 +31,19 @@ class FeedProcessorPluginTest extends AggregatorTestBase {
   }
 
   /**
-   * Tests processing functionality.
+   * Test processing functionality.
    */
   public function testProcess() {
     $feed = $this->createFeed();
     $this->updateFeedItems($feed);
     foreach ($feed->items as $iid) {
       $item = Item::load($iid);
-      $this->assertStringStartsWith('testProcessor', $item->label());
+      $this->assertTrue(strpos($item->label(), 'testProcessor') === 0);
     }
   }
 
   /**
-   * Tests deleting functionality.
+   * Test deleting functionality.
    */
   public function testDelete() {
     $feed = $this->createFeed();
@@ -51,11 +51,11 @@ class FeedProcessorPluginTest extends AggregatorTestBase {
     $this->updateAndDelete($feed, NULL);
     // Make sure the feed title is changed.
     $entities = \Drupal::entityTypeManager()->getStorage('aggregator_feed')->loadByProperties(['description' => $description]);
-    $this->assertEmpty($entities);
+    $this->assertTrue(empty($entities));
   }
 
   /**
-   * Tests post-processing functionality.
+   * Test post-processing functionality.
    */
   public function testPostProcess() {
     $feed = $this->createFeed(NULL, ['refresh' => 1800]);
@@ -66,7 +66,7 @@ class FeedProcessorPluginTest extends AggregatorTestBase {
     // Reload the feed to get new values.
     $feed = Feed::load($feed_id);
     // Make sure its refresh rate doubled.
-    $this->assertEquals(3600, $feed->getRefreshRate());
+    $this->assertEqual($feed->getRefreshRate(), 3600);
   }
 
 }

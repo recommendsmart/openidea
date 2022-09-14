@@ -17,12 +17,12 @@ class TermValidationTest extends EntityKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['taxonomy'];
+  public static $modules = ['taxonomy'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('taxonomy_term');
   }
@@ -40,30 +40,30 @@ class TermValidationTest extends EntityKernelTestBase {
       'vid' => 'tags',
     ]);
     $violations = $term->validate();
-    $this->assertCount(0, $violations, 'No violations when validating a default term.');
+    $this->assertEqual(count($violations), 0, 'No violations when validating a default term.');
 
     $term->set('name', $this->randomString(256));
     $violations = $term->validate();
-    $this->assertCount(1, $violations, 'Violation found when name is too long.');
-    $this->assertEquals('name.0.value', $violations[0]->getPropertyPath());
+    $this->assertEqual(count($violations), 1, 'Violation found when name is too long.');
+    $this->assertEqual($violations[0]->getPropertyPath(), 'name.0.value');
     $field_label = $term->get('name')->getFieldDefinition()->getLabel();
-    $this->assertEquals(t('%name: may not be longer than @max characters.', ['%name' => $field_label, '@max' => 255]), $violations[0]->getMessage());
+    $this->assertEqual($violations[0]->getMessage(), t('%name: may not be longer than @max characters.', ['%name' => $field_label, '@max' => 255]));
 
     $term->set('name', NULL);
     $violations = $term->validate();
-    $this->assertCount(1, $violations, 'Violation found when name is NULL.');
-    $this->assertEquals('name', $violations[0]->getPropertyPath());
-    $this->assertEquals('This value should not be null.', $violations[0]->getMessage());
+    $this->assertEqual(count($violations), 1, 'Violation found when name is NULL.');
+    $this->assertEqual($violations[0]->getPropertyPath(), 'name');
+    $this->assertEqual($violations[0]->getMessage(), t('This value should not be null.'));
     $term->set('name', 'test');
 
     $term->set('parent', 9999);
     $violations = $term->validate();
-    $this->assertCount(1, $violations, 'Violation found when term parent is invalid.');
-    $this->assertEquals(new FormattableMarkup('The referenced entity (%type: %id) does not exist.', ['%type' => 'taxonomy_term', '%id' => 9999]), $violations[0]->getMessage());
+    $this->assertEqual(count($violations), 1, 'Violation found when term parent is invalid.');
+    $this->assertEqual($violations[0]->getMessage(), new FormattableMarkup('The referenced entity (%type: %id) does not exist.', ['%type' => 'taxonomy_term', '%id' => 9999]));
 
     $term->set('parent', 0);
     $violations = $term->validate();
-    $this->assertCount(0, $violations, 'No violations for parent id 0.');
+    $this->assertEqual(count($violations), 0, 'No violations for parent id 0.');
   }
 
 }

@@ -16,7 +16,7 @@ class FieldRenderedEntityTranslationTest extends ViewTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'locale',
     'content_translation',
@@ -43,7 +43,7 @@ class FieldRenderedEntityTranslationTest extends ViewTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     $this->entityTypeManager = $this->container->get('entity_type.manager');
@@ -287,10 +287,8 @@ class FieldRenderedEntityTranslationTest extends ViewTestBase {
    *
    * @param array $expected
    *   The expected rows of the result.
-   *
-   * @internal
    */
-  protected function assertRows(array $expected = []): void {
+  protected function assertRows(array $expected = []) {
     $actual = [];
     $rows = $this->cssSelect('div.views-row');
     foreach ($rows as $row) {

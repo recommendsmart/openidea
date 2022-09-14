@@ -17,7 +17,7 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['twig_theme_test', 'block'];
+  public static $modules = ['twig_theme_test', 'block'];
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
    */
   protected $twig;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     \Drupal::service('theme_installer')->install(['test_theme_twig_registry_loader', 'test_theme_twig_registry_loader_theme', 'test_theme_twig_registry_loader_subtheme']);
     $this->twig = \Drupal::service('twig');
@@ -37,11 +37,9 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
 
   /**
    * Checks to see if a value is a Twig template.
-   *
-   * @internal
    */
-  public function assertTwigTemplate($value, string $message = ''): void {
-    $this->assertInstanceOf(TemplateWrapper::class, $value, $message);
+  public function assertTwigTemplate($value, $message = '', $group = 'Other') {
+    $this->assertTrue($value instanceof TemplateWrapper, $message, $group);
   }
 
   /**
@@ -57,8 +55,8 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
   public function testTwigNamespaces() {
     // Test the module-provided extend and insert templates.
     $this->drupalGet('twig-theme-test/registry-loader');
-    $this->assertSession()->pageTextContains('This line is from twig_theme_test/templates/twig-registry-loader-test-extend.html.twig');
-    $this->assertSession()->pageTextContains('This line is from twig_theme_test/templates/twig-registry-loader-test-include.html.twig');
+    $this->assertText('This line is from twig_theme_test/templates/twig-registry-loader-test-extend.html.twig');
+    $this->assertText('This line is from twig_theme_test/templates/twig-registry-loader-test-include.html.twig');
 
     // Enable a theme that overrides the extend and insert templates to ensure
     // they are picked up by the registry loader.
@@ -66,8 +64,8 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
       ->set('default', 'test_theme_twig_registry_loader')
       ->save();
     $this->drupalGet('twig-theme-test/registry-loader');
-    $this->assertSession()->pageTextContains('This line is from test_theme_twig_registry_loader/templates/twig-registry-loader-test-extend.html.twig');
-    $this->assertSession()->pageTextContains('This line is from test_theme_twig_registry_loader/templates/twig-registry-loader-test-include.html.twig');
+    $this->assertText('This line is from test_theme_twig_registry_loader/templates/twig-registry-loader-test-extend.html.twig');
+    $this->assertText('This line is from test_theme_twig_registry_loader/templates/twig-registry-loader-test-include.html.twig');
 
     // Enable overriding theme that overrides the extend and insert templates
     // from the base theme.
@@ -75,8 +73,8 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
       ->set('default', 'test_theme_twig_registry_loader_theme')
       ->save();
     $this->drupalGet('twig-theme-test/registry-loader');
-    $this->assertSession()->pageTextContains('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-extend.html.twig');
-    $this->assertSession()->pageTextContains('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-include.html.twig');
+    $this->assertText('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-extend.html.twig');
+    $this->assertText('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-include.html.twig');
 
     // Enable a subtheme for the theme that doesn't have any overrides to make
     // sure that templates are being loaded from the first parent which has the
@@ -85,8 +83,8 @@ class TwigRegistryLoaderTest extends BrowserTestBase {
       ->set('default', 'test_theme_twig_registry_loader_subtheme')
       ->save();
     $this->drupalGet('twig-theme-test/registry-loader');
-    $this->assertSession()->pageTextContains('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-extend.html.twig');
-    $this->assertSession()->pageTextContains('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-include.html.twig');
+    $this->assertText('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-extend.html.twig');
+    $this->assertText('This line is from test_theme_twig_registry_loader_theme/templates/twig-registry-loader-test-include.html.twig');
   }
 
 }

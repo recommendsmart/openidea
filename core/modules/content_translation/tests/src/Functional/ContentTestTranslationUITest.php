@@ -15,36 +15,21 @@ class ContentTestTranslationUITest extends ContentTranslationUITestBase {
   protected $testHTMLEscapeForAllLanguages = TRUE;
 
   /**
-   * {@inheritdoc}
-   */
-  protected $defaultCacheContexts = [
-    'languages:language_interface',
-    'theme',
-    'url.query_args:_wrapper_format',
-    'user.permissions',
-    'url.site',
-  ];
-
-  /**
    * Modules to enable.
    *
    * @var array
    */
-  protected static $modules = [
-    'language',
-    'content_translation',
-    'entity_test',
-  ];
+  public static $modules = ['language', 'content_translation', 'entity_test'];
 
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     // Use the entity_test_mul as this has multilingual property support.
     $this->entityTypeId = 'entity_test_mul_changed';
     parent::setUp();

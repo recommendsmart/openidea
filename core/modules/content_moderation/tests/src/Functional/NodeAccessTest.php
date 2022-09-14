@@ -16,7 +16,7 @@ class NodeAccessTest extends ModerationStateTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'content_moderation',
     'block',
     'block_content',
@@ -50,7 +50,7 @@ class NodeAccessTest extends ModerationStateTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->drupalLogin($this->adminUser);
     $this->createContentTypeFromUi('Moderated content', 'moderated_content', FALSE);
@@ -87,10 +87,10 @@ class NodeAccessTest extends ModerationStateTestBase {
     $this->assertSession()->fieldNotExists('Published');
 
     // Create a node to test with.
-    $this->submitForm([
+    $this->drupalPostForm(NULL, [
       'title[0][value]' => 'moderated content',
       'moderation_state[0][state]' => 'draft',
-    ], 'Save');
+    ], t('Save'));
     $node = $this->getNodeByTitle('moderated content');
     if (!$node) {
       $this->fail('Test node was not saved correctly.');
@@ -109,46 +109,46 @@ class NodeAccessTest extends ModerationStateTestBase {
     $this->drupalLogin($user);
 
     $this->drupalGet($edit_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     $this->drupalGet($latest_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->drupalGet($view_path);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Publish the node.
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet($edit_path);
-    $this->submitForm(['moderation_state[0][state]' => 'published'], 'Save');
+    $this->drupalPostForm($edit_path, [
+      'moderation_state[0][state]' => 'published',
+    ], t('Save'));
 
     // Ensure access works correctly for anonymous users.
     $this->drupalLogout();
 
     $this->drupalGet($edit_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     $this->drupalGet($latest_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->drupalGet($view_path);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Create a pending revision for the 'Latest revision' tab.
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet($edit_path);
-    $this->submitForm([
+    $this->drupalPostForm($edit_path, [
       'title[0][value]' => 'moderated content revised',
       'moderation_state[0][state]' => 'draft',
-    ], 'Save');
+    ], t('Save'));
 
     $this->drupalLogin($user);
 
     $this->drupalGet($edit_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     $this->drupalGet($latest_path);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $this->drupalGet($view_path);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Now make another user, who should not be able to see pending revisions.
     $user = $this->createUser([
@@ -157,12 +157,12 @@ class NodeAccessTest extends ModerationStateTestBase {
     $this->drupalLogin($user);
 
     $this->drupalGet($edit_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     $this->drupalGet($latest_path);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->drupalGet($view_path);
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Now create a private node that the user is not granted access to by the
     // node grants, but is granted access via hook_node_access().
@@ -181,10 +181,10 @@ class NodeAccessTest extends ModerationStateTestBase {
     \Drupal::state()->set('node_access_test.allow_uid', $user->id());
 
     $this->drupalGet($node->toUrl());
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Verify the moderation form is in place by publishing the node.
-    $this->submitForm([], 'Apply');
+    $this->drupalPostForm(NULL, [], t('Apply'));
     $node = \Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($node->id());
     $this->assertEquals('published', $node->moderation_state->value);
   }

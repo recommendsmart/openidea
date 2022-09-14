@@ -12,7 +12,7 @@ namespace Drupal\Core\Entity\Exception;
 class NoCorrespondingEntityClassException extends \Exception {
 
   /**
-   * Constructs a NoCorrespondingEntityClassException.
+   * Constructs an NoCorrespondingEntityClassException.
    *
    * @param string $class
    *   The class which does not correspond to an entity type.

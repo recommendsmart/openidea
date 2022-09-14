@@ -33,7 +33,7 @@ class ImageStyleStorage extends ConfigEntityStorage implements ImageStyleStorage
    * {@inheritdoc}
    */
   public function getReplacementId($name) {
-    return $this->replacement[$name] ?? NULL;
+    return isset($this->replacement[$name]) ? $this->replacement[$name] : NULL;
   }
 
   /**

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\field\Unit;
 
+use Drupal\Tests\AssertHelperTrait;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -10,13 +11,15 @@ use Drupal\Tests\UnitTestCase;
  */
 class FieldUninstallValidatorTest extends UnitTestCase {
 
+  use AssertHelperTrait;
+
   /**
    * @var \Drupal\field\FieldUninstallValidator|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $fieldUninstallValidator;
 
   /**
-   * The mock field type plugin manager.
+   * The mock field type plugin manager;
    *
    * @var \Drupal\Core\Field\FieldTypePluginManagerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
@@ -25,11 +28,11 @@ class FieldUninstallValidatorTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->fieldUninstallValidator = $this->getMockBuilder('Drupal\field\FieldUninstallValidator')
       ->disableOriginalConstructor()
-      ->onlyMethods(['getFieldStoragesByModule', 'getFieldTypeLabel'])
+      ->setMethods(['getFieldStoragesByModule', 'getFieldTypeLabel'])
       ->getMock();
     $this->fieldUninstallValidator->setStringTranslation($this->getStringTranslationStub());
   }
@@ -45,7 +48,7 @@ class FieldUninstallValidatorTest extends UnitTestCase {
     $module = $this->randomMachineName();
     $expected = [];
     $reasons = $this->fieldUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
+    $this->assertSame($expected, $this->castSafeStrings($reasons));
   }
 
   /**
@@ -65,7 +68,7 @@ class FieldUninstallValidatorTest extends UnitTestCase {
     $module = $this->randomMachineName();
     $expected = ['Fields pending deletion'];
     $reasons = $this->fieldUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
+    $this->assertSame($expected, $this->castSafeStrings($reasons));
   }
 
   /**
@@ -97,7 +100,7 @@ class FieldUninstallValidatorTest extends UnitTestCase {
     $module = $this->randomMachineName();
     $expected = ["The <em class=\"placeholder\">$field_type_label</em> field type is used in the following field: $field_name"];
     $reasons = $this->fieldUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
+    $this->assertSame($expected, $this->castSafeStrings($reasons));
   }
 
 }

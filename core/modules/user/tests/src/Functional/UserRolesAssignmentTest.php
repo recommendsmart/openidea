@@ -11,12 +11,9 @@ use Drupal\Tests\BrowserTestBase;
  */
 class UserRolesAssignmentTest extends BrowserTestBase {
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-    $admin_user = $this->drupalCreateUser([
-      'administer permissions',
-      'administer users',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer permissions', 'administer users']);
     $this->drupalLogin($admin_user);
   }
 
@@ -34,17 +31,15 @@ class UserRolesAssignmentTest extends BrowserTestBase {
     $account = $this->drupalCreateUser();
 
     // Assign the role to the user.
-    $this->drupalGet('user/' . $account->id() . '/edit');
-    $this->submitForm(["roles[{$rid}]" => $rid], 'Save');
-    $this->assertSession()->pageTextContains('The changes have been saved.');
-    $this->assertSession()->checkboxChecked('edit-roles-' . $rid);
+    $this->drupalPostForm('user/' . $account->id() . '/edit', ["roles[$rid]" => $rid], t('Save'));
+    $this->assertText(t('The changes have been saved.'));
+    $this->assertFieldChecked('edit-roles-' . $rid, 'Role is assigned.');
     $this->userLoadAndCheckRoleAssigned($account, $rid);
 
     // Remove the role from the user.
-    $this->drupalGet('user/' . $account->id() . '/edit');
-    $this->submitForm(["roles[{$rid}]" => FALSE], 'Save');
-    $this->assertSession()->pageTextContains('The changes have been saved.');
-    $this->assertSession()->checkboxNotChecked('edit-roles-' . $rid);
+    $this->drupalPostForm('user/' . $account->id() . '/edit', ["roles[$rid]" => FALSE], t('Save'));
+    $this->assertText(t('The changes have been saved.'));
+    $this->assertNoFieldChecked('edit-roles-' . $rid, 'Role is removed from user.');
     $this->userLoadAndCheckRoleAssigned($account, $rid, FALSE);
   }
 
@@ -62,21 +57,19 @@ class UserRolesAssignmentTest extends BrowserTestBase {
       'pass[pass2]' => $pass,
       "roles[$rid]" => $rid,
     ];
-    $this->drupalGet('admin/people/create');
-    $this->submitForm($edit, 'Create new account');
-    $this->assertSession()->pageTextContains('Created a new user account for ' . $edit['name'] . '.');
+    $this->drupalPostForm('admin/people/create', $edit, t('Create new account'));
+    $this->assertText(t('Created a new user account for @name.', ['@name' => $edit['name']]));
     // Get the newly added user.
     $account = user_load_by_name($edit['name']);
 
     $this->drupalGet('user/' . $account->id() . '/edit');
-    $this->assertSession()->checkboxChecked('edit-roles-' . $rid);
+    $this->assertFieldChecked('edit-roles-' . $rid, 'Role is assigned.');
     $this->userLoadAndCheckRoleAssigned($account, $rid);
 
     // Remove the role again.
-    $this->drupalGet('user/' . $account->id() . '/edit');
-    $this->submitForm(["roles[{$rid}]" => FALSE], 'Save');
-    $this->assertSession()->pageTextContains('The changes have been saved.');
-    $this->assertSession()->checkboxNotChecked('edit-roles-' . $rid);
+    $this->drupalPostForm('user/' . $account->id() . '/edit', ["roles[$rid]" => FALSE], t('Save'));
+    $this->assertText(t('The changes have been saved.'));
+    $this->assertNoFieldChecked('edit-roles-' . $rid, 'Role is removed from user.');
     $this->userLoadAndCheckRoleAssigned($account, $rid, FALSE);
   }
 

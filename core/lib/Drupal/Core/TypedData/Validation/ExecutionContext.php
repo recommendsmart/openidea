@@ -9,7 +9,6 @@ use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Mapping\MetadataInterface;
 use Symfony\Component\Validator\Util\PropertyPath;
-use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -170,7 +169,7 @@ class ExecutionContext implements ExecutionContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildViolation($message, array $parameters = []): ConstraintViolationBuilderInterface {
+  public function buildViolation($message, array $parameters = []) {
     return new ConstraintViolationBuilder($this->violations, $this->constraint, $message, $parameters, $this->root, $this->propertyPath, $this->value, $this->translator, $this->translationDomain);
   }
 
@@ -205,42 +204,42 @@ class ExecutionContext implements ExecutionContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getObject(): ?object {
+  public function getObject() {
     return $this->data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMetadata(): ?MetadataInterface {
+  public function getMetadata() {
     return $this->metadata;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getGroup(): ?string {
+  public function getGroup() {
     return Constraint::DEFAULT_GROUP;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getClassName(): ?string {
+  public function getClassName() {
     return get_class($this->data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPropertyName(): ?string {
+  public function getPropertyName() {
     return $this->data->getName();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPropertyPath($sub_path = ''): string {
+  public function getPropertyPath($sub_path = '') {
     return PropertyPath::append($this->propertyPath, $sub_path);
   }
 

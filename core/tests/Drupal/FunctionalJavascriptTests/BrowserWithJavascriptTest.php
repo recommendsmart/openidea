@@ -2,6 +2,7 @@
 
 namespace Drupal\FunctionalJavascriptTests;
 
+use Behat\Mink\Driver\GoutteDriver;
 use PHPUnit\Framework\AssertionFailedError;
 
 /**
@@ -16,7 +17,7 @@ class BrowserWithJavascriptTest extends WebDriverTestBase {
    *
    * @var array
    */
-  protected static $modules = ['test_page_test'];
+  public static $modules = ['test_page_test'];
 
   /**
    * {@inheritdoc}
@@ -37,13 +38,9 @@ class BrowserWithJavascriptTest extends WebDriverTestBase {
         x = w.innerWidth || e.clientWidth || g.clientWidth,
         y = w.innerHeight || e.clientHeight|| g.clientHeight;
         return x == 400 && y == 300;
-    }())
+    }());
 JS;
     $this->assertJsCondition($javascript);
-
-    // Ensure that \Drupal\Tests\UiHelperTrait::isTestUsingGuzzleClient() works
-    // as expected.
-    $this->assertFalse($this->isTestUsingGuzzleClient());
   }
 
   public function testAssertJsCondition() {
@@ -60,7 +57,7 @@ JS;
         x = w.innerWidth || e.clientWidth || g.clientWidth,
         y = w.innerHeight || e.clientHeight|| g.clientHeight;
         return x == 400 && y == 300;
-    }())
+    }());
 JS;
 
     // We expected the following assertion to fail because the window has been
@@ -154,9 +151,9 @@ JS;
       $this->metaRefreshCount = 0;
     }
 
-    // Log only for WebDriverTestBase tests because for DrupalTestBrowser we log
-    // with ::getResponseLogHandler.
-    if ($this->htmlOutputEnabled && !$this->isTestUsingGuzzleClient()) {
+    // Log only for JavascriptTestBase tests because for Goutte we log with
+    // ::getResponseLogHandler.
+    if ($this->htmlOutputEnabled && !($this->getSession()->getDriver() instanceof GoutteDriver)) {
       $html_output = 'GET request to: ' . $url .
         '<hr />Ending URL: ' . $this->getSession()->getCurrentUrl();
       $html_output .= '<hr />' . $out;

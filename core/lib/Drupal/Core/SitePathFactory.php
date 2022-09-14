@@ -15,7 +15,7 @@ class SitePathFactory {
   protected $drupalKernel;
 
   /**
-   * Constructs a SitePathFactory instance.
+   * Constructs an SitePathFactory instance.
    *
    * @param \Drupal\Core\DrupalKernelInterface $drupal_kernel
    *   The Drupal kernel.
@@ -31,7 +31,7 @@ class SitePathFactory {
    *   The site path.
    */
   public function get() {
-    return $this->drupalKernel->getContainer()->getParameter('site.path');
+    return $this->drupalKernel->getSitePath();
   }
 
 }

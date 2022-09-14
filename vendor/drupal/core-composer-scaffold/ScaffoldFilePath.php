@@ -21,7 +21,7 @@ use Composer\Util\Filesystem;
 class ScaffoldFilePath {
 
   /**
-   * The type of scaffold file this is,'autoload', 'dest' or 'src'.
+   * The type of scaffold file this is, 'src' or 'dest'.
    *
    * @var string
    */
@@ -52,7 +52,7 @@ class ScaffoldFilePath {
    * ScaffoldFilePath constructor.
    *
    * @param string $path_type
-   *   The type of scaffold file this is,'autoload', 'dest' or 'src'.
+   *   The type of scaffold file this is, 'src' or 'dest'.
    * @param string $package_name
    *   The name of the package containing the file.
    * @param string $rel_path

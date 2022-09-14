@@ -30,13 +30,13 @@ class SqlBaseTest extends UnitTestCase {
    * @param array $source_options
    *   (optional) An array of connection options for the source connection.
    *   Defaults to an empty array.
-   * @param array $id_map_options
+   * @param array $idmap_options
    *   (optional) An array of connection options for the ID map connection.
    *   Defaults to an empty array.
    *
    * @dataProvider sqlBaseTestProvider
    */
-  public function testMapJoinable($expected_result, $id_map_is_sql, $with_id_map, $source_options = [], $id_map_options = []) {
+  public function testMapJoinable($expected_result, $id_map_is_sql, $with_id_map, $source_options = [], $idmap_options = []) {
     // Setup a connection object.
     $source_connection = $this->getMockBuilder('Drupal\Core\Database\Connection')
       ->disableOriginalConstructor()
@@ -46,12 +46,12 @@ class SqlBaseTest extends UnitTestCase {
       ->willReturn($source_options);
 
     // Setup the ID map connection.
-    $id_map_connection = $this->getMockBuilder('Drupal\Core\Database\Connection')
+    $idmap_connection = $this->getMockBuilder('Drupal\Core\Database\Connection')
       ->disableOriginalConstructor()
       ->getMock();
-    $id_map_connection->expects($id_map_is_sql && $with_id_map ? $this->once() : $this->never())
+    $idmap_connection->expects($id_map_is_sql && $with_id_map ? $this->once() : $this->never())
       ->method('getConnectionOptions')
-      ->willReturn($id_map_options);
+      ->willReturn($idmap_options);
 
     // Setup the Sql object.
     $sql = $this->getMockBuilder('Drupal\migrate\Plugin\migrate\id_map\Sql')
@@ -59,7 +59,7 @@ class SqlBaseTest extends UnitTestCase {
       ->getMock();
     $sql->expects($id_map_is_sql && $with_id_map ? $this->once() : $this->never())
       ->method('getDatabase')
-      ->willReturn($id_map_connection);
+      ->willReturn($idmap_connection);
 
     // Setup a migration entity.
     $migration = $this->createMock(MigrationInterface::class);

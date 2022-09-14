@@ -2,6 +2,7 @@
 
 namespace Drupal\update;
 
+use Drupal\Component\Utility\EmailValidatorInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -23,12 +24,22 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
   protected $emailValidator;
 
   /**
+   * Constructs a new UpdateSettingsForm.
+   *
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   *   The email validator.
+   */
+  public function __construct(EmailValidatorInterface $email_validator) {
+    $this->emailValidator = $email_validator;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    $instance = parent::create($container);
-    $instance->emailValidator = $container->get('email.validator');
-    return $instance;
+    return new static(
+      $container->get('email.validator')
+    );
   }
 
   /**
@@ -53,39 +64,39 @@ class UpdateSettingsForm extends ConfigFormBase implements ContainerInjectionInt
 
     $form['update_check_frequency'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Check for updates'),
+      '#title' => t('Check for updates'),
       '#default_value' => $config->get('check.interval_days'),
       '#options' => [
-        '1' => $this->t('Daily'),
-        '7' => $this->t('Weekly'),
+        '1' => t('Daily'),
+        '7' => t('Weekly'),
       ],
-      '#description' => $this->t('Select how frequently you want to automatically check for new releases of your currently installed modules and themes.'),
+      '#description' => t('Select how frequently you want to automatically check for new releases of your currently installed modules and themes.'),
     ];
 
     $form['update_check_disabled'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Check for updates of uninstalled modules and themes'),
+      '#title' => t('Check for updates of uninstalled modules and themes'),
       '#default_value' => $config->get('check.disabled_extensions'),
     ];
 
     $notification_emails = $config->get('notification.emails');
     $form['update_notify_emails'] = [
       '#type' => 'textarea',
-      '#title' => $this->t('Email addresses to notify when updates are available'),
+      '#title' => t('Email addresses to notify when updates are available'),
       '#rows' => 4,
       '#default_value' => implode("\n", $notification_emails),
-      '#description' => $this->t('Whenever your site checks for available updates and finds new releases, it can notify a list of users via email. Put each address on a separate line. If blank, no emails will be sent.'),
+      '#description' => t('Whenever your site checks for available updates and finds new releases, it can notify a list of users via email. Put each address on a separate line. If blank, no emails will be sent.'),
     ];
 
     $form['update_notification_threshold'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Email notification threshold'),
+      '#title' => t('Email notification threshold'),
       '#default_value' => $config->get('notification.threshold'),
       '#options' => [
-        'all' => $this->t('All newer versions'),
-        'security' => $this->t('Only security updates'),
+        'all' => t('All newer versions'),
+        'security' => t('Only security updates'),
       ],
-      '#description' => $this->t('You can choose to send email only if a security update is available, or to be notified about all newer versions. If there are updates available of Drupal core or any of your installed modules and themes, your site will always print a message on the <a href=":status_report">status report</a> page, and will also display an error message on administration pages if there is a security update.', [':status_report' => Url::fromRoute('system.status')->toString()]),
+      '#description' => t('You can choose to send email only if a security update is available, or to be notified about all newer versions. If there are updates available of Drupal core or any of your installed modules and themes, your site will always print a message on the <a href=":status_report">status report</a> page, and will also display an error message on administration pages if there is a security update.', [':status_report' => Url::fromRoute('system.status')->toString()]),
     ];
 
     return parent::buildForm($form, $form_state);

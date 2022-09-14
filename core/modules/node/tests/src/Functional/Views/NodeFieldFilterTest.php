@@ -14,7 +14,7 @@ class NodeFieldFilterTest extends NodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['language'];
+  public static $modules = ['language'];
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,7 @@ class NodeFieldFilterTest extends NodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     // Create Page content type.
@@ -54,7 +54,7 @@ class NodeFieldFilterTest extends NodeTestBase {
     $this->nodeTitles = [
       'en' => 'Food in Paris',
       'es' => 'Comida en Paris',
-      'fr' => 'Nourriture en Paris',
+      'fr' => 'Nouriture en Paris',
     ];
 
     // Create node with translations.
@@ -97,10 +97,8 @@ class NodeFieldFilterTest extends NodeTestBase {
    *   that translation should be shown on the given page.
    * @param string $message
    *   Message suffix to display.
-   *
-   * @internal
    */
-  protected function assertPageCounts(string $path, array $counts, string $message): void {
+  protected function assertPageCounts($path, $counts, $message) {
     // Disable read more links.
     \Drupal::service('entity_display.repository')
       ->getViewDisplay('node', 'page', 'teaser')
@@ -115,7 +113,7 @@ class NodeFieldFilterTest extends NodeTestBase {
     // page, and they are the same. So the title/body string should appear on
     // the page twice as many times as the input count.
     foreach ($counts as $langcode => $count) {
-      $this->assertEquals(2 * $count, substr_count($text, $this->nodeTitles[$langcode]), 'Translation ' . $langcode . ' has count ' . $count . ' with ' . $message);
+      $this->assertEqual(substr_count($text, $this->nodeTitles[$langcode]), 2 * $count, 'Translation ' . $langcode . ' has count ' . $count . ' with ' . $message);
     }
   }
 

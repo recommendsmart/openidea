@@ -19,7 +19,7 @@ class ItemCacheTagsTest extends EntityCacheTagsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['aggregator'];
+  public static $modules = ['aggregator'];
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class ItemCacheTagsTest extends EntityCacheTagsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Give anonymous users permission to access feeds, so that we can verify
@@ -56,7 +56,7 @@ class ItemCacheTagsTest extends EntityCacheTagsTestBase {
     // Create a "Llama" aggregator feed item.
     $item = Item::create([
       'fid' => $feed->id(),
-      'title' => 'Llama',
+      'title' => t('Llama'),
       'path' => 'https://www.drupal.org/',
     ]);
     $item->save();
@@ -77,7 +77,7 @@ class ItemCacheTagsTest extends EntityCacheTagsTestBase {
     // Now create a feed item in that feed.
     Item::create([
       'fid' => $this->entity->getFeedId(),
-      'title' => 'Llama 2',
+      'title' => t('Llama 2'),
       'path' => 'https://groups.drupal.org/',
     ])->save();
 

@@ -15,7 +15,7 @@ class LayoutTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'layout_discovery', 'layout_test'];
+  public static $modules = ['system', 'layout_discovery', 'layout_test'];
 
   /**
    * The layout plugin manager.
@@ -27,7 +27,7 @@ class LayoutTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->layoutPluginManager = $this->container->get('plugin.manager.core.layout');
@@ -41,11 +41,11 @@ class LayoutTest extends KernelTestBase {
     $this->config('system.theme')->set('default', 'test_layout_theme')->save();
 
     $theme_definitions = $this->container->get('theme.registry')->get();
-    $this->assertContains('template_preprocess_layout', $theme_definitions['test_layout_theme']['preprocess functions']);
+    $this->assertTrue(in_array('template_preprocess_layout', $theme_definitions['test_layout_theme']['preprocess functions']));
   }
 
   /**
-   * Tests rendering a layout.
+   * Test rendering a layout.
    *
    * @dataProvider renderLayoutData
    */

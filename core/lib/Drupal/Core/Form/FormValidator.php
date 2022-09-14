@@ -223,9 +223,7 @@ class FormValidator implements FormValidatorInterface {
    *   not be repeated in the submission step.
    * @param $form_id
    *   A unique string identifying the form for validation, submission,
-   *   theming, and hook_form_alter functions. Is only present on the initial
-   *   call to the method, which receives the entire form array as the $element,
-   *   and not on recursive calls.
+   *   theming, and hook_form_alter functions.
    */
   protected function doValidateForm(&$elements, FormStateInterface &$form_state, $form_id = NULL) {
     // Recurse through all children, sorting the elements so that the order of

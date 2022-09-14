@@ -7,7 +7,6 @@ use Drupal\comment\CommentManagerInterface;
 use Drupal\comment\Entity\Comment;
 use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Tests\system\Functional\Entity\EntityWithUriCacheTagsTestBase;
@@ -26,7 +25,7 @@ class CommentCacheTagsTest extends EntityWithUriCacheTagsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment'];
+  public static $modules = ['comment'];
 
   /**
    * {@inheritdoc}
@@ -46,7 +45,7 @@ class CommentCacheTagsTest extends EntityWithUriCacheTagsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Give anonymous users permission to view comments, so that we can verify
@@ -97,7 +96,7 @@ class CommentCacheTagsTest extends EntityWithUriCacheTagsTestBase {
   }
 
   /**
-   * Tests that comments invalidate the cache tag of their host entity.
+   * Test that comments correctly invalidate the cache tag of their host entity.
    */
   public function testCommentEntity() {
     $this->verifyPageCache($this->entityTestCamelid->toUrl(), 'MISS');
@@ -129,7 +128,7 @@ class CommentCacheTagsTest extends EntityWithUriCacheTagsTestBase {
     // Ensure that a new comment only invalidates the commented entity.
     $this->verifyPageCache($this->entityTestCamelid->toUrl(), 'HIT');
     $this->verifyPageCache($this->entityTestHippopotamidae->toUrl(), 'MISS');
-    $this->assertSession()->pageTextContains($hippo_comment->getSubject());
+    $this->assertText($hippo_comment->getSubject());
 
     // Ensure that updating an existing comment only invalidates the commented
     // entity.
@@ -156,17 +155,6 @@ class CommentCacheTagsTest extends EntityWithUriCacheTagsTestBase {
       'config:filter.format.plain_text',
       'user:' . $entity->getOwnerId(),
       'user_view',
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getDefaultCacheContexts() {
-    return [
-      'languages:' . LanguageInterface::TYPE_INTERFACE,
-      'theme',
-      'user.permissions',
     ];
   }
 

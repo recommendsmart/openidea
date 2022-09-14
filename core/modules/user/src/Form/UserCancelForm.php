@@ -20,14 +20,14 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
   protected $cancelMethods;
 
   /**
-   * Whether it is allowed to select cancellation method.
+   * Whether allowed to select cancellation method.
    *
    * @var bool
    */
   protected $selectCancel;
 
   /**
-   * The account being cancelled.
+   * The user being cancelled.
    *
    * @var \Drupal\user\UserInterface
    */
@@ -54,26 +54,29 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getDescription() {
-    if ($this->selectCancel) {
-      return '';
-    }
+    $description = '';
     $default_method = $this->config('user.settings')->get('cancel_method');
     $own_account = $this->entity->id() == $this->currentUser()->id();
+    if ($this->selectCancel) {
+      $description = $this->t('Select the method to cancel the account above.');
+    }
     // Options supplied via user_cancel_methods() can have a custom
     // #confirm_description property for the confirmation form description.
     // This text refers to "Your account" so only user it if cancelling own account.
-    if ($own_account && isset($this->cancelMethods[$default_method]['#confirm_description'])) {
-      return $this->cancelMethods[$default_method]['#confirm_description'];
+    elseif ($own_account && isset($this->cancelMethods[$default_method]['#confirm_description'])) {
+      $description = $this->cancelMethods[$default_method]['#confirm_description'];
     }
-
-    return $this->cancelMethods['#options'][$default_method];
+    else {
+      $description = $this->cancelMethods['#options'][$default_method];
+    }
+    return $description . ' ' . $this->t('This action cannot be undone.');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getConfirmText() {
-    return $this->t('Confirm');
+    return $this->t('Cancel account');
   }
 
   /**
@@ -89,7 +92,7 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
 
     $form['user_cancel_method'] = [
       '#type' => 'radios',
-      '#title' => $own_account ? $this->t('When cancelling your account') : $this->t('Cancellation method'),
+      '#title' => $own_account ? $this->t('When cancelling your account') : $this->t('When cancelling the account'),
       '#access' => $this->selectCancel,
     ];
     $form['user_cancel_method'] += $this->cancelMethods;
@@ -99,7 +102,7 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
     $override_access = !$own_account;
     $form['user_cancel_confirm'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Require email confirmation'),
+      '#title' => $this->t('Require email confirmation to cancel account'),
       '#default_value' => !$override_access,
       '#access' => $override_access,
       '#description' => $this->t('When enabled, the user must confirm the account cancellation via email.'),

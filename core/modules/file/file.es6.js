@@ -7,7 +7,7 @@
  * prevents separate file fields from accidentally uploading files).
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   /**
    * Attach behaviors to the file fields passed in the settings.
    *
@@ -24,11 +24,14 @@
       let elements;
 
       function initFileValidation(selector) {
-        $(once('fileValidate', $context.find(selector))).on(
-          'change.fileValidate',
-          { extensions: elements[selector] },
-          Drupal.file.validateExtension,
-        );
+        $context
+          .find(selector)
+          .once('fileValidate')
+          .on(
+            'change.fileValidate',
+            { extensions: elements[selector] },
+            Drupal.file.validateExtension,
+          );
       }
 
       if (settings.file && settings.file.elements) {
@@ -41,10 +44,10 @@
       let elements;
 
       function removeFileValidation(selector) {
-        $(once.remove('fileValidate', $context.find(selector))).off(
-          'change.fileValidate',
-          Drupal.file.validateExtension,
-        );
+        $context
+          .find(selector)
+          .removeOnce('fileValidate')
+          .off('change.fileValidate', Drupal.file.validateExtension);
       }
 
       if (trigger === 'unload' && settings.file && settings.file.elements) {
@@ -66,16 +69,17 @@
    */
   Drupal.behaviors.fileAutoUpload = {
     attach(context) {
-      $(once('auto-file-upload', 'input[type="file"]', context)).on(
-        'change.autoFileUpload',
-        Drupal.file.triggerUploadButton,
-      );
+      $(context)
+        .find('input[type="file"]')
+        .once('auto-file-upload')
+        .on('change.autoFileUpload', Drupal.file.triggerUploadButton);
     },
     detach(context, settings, trigger) {
       if (trigger === 'unload') {
-        $(once.remove('auto-file-upload', 'input[type="file"]', context)).off(
-          '.autoFileUpload',
-        );
+        $(context)
+          .find('input[type="file"]')
+          .removeOnce('auto-file-upload')
+          .off('.autoFileUpload');
       }
     },
   };

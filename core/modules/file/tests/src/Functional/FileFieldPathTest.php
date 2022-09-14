@@ -85,10 +85,8 @@ class FileFieldPathTest extends FileFieldTestBase {
    *   Where the file was actually uploaded.
    * @param string $message
    *   The message to display with this assertion.
-   *
-   * @internal
    */
-  public function assertPathMatch(string $expected_path, string $actual_path, string $message): void {
+  public function assertPathMatch($expected_path, $actual_path, $message) {
     // Strip off the extension of the expected path to allow for _0, _1, etc.
     // suffixes when the file hits a duplicate name.
     $pos = strrpos($expected_path, '.');

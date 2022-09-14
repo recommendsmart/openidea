@@ -28,19 +28,14 @@ class SearchNodePunctuationTest extends BrowserTestBase {
    */
   public $testUser;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
 
     node_access_rebuild();
     // Create a test user and log in.
-    $this->testUser = $this->drupalCreateUser([
-      'access content',
-      'search content',
-      'use advanced search',
-      'access user profiles',
-    ]);
+    $this->testUser = $this->drupalCreateUser(['access content', 'search content', 'use advanced search', 'access user profiles']);
     $this->drupalLogin($this->testUser);
   }
 
@@ -49,8 +44,7 @@ class SearchNodePunctuationTest extends BrowserTestBase {
    */
   public function testPhraseSearchPunctuation() {
     $node = $this->drupalCreateNode(['body' => [['value' => "The bunny's ears were fluffy."]]]);
-    // cSpell:disable-next-line
-    $this->drupalCreateNode(['body' => [['value' => 'Dignissim Aliquam &amp; Quieligo meus natu quae quia te. Damnum&copy; erat&mdash; neo pneum. Facilisi feugiat ibidem ratis.']]]);
+    $node2 = $this->drupalCreateNode(['body' => [['value' => 'Dignissim Aliquam &amp; Quieligo meus natu quae quia te. Damnum&copy; erat&mdash; neo pneum. Facilisi feugiat ibidem ratis.']]]);
 
     // Update the search index.
     $this->container->get('plugin.manager.search')->createInstance('node_search')->updateIndex();
@@ -60,26 +54,23 @@ class SearchNodePunctuationTest extends BrowserTestBase {
 
     // Submit a phrase wrapped in double quotes to include the punctuation.
     $edit = ['keys' => '"bunny\'s"'];
-    $this->drupalGet('search/node');
-    $this->submitForm($edit, 'Search');
-    $this->assertSession()->pageTextContains($node->label());
+    $this->drupalPostForm('search/node', $edit, t('Search'));
+    $this->assertText($node->label());
 
     // Check if the author is linked correctly to the user profile page.
     $username = $node->getOwner()->getAccountName();
-    $this->assertSession()->linkExists($username);
+    $this->assertLink($username);
 
     // Search for "&" and verify entities are not broken up in the output.
     $edit = ['keys' => '&'];
-    $this->drupalGet('search/node');
-    $this->submitForm($edit, 'Search');
-    $this->assertSession()->responseNotContains('<strong>&</strong>amp;');
-    $this->assertSession()->pageTextContains('You must include at least one keyword');
+    $this->drupalPostForm('search/node', $edit, t('Search'));
+    $this->assertNoRaw('<strong>&</strong>amp;');
+    $this->assertText('You must include at least one keyword');
 
     $edit = ['keys' => '&amp;'];
-    $this->drupalGet('search/node');
-    $this->submitForm($edit, 'Search');
-    $this->assertSession()->responseNotContains('<strong>&</strong>amp;');
-    $this->assertSession()->pageTextContains('You must include at least one keyword');
+    $this->drupalPostForm('search/node', $edit, t('Search'));
+    $this->assertNoRaw('<strong>&</strong>amp;');
+    $this->assertText('You must include at least one keyword');
   }
 
 }

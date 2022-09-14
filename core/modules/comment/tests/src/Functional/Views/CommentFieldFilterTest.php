@@ -15,7 +15,7 @@ class CommentFieldFilterTest extends CommentTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['language'];
+  public static $modules = ['language'];
 
   /**
    * {@inheritdoc}
@@ -36,7 +36,7 @@ class CommentFieldFilterTest extends CommentTestBase {
    */
   public $commentTitles = [];
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
     $this->drupalLogin($this->drupalCreateUser(['access comments']));
 
@@ -48,7 +48,7 @@ class CommentFieldFilterTest extends CommentTestBase {
     $this->commentTitles = [
       'en' => 'Food in Paris',
       'es' => 'Comida en Paris',
-      'fr' => 'Nourriture en Paris',
+      'fr' => 'Nouriture en Paris',
     ];
 
     // Create a new comment. Using the one created earlier will not work,
@@ -108,10 +108,8 @@ class CommentFieldFilterTest extends CommentTestBase {
    *   that translation should be shown on the given page.
    * @param string $message
    *   Message suffix to display.
-   *
-   * @internal
    */
-  protected function assertPageCounts(string $path, array $counts, string $message): void {
+  protected function assertPageCounts($path, $counts, $message) {
     // Get the text of the page.
     $this->drupalGet($path);
     $text = $this->getTextContent();
@@ -120,7 +118,7 @@ class CommentFieldFilterTest extends CommentTestBase {
     // page, and they are the same. So the title/body string should appear on
     // the page twice as many times as the input count.
     foreach ($counts as $langcode => $count) {
-      $this->assertEquals(2 * $count, substr_count($text, $this->commentTitles[$langcode]), 'Translation ' . $langcode . ' has count ' . $count . ' with ' . $message);
+      $this->assertEqual(substr_count($text, $this->commentTitles[$langcode]), 2 * $count, 'Translation ' . $langcode . ' has count ' . $count . ' with ' . $message);
     }
   }
 

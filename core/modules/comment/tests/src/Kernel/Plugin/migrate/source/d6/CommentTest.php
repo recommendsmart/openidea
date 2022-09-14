@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\comment\Kernel\Plugin\migrate\source\d6;
 
-use Drupal\migrate\Row;
 use Drupal\Tests\migrate\Kernel\MigrateSqlSourceTestBase;
 
 /**
@@ -16,18 +15,7 @@ class CommentTest extends MigrateSqlSourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'd6_comment_test', 'migrate_drupal'];
-
-  /**
-   * @group legacy
-   */
-  public function testPrepareCommentDeprecation() {
-    $this->expectDeprecation('Drupal\comment\Plugin\migrate\source\d6\Comment::prepareComment() is deprecated in drupal:9.3.0 and is removed from drupal:10.0.0. No direct replacement is provided. See https://www.drupal.org/node/3221964');
-    $migration = $this->createMock('Drupal\migrate\Plugin\MigrationInterface');
-    $mgr = \Drupal::service('plugin.manager.migrate.source');
-    $plugin = $mgr->createInstance('d6_comment_test', [], $migration);
-    $plugin->prepareComment(new Row());
-  }
+  public static $modules = ['comment', 'migrate_drupal'];
 
   /**
    * {@inheritdoc}
@@ -51,7 +39,7 @@ class CommentTest extends MigrateSqlSourceTestBase {
         'name' => '',
         'mail' => '',
         'homepage' => '',
-        'format' => 'test_format1',
+        'format' => 'testformat1',
         'type' => 'story',
       ],
       [
@@ -68,7 +56,7 @@ class CommentTest extends MigrateSqlSourceTestBase {
         'name' => '',
         'mail' => '',
         'homepage' => '',
-        'format' => 'test_format2',
+        'format' => 'testformat2',
         'type' => 'page',
       ],
     ];
@@ -102,7 +90,7 @@ class CommentTest extends MigrateSqlSourceTestBase {
         'name' => '',
         'mail' => '',
         'homepage' => '',
-        'format' => 'test_format1',
+        'format' => 'testformat1',
         'type' => 'story',
         'language' => 'en',
       ],
@@ -120,7 +108,7 @@ class CommentTest extends MigrateSqlSourceTestBase {
         'name' => '',
         'mail' => '',
         'homepage' => '',
-        'format' => 'test_format2',
+        'format' => 'testformat2',
         'type' => 'page',
         'language' => 'fr',
       ],

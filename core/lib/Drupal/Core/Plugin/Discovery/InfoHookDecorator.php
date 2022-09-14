@@ -27,7 +27,7 @@ class InfoHookDecorator implements DiscoveryInterface {
   protected $hook;
 
   /**
-   * Constructs an InfoHookDecorator object.
+   * Constructs a InfoHookDecorator object.
    *
    * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
    *   The object implementing DiscoveryInterface that is being decorated.

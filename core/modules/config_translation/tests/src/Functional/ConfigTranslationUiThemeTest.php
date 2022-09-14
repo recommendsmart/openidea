@@ -17,10 +17,7 @@ class ConfigTranslationUiThemeTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
-    'config_translation',
-    'config_translation_test',
-  ];
+  public static $modules = ['config_translation', 'config_translation_test'];
 
   /**
    * {@inheritdoc}
@@ -41,7 +38,7 @@ class ConfigTranslationUiThemeTest extends BrowserTestBase {
    */
   protected $adminUser;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $admin_permissions = [
@@ -69,13 +66,16 @@ class ConfigTranslationUiThemeTest extends BrowserTestBase {
     $this->drupalLogin($this->adminUser);
 
     $this->drupalGet('admin/appearance');
-    $element = $this->assertSession()->elementExists('xpath', "//a[normalize-space()='Install and set as default' and contains(@href, '{$theme}')]");
-    $this->drupalGet($GLOBALS['base_root'] . $element->getAttribute('href'), ['external' => TRUE]);
+    $elements = $this->xpath('//a[normalize-space()=:label and contains(@href, :theme)]', [
+      ':label' => 'Install and set as default',
+      ':theme' => $theme,
+    ]);
+    $this->drupalGet($GLOBALS['base_root'] . $elements[0]->getAttribute('href'), ['external' => TRUE]);
 
     $translation_base_url = 'admin/config/development/performance/translate';
     $this->drupalGet($translation_base_url);
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->linkByHrefExists("$translation_base_url/fr/add");
+    $this->assertResponse(200);
+    $this->assertLinkByHref("$translation_base_url/fr/add");
   }
 
 }

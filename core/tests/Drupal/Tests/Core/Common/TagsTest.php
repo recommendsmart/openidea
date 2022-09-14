@@ -43,10 +43,8 @@ class TagsTest extends UnitTestCase {
 
   /**
    * Helper function: asserts that the ending array of tags is what we wanted.
-   *
-   * @internal
    */
-  protected function assertTags(array $tags): void {
+  protected function assertTags($tags) {
     $original = $this->validTags;
     foreach ($tags as $tag) {
       $key = array_search($tag, $original);

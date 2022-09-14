@@ -15,12 +15,12 @@ class MigrateUploadFieldTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['menu_ui'];
+  public static $modules = ['menu_ui'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->migrateFields();
   }
@@ -30,8 +30,8 @@ class MigrateUploadFieldTest extends MigrateDrupal6TestBase {
    */
   public function testUpload() {
     $field_storage = FieldStorageConfig::load('node.upload');
-    $this->assertSame('node.upload', $field_storage->id());
-    $this->assertSame([['node', 'upload']], $this->getMigration('d6_upload_field')->getIdMap()->lookupDestinationIds(['']));
+    $this->assertIdentical('node.upload', $field_storage->id());
+    $this->assertIdentical([['node', 'upload']], $this->getMigration('d6_upload_field')->getIdMap()->lookupDestinationIds(['']));
   }
 
 }

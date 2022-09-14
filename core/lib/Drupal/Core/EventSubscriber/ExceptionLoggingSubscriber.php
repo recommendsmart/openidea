@@ -5,7 +5,7 @@ namespace Drupal\Core\EventSubscriber;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Utility\Error;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -34,26 +34,21 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
   /**
    * Log 403 errors.
    *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
    *   The event to process.
    */
-  public function on403(ExceptionEvent $event) {
-    // Log the exception with the page where it happened so that admins know
-    // why access was denied.
-    $exception = $event->getThrowable();
-    $error = Error::decodeException($exception);
-    unset($error['@backtrace_string']);
-    $error['@uri'] = $event->getRequest()->getRequestUri();
-    $this->logger->get('access denied')->warning('Path: @uri. %type: @message in %function (line %line of %file).', $error);
+  public function on403(GetResponseForExceptionEvent $event) {
+    $request = $event->getRequest();
+    $this->logger->get('access denied')->warning('@uri', ['@uri' => $request->getRequestUri()]);
   }
 
   /**
    * Log 404 errors.
    *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
    *   The event to process.
    */
-  public function on404(ExceptionEvent $event) {
+  public function on404(GetResponseForExceptionEvent $event) {
     $request = $event->getRequest();
     $this->logger->get('page not found')->warning('@uri', ['@uri' => $request->getRequestUri()]);
   }
@@ -61,11 +56,11 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
   /**
    * Log not-otherwise-specified errors, including HTTP 500.
    *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
    *   The event to process.
    */
-  public function onError(ExceptionEvent $event) {
-    $exception = $event->getThrowable();
+  public function onError(GetResponseForExceptionEvent $event) {
+    $exception = $event->getException();
     $error = Error::decodeException($exception);
     $this->logger->get('php')->log($error['severity_level'], '%type: @message in %function (line %line of %file).', $error);
 
@@ -78,11 +73,11 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
   /**
    * Log all exceptions.
    *
-   * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
    *   The event to process.
    */
-  public function onException(ExceptionEvent $event) {
-    $exception = $event->getThrowable();
+  public function onException(GetResponseForExceptionEvent $event) {
+    $exception = $event->getException();
 
     $method = 'onError';
 

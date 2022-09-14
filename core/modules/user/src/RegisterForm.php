@@ -75,7 +75,7 @@ class RegisterForm extends AccountForm {
       $pass = $form_state->getValue('pass');
     }
     else {
-      $pass = \Drupal::service('password_generator')->generate();
+      $pass = user_password();
     }
 
     // Remove unneeded values.

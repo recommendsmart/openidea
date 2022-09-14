@@ -2,7 +2,6 @@
 
 namespace Drupal\file\Plugin\views\filter;
 
-use Drupal\file\FileInterface;
 use Drupal\views\Plugin\views\filter\InOperator;
 
 /**
@@ -16,10 +15,7 @@ class Status extends InOperator {
 
   public function getValueOptions() {
     if (!isset($this->valueOptions)) {
-      $this->valueOptions = [
-        0 => $this->t('Temporary'),
-        FileInterface::STATUS_PERMANENT => $this->t('Permanent'),
-      ];
+      $this->valueOptions = _views_file_status();
     }
     return $this->valueOptions;
   }

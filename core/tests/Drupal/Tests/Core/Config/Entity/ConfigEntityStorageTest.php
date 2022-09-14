@@ -103,7 +103,7 @@ class ConfigEntityStorageTest extends UnitTestCase {
    *
    * @covers ::__construct
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->entityTypeId = 'test_entity_type';
@@ -247,7 +247,6 @@ class ConfigEntityStorageTest extends UnitTestCase {
    * @covers ::doSave
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to test.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *
@@ -300,7 +299,6 @@ class ConfigEntityStorageTest extends UnitTestCase {
    * @covers ::doSave
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to test.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *

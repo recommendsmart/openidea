@@ -4,8 +4,6 @@ namespace Drupal\Tests\file\Kernel\Plugin\migrate\source\d6;
 
 use Drupal\Tests\migrate\Kernel\MigrateSqlSourceTestBase;
 
-// cspell:ignore uploadsize
-
 /**
  * Tests D6 d6_upload_instance source plugin.
  *
@@ -18,7 +16,7 @@ class UploadInstanceTest extends MigrateSqlSourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['file', 'migrate_drupal'];
+  public static $modules = ['file', 'migrate_drupal'];
 
   /**
    * {@inheritdoc}

@@ -5,7 +5,6 @@ namespace Drupal\Tests\Composer\Plugin\Scaffold\Integration;
 use Drupal\Composer\Plugin\Scaffold\Operations\ReplaceOp;
 use Drupal\Composer\Plugin\Scaffold\ScaffoldOptions;
 use Drupal\Tests\Composer\Plugin\Scaffold\Fixtures;
-use Drupal\Tests\Traits\PhpUnitWarnings;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -14,7 +13,6 @@ use PHPUnit\Framework\TestCase;
  * @group Scaffold
  */
 class ReplaceOpTest extends TestCase {
-  use PhpUnitWarnings;
 
   /**
    * @covers ::process
@@ -26,7 +24,7 @@ class ReplaceOpTest extends TestCase {
     $options = ScaffoldOptions::create([]);
     $sut = new ReplaceOp($source, TRUE);
     // Assert that there is no target file before we run our test.
-    $this->assertFileDoesNotExist($destination->fullPath());
+    $this->assertFileNotExists($destination->fullPath());
     // Test the system under test.
     $sut->process($destination, $fixtures->io(), $options);
     // Assert that the target file was created.
@@ -36,7 +34,7 @@ class ReplaceOpTest extends TestCase {
     $this->assertEquals('# Test version of robots.txt from drupal/core.', $contents);
     // Confirm that expected output was written to our io fixture.
     $output = $fixtures->getOutput();
-    $this->assertStringContainsString('Copy [web-root]/robots.txt from assets/robots.txt', $output);
+    $this->assertContains('Copy [web-root]/robots.txt from assets/robots.txt', $output);
   }
 
 }

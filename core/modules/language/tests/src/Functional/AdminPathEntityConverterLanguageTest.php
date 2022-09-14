@@ -12,14 +12,14 @@ use Drupal\Tests\BrowserTestBase;
  */
 class AdminPathEntityConverterLanguageTest extends BrowserTestBase {
 
-  protected static $modules = ['language', 'language_test'];
+  public static $modules = ['language', 'language_test'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $permissions = [
       'access administration pages',
@@ -39,12 +39,12 @@ class AdminPathEntityConverterLanguageTest extends BrowserTestBase {
       ->save();
 
     $this->drupalGet('es/admin/language_test/entity_using_current_language/es');
-    $this->assertSession()->pageTextNotContains('Loaded Spanish.');
-    $this->assertSession()->pageTextContains('Loaded Español.');
+    $this->assertNoRaw(t('Loaded %label.', ['%label' => 'Spanish']));
+    $this->assertRaw(t('Loaded %label.', ['%label' => 'Español']));
 
     $this->drupalGet('es/admin/language_test/entity_using_original_language/es');
-    $this->assertSession()->pageTextContains('Loaded Spanish.');
-    $this->assertSession()->pageTextNotContains('Loaded Español.');
+    $this->assertRaw(t('Loaded %label.', ['%label' => 'Spanish']));
+    $this->assertNoRaw(t('Loaded %label.', ['%label' => 'Español']));
   }
 
 }

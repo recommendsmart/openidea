@@ -25,27 +25,12 @@ class FileMoveTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['image'];
+  public static $modules = ['image'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
-
-  /**
-   * The file repository service.
-   *
-   * @var \Drupal\file\FileRepository
-   */
-  protected $fileRepository;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->fileRepository = $this->container->get('file.repository');
-  }
 
   /**
    * Tests moving a randomly generated image.
@@ -62,18 +47,18 @@ class FileMoveTest extends BrowserTestBase {
     $style->createDerivative($original_uri, $derivative_uri);
 
     // Check if derivative image exists.
-    $this->assertFileExists($derivative_uri);
+    $this->assertTrue(file_exists($derivative_uri), 'Make sure derivative image is generated successfully.');
 
     // Clone the object so we don't have to worry about the function changing
     // our reference copy.
     $desired_filepath = 'public://' . $this->randomMachineName();
-    $result = $this->fileRepository->move(clone $file, $desired_filepath, FileSystemInterface::EXISTS_ERROR);
+    $result = file_move(clone $file, $desired_filepath, FileSystemInterface::EXISTS_ERROR);
 
     // Check if image has been moved.
-    $this->assertFileExists($result->getFileUri());
+    $this->assertTrue(file_exists($result->getFileUri()), 'Make sure image is moved successfully.');
 
     // Check if derivative image has been flushed.
-    $this->assertFileDoesNotExist($derivative_uri);
+    $this->assertFalse(file_exists($derivative_uri), 'Make sure derivative image has been flushed.');
   }
 
 }

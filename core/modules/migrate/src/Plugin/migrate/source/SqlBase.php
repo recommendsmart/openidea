@@ -14,8 +14,6 @@ use Drupal\migrate\Plugin\MigrateIdMapInterface;
 use Drupal\migrate\Plugin\RequirementsInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-// cspell:ignore destid sourceid
-
 /**
  * Sources whose data may be fetched via a database connection.
  *
@@ -278,7 +276,7 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
       //    conditions, so we need to OR them together (but AND with any existing
       //    conditions in the query). So, ultimately the SQL condition will look
       //    like (original conditions) AND (map IS NULL OR map needs update
-      //    OR above high water).
+      //      OR above high water).
       $conditions = $this->query->orConditionGroup();
       $condition_added = FALSE;
       $added_fields = [];
@@ -385,9 +383,9 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
   abstract public function query();
 
   /**
-   * Gets the source count using countQuery().
+   * {@inheritdoc}
    */
-  protected function doCount() {
+  public function count($refresh = FALSE) {
     return (int) $this->query()->countQuery()->execute()->fetchField();
   }
 
@@ -454,20 +452,13 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
     }
 
     foreach (['username', 'password', 'host', 'port', 'namespace', 'driver'] as $key) {
-      if (isset($source_database_options[$key]) && isset($id_map_database_options[$key])) {
+      if (isset($source_database_options[$key])) {
         if ($id_map_database_options[$key] != $source_database_options[$key]) {
           return FALSE;
         }
       }
     }
     return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __sleep() {
-    return array_diff(parent::__sleep(), ['database']);
   }
 
 }

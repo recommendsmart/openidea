@@ -39,7 +39,7 @@ class Plugin implements AnnotationInterface {
       return $value !== NULL;
     });
     $parsed_values = $this->parse($values);
-    $this->definition = NestedArray::mergeDeepArray([$defaults, $parsed_values], TRUE);
+    $this->definition = NestedArray::mergeDeep($defaults, $parsed_values);
   }
 
   /**
@@ -78,7 +78,7 @@ class Plugin implements AnnotationInterface {
    * {@inheritdoc}
    */
   public function getProvider() {
-    return $this->definition['provider'] ?? FALSE;
+    return isset($this->definition['provider']) ? $this->definition['provider'] : FALSE;
   }
 
   /**

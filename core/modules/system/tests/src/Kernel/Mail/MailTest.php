@@ -3,6 +3,7 @@
 namespace Drupal\Tests\system\Kernel\Mail;
 
 use Drupal\Component\Utility\Random;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Mail\Plugin\Mail\TestMailCollector;
@@ -36,7 +37,7 @@ class MailTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('user');
     $this->installEntitySchema('file');
@@ -88,7 +89,7 @@ class MailTest extends KernelTestBase {
   }
 
   /**
-   * Tests that message sending may be canceled.
+   * Test that message sending may be canceled.
    *
    * @see mail_cancel_test_mail_alter()
    */
@@ -146,9 +147,9 @@ class MailTest extends KernelTestBase {
     $captured_emails = \Drupal::state()->get('system.test_mail_collector');
     $sent_message = end($captured_emails);
     // From header is correctly encoded.
-    $this->assertEquals('=?utf-8?Q?Dr=C3=A9pal?= this is a very long test sentence to test what happens with very long site names <mailtest@example.com>', $sent_message['headers']['From']);
+    $this->assertEquals('=?UTF-8?B?RHLDqXBhbCB0aGlzIGlzIGEgdmVyeSBsb25nIHRlc3Qgc2VudGVuY2UgdG8gdGU=?= <mailtest@example.com>', $sent_message['headers']['From']);
     // From header is correctly encoded.
-    $this->assertEquals('Drépal this is a very long test sentence to test what happens with very long site names <mailtest@example.com>', iconv_mime_decode($sent_message['headers']['From']));
+    $this->assertEquals('Drépal this is a very long test sentence to te <mailtest@example.com>', Unicode::mimeHeaderDecode($sent_message['headers']['From']));
     $this->assertFalse(isset($sent_message['headers']['Reply-to']), 'Message reply-to is not set if not specified.');
     // Errors-to header must not be set, it is deprecated.
     $this->assertFalse(isset($sent_message['headers']['Errors-To']));
@@ -178,9 +179,9 @@ class MailTest extends KernelTestBase {
     $captured_emails = \Drupal::state()->get('system.test_mail_collector');
     $sent_message = end($captured_emails);
     // From header is correctly encoded.
-    $this->assertEquals('=?utf-8?Q?Dr=C3=A9pal=2C_=22si=5Cte=22?= <mailtest@example.com>', $sent_message['headers']['From']);
+    $this->assertEquals('=?UTF-8?B?RHLDqXBhbCwgInNpXHRlIg==?= <mailtest@example.com>', $sent_message['headers']['From']);
     // From header is correctly encoded.
-    $this->assertEquals($site_name . ' <mailtest@example.com>', iconv_mime_decode($sent_message['headers']['From']));
+    $this->assertEquals($site_name . ' <mailtest@example.com>', Unicode::mimeHeaderDecode($sent_message['headers']['From']));
   }
 
   /**
@@ -305,7 +306,7 @@ class MailTest extends KernelTestBase {
 
     // Test images.
     foreach ($path_pairs as $test_type => $paths) {
-      [$input_path, $expected_path] = $paths;
+      list($input_path, $expected_path) = $paths;
 
       // Reset the state variable that holds sent messages.
       \Drupal::state()->set('system.test_mail_collector', []);
@@ -336,7 +337,7 @@ class MailTest extends KernelTestBase {
     ];
 
     foreach ($path_pairs as $paths) {
-      [$input_path, $expected_path] = $paths;
+      list($input_path, $expected_path) = $paths;
 
       // Reset the state variable that holds sent messages.
       \Drupal::state()->set('system.test_mail_collector', []);

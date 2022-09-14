@@ -13,18 +13,18 @@ bundle: disclaimer_block
 mode: default
 content:
   field_copyright:
-    type: text_default
+    weight: 2
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 2
+    type: text_default
     region: content
   field_disclaimer:
-    type: text_default
+    weight: 1
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 1
+    type: text_default
     region: content
 hidden:
   langcode: true

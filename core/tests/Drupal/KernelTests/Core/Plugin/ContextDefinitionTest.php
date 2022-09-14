@@ -4,7 +4,6 @@ namespace Drupal\KernelTests\Core\Plugin;
 
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
-use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\KernelTests\KernelTestBase;
 
@@ -17,7 +16,7 @@ class ContextDefinitionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['entity_test', 'user'];
+  public static $modules = ['entity_test', 'user'];
 
   /**
    * @covers ::isSatisfiedBy
@@ -33,22 +32,6 @@ class ContextDefinitionTest extends KernelTestBase {
     $requirement = new ContextDefinition('any');
     $context = EntityContext::fromEntity($value);
     $this->assertTrue($requirement->isSatisfiedBy($context));
-  }
-
-  /**
-   * @covers ::__construct
-   */
-  public function testEntityContextDefinitionAssert() {
-    $this->expectException(\AssertionError::class);
-    $this->expectExceptionMessage('assert(strpos($data_type, \'entity:\') !== 0 || $this instanceof EntityContextDefinition)');
-    new ContextDefinition('entity:entity_test');
-  }
-
-  /**
-   * @covers ::create
-   */
-  public function testCreateWithEntityDataType() {
-    $this->assertInstanceOf(EntityContextDefinition::class, ContextDefinition::create('entity:user'));
   }
 
 }

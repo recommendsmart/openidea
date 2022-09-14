@@ -17,7 +17,7 @@ class NodeCacheTagsTest extends EntityWithUriCacheTagsTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
@@ -41,6 +41,17 @@ class NodeCacheTagsTest extends EntityWithUriCacheTagsTestBase {
       ->save();
 
     return $node;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getDefaultCacheContexts() {
+    $defaults = parent::getDefaultCacheContexts();
+    // @see \Drupal\node\Controller\NodeViewController::view()
+    $defaults[] = 'url.site';
+    $defaults[] = 'user.roles:anonymous';
+    return $defaults;
   }
 
   /**

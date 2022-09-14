@@ -7,7 +7,7 @@ use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Defines an item list class for comment fields.
+ * Defines a item list class for comment fields.
  */
 class CommentFieldItemList extends FieldItemList {
 
@@ -30,7 +30,6 @@ class CommentFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function offsetExists($offset) {
     // For consistency with what happens in get(), we force offsetExists() to
     // be TRUE for delta 0.

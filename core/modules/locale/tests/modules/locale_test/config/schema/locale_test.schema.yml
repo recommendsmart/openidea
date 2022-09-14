@@ -2,7 +2,7 @@
 
 locale_test.no_translation:
   type: config_object
-  label: 'No translation settings'
+  label: 'No traslation settings'
   mapping:
     test:
       type: string

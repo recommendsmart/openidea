@@ -58,7 +58,7 @@ class CommentAdminOverview extends FormBase {
    * Creates a CommentAdminOverview form.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
+   *   The entity manager service.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -161,13 +161,12 @@ class CommentAdminOverview extends FormBase {
       'operations' => $this->t('Operations'),
     ];
     $cids = $this->commentStorage->getQuery()
-      ->accessCheck(TRUE)
       ->condition('status', $status)
       ->tableSort($header)
       ->pager(50)
       ->execute();
 
-    /** @var \Drupal\comment\CommentInterface[] $comments */
+    /** @var $comments \Drupal\comment\CommentInterface[] */
     $comments = $this->commentStorage->loadMultiple($cids);
 
     // Build a table listing the appropriate comments.
@@ -188,7 +187,7 @@ class CommentAdminOverview extends FormBase {
     }
 
     foreach ($comments as $comment) {
-      /** @var \Drupal\Core\Entity\EntityInterface $commented_entity */
+      /** @var $commented_entity \Drupal\Core\Entity\EntityInterface */
       $commented_entity = $commented_entities[$comment->getCommentedEntityTypeId()][$comment->getCommentedEntityId()];
       $comment_permalink = $comment->permalink();
       if ($comment->hasField('comment_body') && ($body = $comment->get('comment_body')->value)) {

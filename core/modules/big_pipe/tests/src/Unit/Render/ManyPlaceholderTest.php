@@ -8,7 +8,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Render\HtmlResponse;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Tests\UnitTestCase;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -31,7 +31,7 @@ class ManyPlaceholderTest extends UnitTestCase {
       $this->prophesize(EventDispatcherInterface::class)->reveal(),
       $this->prophesize(ConfigFactoryInterface::class)->reveal()
     );
-    $response = new BigPipeResponse(new HtmlResponse());
+    $response = new BigPipeResponse(HtmlResponse::create());
 
     // Add many placeholders.
     $many_placeholders = [];

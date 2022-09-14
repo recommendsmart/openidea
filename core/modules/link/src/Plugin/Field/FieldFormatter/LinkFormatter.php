@@ -8,6 +8,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\link\LinkItemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -23,7 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class LinkFormatter extends FormatterBase {
+class LinkFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
    * The path validator service.

@@ -42,7 +42,7 @@ class Details extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#open' => FALSE,
       '#summary_attributes' => [],

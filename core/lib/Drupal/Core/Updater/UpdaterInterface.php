@@ -49,7 +49,6 @@ interface UpdaterInterface {
    * Determines if the Updater can handle the project provided in $directory.
    *
    * @param string $directory
-   *   The directory.
    *
    * @return bool
    *   TRUE if the project is installed, FALSE if not.

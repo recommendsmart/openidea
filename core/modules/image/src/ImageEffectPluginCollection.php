@@ -22,7 +22,13 @@ class ImageEffectPluginCollection extends DefaultLazyPluginCollection {
    * {@inheritdoc}
    */
   public function sortHelper($aID, $bID) {
-    return $this->get($aID)->getWeight() <=> $this->get($bID)->getWeight();
+    $a_weight = $this->get($aID)->getWeight();
+    $b_weight = $this->get($bID)->getWeight();
+    if ($a_weight == $b_weight) {
+      return 0;
+    }
+
+    return ($a_weight < $b_weight) ? -1 : 1;
   }
 
 }

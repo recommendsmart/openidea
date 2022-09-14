@@ -71,6 +71,9 @@ class MockAliasManager implements AliasManagerInterface {
 
   /**
    * {@inheritdoc}
+   * @param $path
+   * @param null $langcode
+   * @return
    */
   public function getAliasByPath($path, $langcode = NULL) {
     if ($path[0] !== '/') {

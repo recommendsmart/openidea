@@ -14,12 +14,12 @@ class MigrateDblogConfigsTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['dblog'];
+  public static $modules = ['dblog'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(static::$modules);
     $this->executeMigration('d7_dblog_settings');
@@ -30,7 +30,7 @@ class MigrateDblogConfigsTest extends MigrateDrupal7TestBase {
    */
   public function testDblogSettings() {
     $config = $this->config('dblog.settings');
-    $this->assertSame(10000, $config->get('row_limit'));
+    $this->assertIdentical(10000, $config->get('row_limit'));
   }
 
 }

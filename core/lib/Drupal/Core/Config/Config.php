@@ -4,7 +4,7 @@ namespace Drupal\Core\Config;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Cache\Cache;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Defines the default configuration object.
@@ -21,7 +21,7 @@ class Config extends StorableConfigBase {
   /**
    * An event dispatcher instance to use for configuration events.
    *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected $eventDispatcher;
 
@@ -57,7 +57,7 @@ class Config extends StorableConfigBase {
    * @param \Drupal\Core\Config\StorageInterface $storage
    *   A storage object to use for reading and writing the
    *   configuration data.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   An event dispatcher instance to use for configuration events.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config
    *   The typed configuration manager service.
@@ -91,7 +91,7 @@ class Config extends StorableConfigBase {
     else {
       $parts = explode('.', $key);
       if (count($parts) == 1) {
-        return $this->overriddenData[$key] ?? NULL;
+        return isset($this->overriddenData[$key]) ? $this->overriddenData[$key] : NULL;
       }
       else {
         $value = NestedArray::getValue($this->overriddenData, $parts, $key_exists);
@@ -208,7 +208,9 @@ class Config extends StorableConfigBase {
       if ($this->typedConfigManager->hasConfigSchema($this->name)) {
         // Ensure that the schema wrapper has the latest data.
         $this->schemaWrapper = NULL;
-        $this->data = $this->castValue(NULL, $this->data);
+        foreach ($this->data as $key => $value) {
+          $this->data[$key] = $this->castValue($key, $value);
+        }
       }
       else {
         foreach ($this->data as $key => $value) {
@@ -226,7 +228,7 @@ class Config extends StorableConfigBase {
       Cache::invalidateTags($this->getCacheTags());
     }
     $this->isNew = FALSE;
-    $this->eventDispatcher->dispatch(new ConfigCrudEvent($this), ConfigEvents::SAVE);
+    $this->eventDispatcher->dispatch(ConfigEvents::SAVE, new ConfigCrudEvent($this));
     $this->originalData = $this->data;
     return $this;
   }
@@ -243,7 +245,7 @@ class Config extends StorableConfigBase {
     Cache::invalidateTags($this->getCacheTags());
     $this->isNew = TRUE;
     $this->resetOverriddenData();
-    $this->eventDispatcher->dispatch(new ConfigCrudEvent($this), ConfigEvents::DELETE);
+    $this->eventDispatcher->dispatch(ConfigEvents::DELETE, new ConfigCrudEvent($this));
     $this->originalData = $this->data;
     return $this;
   }
@@ -293,7 +295,7 @@ class Config extends StorableConfigBase {
     else {
       $parts = explode('.', $key);
       if (count($parts) == 1) {
-        return $original_data[$key] ?? NULL;
+        return isset($original_data[$key]) ? $original_data[$key] : NULL;
       }
       else {
         $value = NestedArray::getValue($original_data, $parts, $key_exists);

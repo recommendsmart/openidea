@@ -23,7 +23,7 @@ class FileCopyTest extends FileTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate', 'system'];
+  public static $modules = ['migrate', 'system'];
 
   /**
    * The file system service.
@@ -35,14 +35,14 @@ class FileCopyTest extends FileTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->fileSystem = $this->container->get('file_system');
     $this->container->get('stream_wrapper_manager')->registerWrapper('temporary', 'Drupal\Core\StreamWrapper\TemporaryStream', StreamWrapperInterface::LOCAL_NORMAL);
   }
 
   /**
-   * Tests successful imports/copies.
+   * Test successful imports/copies.
    */
   public function testSuccessfulCopies() {
     $file = $this->createUri(NULL, NULL, 'temporary');
@@ -65,17 +65,18 @@ class FileCopyTest extends FileTestBase {
       ],
     ];
     foreach ($data_sets as $data) {
-      [$source_path, $destination_path] = $data;
+      list($source_path, $destination_path) = $data;
       $actual_destination = $this->doTransform($source_path, $destination_path);
-      $this->assertFileExists($destination_path);
+      $message = sprintf('File %s exists', $destination_path);
+      $this->assertFileExists($destination_path, $message);
       // Make sure we didn't accidentally do a move.
-      $this->assertFileExists($source_path);
+      $this->assertFileExists($source_path, $message);
       $this->assertSame($actual_destination, $destination_path, 'The import returned the copied filename.');
     }
   }
 
   /**
-   * Tests successful file reuse.
+   * Test successful file reuse.
    *
    * @dataProvider providerSuccessfulReuse
    *
@@ -89,7 +90,7 @@ class FileCopyTest extends FileTestBase {
     clearstatcache(TRUE, $destination_path);
 
     $timestamp = (new \SplFileInfo($file_reuse))->getMTime();
-    $this->assertIsInt($timestamp);
+    $this->assertInternalType('int', $timestamp);
 
     // We need to make sure the modified timestamp on the file is sooner than
     // the attempted migration.
@@ -123,7 +124,7 @@ class FileCopyTest extends FileTestBase {
   }
 
   /**
-   * Tests successful moves.
+   * Test successful moves.
    */
   public function testSuccessfulMoves() {
     $file_1 = $this->createUri(NULL, NULL, 'temporary');
@@ -149,22 +150,24 @@ class FileCopyTest extends FileTestBase {
       ],
     ];
     foreach ($data_sets as $data) {
-      [$source_path, $destination_path] = $data;
+      list($source_path, $destination_path) = $data;
       $actual_destination = $this->doTransform($source_path, $destination_path, ['move' => TRUE]);
-      $this->assertFileExists($destination_path);
-      $this->assertFileDoesNotExist($source_path);
+      $message = sprintf('File %s exists', $destination_path);
+      $this->assertFileExists($destination_path, $message);
+      $message = sprintf('File %s does not exist', $source_path);
+      $this->assertFileNotExists($source_path, $message);
       $this->assertSame($actual_destination, $destination_path, 'The importer returned the moved filename.');
     }
   }
 
   /**
-   * Tests that non-existent files throw an exception.
+   * Test that non-existent files throw an exception.
    */
   public function testNonExistentSourceFile() {
     $source = '/non/existent/file';
     $this->expectException(MigrateException::class);
     $this->expectExceptionMessage("File '/non/existent/file' does not exist");
-    $this->doTransform($source, 'public://foo.jpg');
+    $this->doTransform($source, 'public://wontmatter.jpg');
   }
 
   /**
@@ -195,14 +198,14 @@ class FileCopyTest extends FileTestBase {
   }
 
   /**
-   * Tests the 'rename' overwrite mode.
+   * Test the 'rename' overwrite mode.
    */
   public function testRenameFile() {
     $source = $this->createUri(NULL, NULL, 'temporary');
     $destination = $this->createUri('foo.txt', NULL, 'public');
     $expected_destination = 'public://foo_0.txt';
     $actual_destination = $this->doTransform($source, $destination, ['file_exists' => 'rename']);
-    $this->assertFileExists($expected_destination);
+    $this->assertFileExists($expected_destination, 'File was renamed on import');
     $this->assertSame($actual_destination, $expected_destination, 'The importer returned the renamed filename.');
   }
 
@@ -251,7 +254,7 @@ class FileCopyTest extends FileTestBase {
     $executable = $this->prophesize(MigrateExecutableInterface::class)->reveal();
     $row = new Row([], []);
 
-    return $plugin->transform([$source_path, $destination_path], $executable, $row, 'foo');
+    return $plugin->transform([$source_path, $destination_path], $executable, $row, 'foobaz');
   }
 
 }

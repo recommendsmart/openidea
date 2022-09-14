@@ -16,12 +16,12 @@ class MigrateCommentEntityFormDisplaySubjectTest extends MigrateDrupal6TestBase 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment'];
+  public static $modules = ['comment'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['comment']);
     $this->executeMigrations([
@@ -35,12 +35,10 @@ class MigrateCommentEntityFormDisplaySubjectTest extends MigrateDrupal6TestBase 
    *
    * @param string $id
    *   The entity form display ID.
-   *
-   * @internal
    */
-  protected function assertSubjectVisible(string $id): void {
+  protected function assertSubjectVisible($id) {
     $component = EntityFormDisplay::load($id)->getComponent('subject');
-    $this->assertIsArray($component);
+    $this->assertInternalType('array', $component);
     $this->assertSame('string_textfield', $component['type']);
     $this->assertSame(10, $component['weight']);
   }
@@ -50,10 +48,8 @@ class MigrateCommentEntityFormDisplaySubjectTest extends MigrateDrupal6TestBase 
    *
    * @param string $id
    *   The entity form display ID.
-   *
-   * @internal
    */
-  protected function assertSubjectNotVisible(string $id): void {
+  protected function assertSubjectNotVisible($id) {
     $component = EntityFormDisplay::load($id)->getComponent('subject');
     $this->assertNull($component);
   }

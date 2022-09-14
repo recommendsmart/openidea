@@ -20,10 +20,10 @@ trait FieldUiTestTrait {
    *   (optional) The field type of the new field storage. Defaults to
    *   'test_field'.
    * @param array $storage_edit
-   *   (optional) $edit parameter for submitForm() on the second step
+   *   (optional) $edit parameter for drupalPostForm() on the second step
    *   ('Storage settings' form).
    * @param array $field_edit
-   *   (optional) $edit parameter for submitForm() on the third step ('Field
+   *   (optional) $edit parameter for drupalPostForm() on the third step ('Field
    *   settings' form).
    */
   public function fieldUIAddNewField($bundle_path, $field_name, $label = NULL, $field_type = 'test_field', array $storage_edit = [], array $field_edit = []) {
@@ -44,27 +44,21 @@ trait FieldUiTestTrait {
     }
 
     // First step: 'Add field' page.
-    if ($bundle_path !== NULL) {
-      $this->drupalGet($bundle_path);
-    }
-    $this->submitForm($initial_edit, 'Save and continue');
-    $this->assertSession()->pageTextContains("These settings apply to the $label field everywhere it is used.");
+    $this->drupalPostForm($bundle_path, $initial_edit, t('Save and continue'));
+    $this->assertRaw(t('These settings apply to the %label field everywhere it is used.', ['%label' => $label]), 'Storage settings page was displayed.');
     // Test Breadcrumbs.
-    $this->assertSession()->linkExists($label, 0, 'Field label is correct in the breadcrumb of the storage settings page.');
+    $this->assertLink($label, 0, 'Field label is correct in the breadcrumb of the storage settings page.');
 
     // Second step: 'Storage settings' form.
-    $this->submitForm($storage_edit, 'Save field settings');
-    $this->assertSession()->pageTextContains("Updated field $label field settings.");
+    $this->drupalPostForm(NULL, $storage_edit, t('Save field settings'));
+    $this->assertRaw(t('Updated field %label field settings.', ['%label' => $label]), 'Redirected to field settings page.');
 
     // Third step: 'Field settings' form.
-    $this->submitForm($field_edit, 'Save settings');
-    $this->assertSession()->pageTextContains("Saved $label configuration.");
+    $this->drupalPostForm(NULL, $field_edit, t('Save settings'));
+    $this->assertRaw(t('Saved %label configuration.', ['%label' => $label]), 'Redirected to "Manage fields" page.');
 
     // Check that the field appears in the overview form.
-    $xpath = $this->assertSession()->buildXPathQuery("//table[@id=\"field-overview\"]//tr/td[1 and text() = :label]", [
-      ':label' => $label,
-    ]);
-    $this->assertSession()->elementExists('xpath', $xpath);
+    $this->assertFieldByXPath('//table[@id="field-overview"]//tr/td[1]', $label, 'Field was created and appears in the overview page.');
   }
 
   /**
@@ -78,7 +72,7 @@ trait FieldUiTestTrait {
    * @param string $label
    *   (optional) The label of the new field. Defaults to a random string.
    * @param array $field_edit
-   *   (optional) $edit parameter for submitForm() on the second step
+   *   (optional) $edit parameter for drupalPostForm() on the second step
    *   ('Field settings' form).
    */
   public function fieldUIAddExistingField($bundle_path, $existing_storage_name, $label = NULL, array $field_edit = []) {
@@ -89,23 +83,18 @@ trait FieldUiTestTrait {
     ];
 
     // First step: 'Re-use existing field' on the 'Add field' page.
-    $this->drupalGet("{$bundle_path}/fields/add-field");
-    $this->submitForm($initial_edit, 'Save and continue');
+    $this->drupalPostForm("$bundle_path/fields/add-field", $initial_edit, t('Save and continue'));
     // Set the main content to only the content region because the label can
     // contain HTML which will be auto-escaped by Twig.
-    $this->assertSession()->responseContains('field-config-edit-form');
-    // Check that the page does not have double escaped HTML tags.
-    $this->assertSession()->responseNotContains('&amp;lt;');
+    $this->assertRaw('field-config-edit-form', 'The field config edit form is present.');
+    $this->assertNoRaw('&amp;lt;', 'The page does not have double escaped HTML tags.');
 
     // Second step: 'Field settings' form.
-    $this->submitForm($field_edit, 'Save settings');
-    $this->assertSession()->pageTextContains("Saved $label configuration.");
+    $this->drupalPostForm(NULL, $field_edit, t('Save settings'));
+    $this->assertRaw(t('Saved %label configuration.', ['%label' => $label]), 'Redirected to "Manage fields" page.');
 
     // Check that the field appears in the overview form.
-    $xpath = $this->assertSession()->buildXPathQuery("//table[@id=\"field-overview\"]//tr/td[1 and text() = :label]", [
-      ':label' => $label,
-    ]);
-    $this->assertSession()->elementExists('xpath', $xpath);
+    $this->assertFieldByXPath('//table[@id="field-overview"]//tr/td[1]', $label, 'Field was created and appears in the overview page.');
   }
 
   /**
@@ -123,20 +112,17 @@ trait FieldUiTestTrait {
   public function fieldUIDeleteField($bundle_path, $field_name, $label, $bundle_label) {
     // Display confirmation form.
     $this->drupalGet("$bundle_path/fields/$field_name/delete");
-    $this->assertSession()->pageTextContains("Are you sure you want to delete the field $label");
+    $this->assertRaw(t('Are you sure you want to delete the field %label', ['%label' => $label]), 'Delete confirmation was found.');
 
     // Test Breadcrumbs.
-    $this->assertSession()->linkExists($label, 0, 'Field label is correct in the breadcrumb of the field delete page.');
+    $this->assertLink($label, 0, 'Field label is correct in the breadcrumb of the field delete page.');
 
     // Submit confirmation form.
-    $this->submitForm([], 'Delete');
-    $this->assertSession()->pageTextContains("The field $label has been deleted from the $bundle_label content type.");
+    $this->drupalPostForm(NULL, [], t('Delete'));
+    $this->assertRaw(t('The field %label has been deleted from the %type content type.', ['%label' => $label, '%type' => $bundle_label]), 'Delete message was found.');
 
     // Check that the field does not appear in the overview form.
-    $xpath = $this->assertSession()->buildXPathQuery('//table[@id="field-overview"]//span[@class="label-field" and text()= :label]', [
-      ':label' => $label,
-    ]);
-    $this->assertSession()->elementNotExists('xpath', $xpath);
+    $this->assertNoFieldByXPath('//table[@id="field-overview"]//span[@class="label-field"]', $label, 'Field does not appear in the overview page.');
   }
 
 }

@@ -16,7 +16,7 @@ class EntityTestMapFieldTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['entity_test'];
+  public static $modules = ['entity_test'];
 
   /**
    * {@inheritdoc}
@@ -119,9 +119,6 @@ class EntityTestMapFieldTest extends ResourceTestBase {
           'user_id' => [
             'data' => [
               'id' => $author->uuid(),
-              'meta' => [
-                'drupal_internal__target_id' => (int) $author->id(),
-              ],
               'type' => 'user--user',
             ],
             'links' => [

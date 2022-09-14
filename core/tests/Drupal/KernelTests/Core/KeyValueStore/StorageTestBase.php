@@ -48,27 +48,27 @@ abstract class StorageTestBase extends KernelTestBase {
   public function testCRUD() {
     $stores = $this->createStorage();
     // Verify that each store returns its own collection name.
-    $this->assertSame($this->collections[0], $stores[0]->getCollectionName());
-    $this->assertSame($this->collections[1], $stores[1]->getCollectionName());
+    $this->assertIdentical($stores[0]->getCollectionName(), $this->collections[0]);
+    $this->assertIdentical($stores[1]->getCollectionName(), $this->collections[1]);
 
     // Verify that an item can be stored.
     $stores[0]->set('foo', $this->objects[0]);
     $this->assertTrue($stores[0]->has('foo'));
-    $this->assertEquals($this->objects[0], $stores[0]->get('foo'));
+    $this->assertIdenticalObject($this->objects[0], $stores[0]->get('foo'));
     // Verify that the other collection is not affected.
     $this->assertFalse($stores[1]->has('foo'));
     $this->assertNull($stores[1]->get('foo'));
 
     // Verify that an item can be updated.
     $stores[0]->set('foo', $this->objects[1]);
-    $this->assertEquals($this->objects[1], $stores[0]->get('foo'));
+    $this->assertIdenticalObject($this->objects[1], $stores[0]->get('foo'));
     // Verify that the other collection is still not affected.
     $this->assertNull($stores[1]->get('foo'));
 
     // Verify that a collection/name pair is unique.
     $stores[1]->set('foo', $this->objects[2]);
-    $this->assertEquals($this->objects[1], $stores[0]->get('foo'));
-    $this->assertEquals($this->objects[2], $stores[1]->get('foo'));
+    $this->assertIdenticalObject($this->objects[1], $stores[0]->get('foo'));
+    $this->assertIdenticalObject($this->objects[2], $stores[1]->get('foo'));
 
     // Verify that an item can be deleted.
     $stores[0]->delete('foo');
@@ -77,7 +77,7 @@ abstract class StorageTestBase extends KernelTestBase {
 
     // Verify that the other collection is not affected.
     $this->assertTrue($stores[1]->has('foo'));
-    $this->assertEquals($this->objects[2], $stores[1]->get('foo'));
+    $this->assertIdenticalObject($this->objects[2], $stores[1]->get('foo'));
     $stores[1]->delete('foo');
     $this->assertNull($stores[1]->get('foo'));
 
@@ -91,7 +91,7 @@ abstract class StorageTestBase extends KernelTestBase {
     // Verify that multiple items can be retrieved.
     $result = $stores[0]->getMultiple(['foo', 'bar']);
     foreach ($values as $j => $value) {
-      $this->assertEquals($value, $result[$j]);
+      $this->assertIdenticalObject($value, $result[$j]);
     }
 
     // Verify that the other collection was not affected.
@@ -101,13 +101,15 @@ abstract class StorageTestBase extends KernelTestBase {
     // Verify that all items in a collection can be retrieved.
     // Ensure that an item with the same name exists in the other collection.
     $stores[1]->set('foo', $this->objects[5]);
-
+    $result = $stores[0]->getAll();
     // Not using assertSame(), since the order is not defined for getAll().
-    $this->assertEquals($values, $stores[0]->getAll());
-
+    $this->assertEqual(count($result), count($values));
+    foreach ($result as $key => $value) {
+      $this->assertEqual($values[$key], $value);
+    }
     // Verify that all items in the other collection are different.
     $result = $stores[1]->getAll();
-    $this->assertEquals(['foo' => $this->objects[5]], $result);
+    $this->assertEqual($result, ['foo' => $this->objects[5]]);
 
     // Verify that multiple items can be deleted.
     $stores[0]->deleteMultiple(array_keys($values));
@@ -117,7 +119,7 @@ abstract class StorageTestBase extends KernelTestBase {
     // Verify that deleting no items does not cause an error.
     $stores[0]->deleteMultiple([]);
     // Verify that the item in the other collection still exists.
-    $this->assertEquals($this->objects[5], $stores[1]->get('foo'));
+    $this->assertIdenticalObject($this->objects[5], $stores[1]->get('foo'));
 
   }
 
@@ -132,11 +134,11 @@ abstract class StorageTestBase extends KernelTestBase {
     $this->assertNull($stores[0]->get('foo'));
 
     // Verify that a non-existing key with a default returns the default.
-    $this->assertSame('bar', $stores[0]->get('foo', 'bar'));
+    $this->assertIdentical($stores[0]->get('foo', 'bar'), 'bar');
 
     // Verify that a FALSE value can be stored.
     $stores[0]->set('foo', FALSE);
-    $this->assertFalse($stores[0]->get('foo'));
+    $this->assertIdentical($stores[0]->get('foo'), FALSE);
 
     // Verify that a deleted key returns NULL as value.
     $stores[0]->delete('foo');
@@ -146,7 +148,7 @@ abstract class StorageTestBase extends KernelTestBase {
     $stores[0]->set('bar', 'baz');
     $values = $stores[0]->getMultiple(['foo', 'bar']);
     $this->assertFalse(isset($values['foo']), "Key 'foo' not found.");
-    $this->assertSame('baz', $values['bar']);
+    $this->assertIdentical($values['bar'], 'baz');
   }
 
   /**
@@ -160,8 +162,8 @@ abstract class StorageTestBase extends KernelTestBase {
     for ($i = 0; $i <= 1; $i++) {
       // setIfNotExists() should be TRUE the first time (when $i is 0) and
       // FALSE the second time (when $i is 1).
-      $this->assertEquals(!$i, $stores[0]->setIfNotExists($key, $this->objects[$i]));
-      $this->assertEquals($this->objects[0], $stores[0]->get($key));
+      $this->assertEqual(!$i, $stores[0]->setIfNotExists($key, $this->objects[$i]));
+      $this->assertIdenticalObject($this->objects[0], $stores[0]->get($key));
       // Verify that the other collection is not affected.
       $this->assertNull($stores[1]->get($key));
     }
@@ -170,7 +172,7 @@ abstract class StorageTestBase extends KernelTestBase {
     $stores[0]->delete($key);
     $stores[0]->setIfNotExists($key, $this->objects[1]);
     // This time it should succeed.
-    $this->assertEquals($this->objects[1], $stores[0]->get($key));
+    $this->assertIdenticalObject($this->objects[1], $stores[0]->get($key));
     // Verify that the other collection is still not affected.
     $this->assertNull($stores[1]->get($key));
   }
@@ -183,9 +185,9 @@ abstract class StorageTestBase extends KernelTestBase {
     $store = $stores[0];
 
     $store->set('old', 'thing');
-    $this->assertSame('thing', $store->get('old'));
+    $this->assertIdentical($store->get('old'), 'thing');
     $store->rename('old', 'new');
-    $this->assertSame('thing', $store->get('new'));
+    $this->assertIdentical($store->get('new'), 'thing');
     $this->assertNull($store->get('old'));
   }
 

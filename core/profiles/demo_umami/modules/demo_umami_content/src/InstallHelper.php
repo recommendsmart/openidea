@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\path_alias\AliasManagerInterface;
 use Drupal\Core\State\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -18,6 +19,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   This code is only for use by the Umami demo: Content module.
  */
 class InstallHelper implements ContainerInjectionInterface {
+
+  /**
+   * The path alias manager.
+   *
+   * @var \Drupal\path_alias\AliasManagerInterface
+   */
+  protected $aliasManager;
 
   /**
    * Entity type manager.
@@ -91,6 +99,8 @@ class InstallHelper implements ContainerInjectionInterface {
   /**
    * Constructs a new InstallHelper object.
    *
+   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
+   *   The path alias manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
@@ -100,7 +110,8 @@ class InstallHelper implements ContainerInjectionInterface {
    * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler, StateInterface $state, FileSystemInterface $fileSystem) {
+  public function __construct(AliasManagerInterface $aliasManager, EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler, StateInterface $state, FileSystemInterface $fileSystem) {
+    $this->aliasManager = $aliasManager;
     $this->entityTypeManager = $entityTypeManager;
     $this->moduleHandler = $moduleHandler;
     $this->state = $state;
@@ -116,6 +127,7 @@ class InstallHelper implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('path_alias.manager'),
       $container->get('entity_type.manager'),
       $container->get('module_handler'),
       $container->get('state'),
@@ -185,7 +197,7 @@ class InstallHelper implements ContainerInjectionInterface {
       }
       else {
         // Language directory exists, but the file in this language was not found,
-        // remove that language from list of languages to be translated.
+        // remove that language from list list of languages to be translated.
         $key = array_search($language, $translated_languages);
         unset($translated_languages[$key]);
       }
@@ -415,8 +427,6 @@ class InstallHelper implements ContainerInjectionInterface {
    *
    * @param array $data
    *   Data of line that was read from the file.
-   * @param string $langcode
-   *   Current language code.
    *
    * @return array
    *   Data structured as a recipe node.
@@ -677,36 +687,28 @@ class InstallHelper implements ContainerInjectionInterface {
       case 'recipe':
         $structured_content = $this->processRecipe($content, $langcode);
         break;
-
       case 'article':
         $structured_content = $this->processArticle($content, $langcode);
         break;
-
       case 'page':
         $structured_content = $this->processPage($content, $langcode);
         break;
-
       case 'banner_block':
         $structured_content = $this->processBannerBlock($content, $langcode);
         break;
-
       case 'disclaimer_block':
         $structured_content = $this->processDisclaimerBlock($content);
         break;
-
       case 'footer_promo_block':
         $structured_content = $this->processFooterPromoBlock($content, $langcode);
         break;
-
       case 'image':
         $structured_content = $this->processImage($content);
         break;
-
       case 'recipe_category':
       case 'tags':
         $structured_content = $this->processTerm($content, $bundle_machine_name);
         break;
-
       default:
         break;
     }
@@ -727,7 +729,7 @@ class InstallHelper implements ContainerInjectionInterface {
     $filename = $entity_type . '/' . $bundle_machine_name . '.csv';
 
     // Read all multilingual content from the file.
-    [$all_content, $translated_languages] = $this->readMultilingualContent($filename);
+    list($all_content, $translated_languages) = $this->readMultilingualContent($filename);
 
     // English is no longer needed in the list of languages to translate.
     $key = array_search('en', $translated_languages);

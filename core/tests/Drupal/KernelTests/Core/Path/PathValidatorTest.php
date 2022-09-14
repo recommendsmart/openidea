@@ -22,12 +22,12 @@ class PathValidatorTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['path', 'entity_test', 'system', 'user'];
+  public static $modules = ['path', 'entity_test', 'system', 'user'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->setUpCurrentUser();
     $this->installEntitySchema('entity_test');
@@ -48,9 +48,8 @@ class PathValidatorTest extends KernelTestBase {
       'PUT',
       'PATCH',
       'DELETE',
-      // NULL is used in CLI context which results in a request method of an
-      // empty string.
-      '',
+      // Used in CLI context.
+      NULL,
       // If no request was even pushed onto the request stack, and hence.
       FALSE,
     ];

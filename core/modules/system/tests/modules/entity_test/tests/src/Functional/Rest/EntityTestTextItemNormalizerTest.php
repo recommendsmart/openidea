@@ -17,7 +17,7 @@ class EntityTestTextItemNormalizerTest extends EntityTestResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['filter_test'];
+  public static $modules = ['filter_test'];
 
   /**
    * {@inheritdoc}
@@ -177,7 +177,7 @@ class EntityTestTextItemNormalizerTest extends EntityTestResourceTestBase {
     $this->setUpAuthorization('GET');
     $response = $this->request('GET', $url, $request_options);
     $expected_cache_tags = Cache::mergeTags($expected_cache_tags, parent::getExpectedCacheTags());
-    $this->assertEqualsCanonicalizing($expected_cache_tags, explode(' ', $response->getHeader('X-Drupal-Cache-Tags')[0]));
+    $this->assertSame($expected_cache_tags, explode(' ', $response->getHeader('X-Drupal-Cache-Tags')[0]));
   }
 
   public function providerTestGetWithFormat() {

@@ -16,9 +16,9 @@ class UnpublishByKeywordActionTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['action', 'node', 'system', 'user', 'field'];
+  public static $modules = ['action', 'node', 'system', 'user', 'field'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installEntitySchema('node');
     $this->installEntitySchema('user');
@@ -37,7 +37,7 @@ class UnpublishByKeywordActionTest extends KernelTestBase {
     /** @var \Drupal\node\Plugin\Action\UnpublishByKeywordNode $action */
     $action = Action::create([
       'id' => 'foo',
-      'label' => 'Foo',
+      'label' => 'Foobaz',
       'plugin' => 'node_unpublish_by_keyword_action',
       'configuration' => [
         'keywords' => ['test'],

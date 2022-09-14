@@ -42,14 +42,7 @@ window.Drupal = { behaviors: {}, locale: {} };
 
 // JavaScript should be made compatible with libraries other than jQuery by
 // wrapping it in an anonymous closure.
-(function (
-  Drupal,
-  drupalSettings,
-  drupalTranslations,
-  console,
-  Proxy,
-  Reflect,
-) {
+(function(Drupal, drupalSettings, drupalTranslations, console, Proxy, Reflect) {
   /**
    * Helper to rethrow errors asynchronously.
    *
@@ -59,7 +52,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @param {Error|string} error
    *   The error to be thrown.
    */
-  Drupal.throwError = function (error) {
+  Drupal.throwError = function(error) {
     setTimeout(() => {
       throw error;
     }, 0);
@@ -128,7 +121,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * behaviors to the new content.
    *
    * Behaviors should use `var elements =
-   * once('behavior-name', selector, context);` to ensure the behavior is
+   * $(context).find(selector).once('behavior-name');` to ensure the behavior is
    * attached only once to a given element. (Doing so enables the reprocessing
    * of given elements, which may be needed on occasion despite the ability to
    * limit behavior attachment to a particular element.)
@@ -154,12 +147,12 @@ window.Drupal = { behaviors: {}, locale: {} };
    *
    * @throws {Drupal~DrupalBehaviorError}
    */
-  Drupal.attachBehaviors = function (context, settings) {
+  Drupal.attachBehaviors = function(context, settings) {
     context = context || document;
     settings = settings || drupalSettings;
     const behaviors = Drupal.behaviors;
     // Execute all of them.
-    Object.keys(behaviors || {}).forEach((i) => {
+    Object.keys(behaviors || {}).forEach(i => {
       if (typeof behaviors[i].attach === 'function') {
         // Don't stop the execution of behaviors in case of an error.
         try {
@@ -178,10 +171,10 @@ window.Drupal = { behaviors: {}, locale: {} };
    * before page content is about to be removed, feeding in an element to be
    * processed, in order to allow special behaviors to detach from the content.
    *
-   * Such implementations should use `once.filter()` and `once.remove()` to find
+   * Such implementations should use `.findOnce()` and `.removeOnce()` to find
    * elements with their corresponding `Drupal.behaviors.behaviorName.attach`
-   * implementation, i.e. `once.remove('behaviorName', selector, context)`,
-   * to ensure the behavior is detached only from previously processed elements.
+   * implementation, i.e. `.removeOnce('behaviorName')`, to ensure the behavior
+   * is detached only from previously processed elements.
    *
    * @param {HTMLDocument|HTMLElement} [context=document]
    *   An element to detach behaviors from.
@@ -212,13 +205,13 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @see Drupal~behaviorDetach
    * @see Drupal.attachBehaviors
    */
-  Drupal.detachBehaviors = function (context, settings, trigger) {
+  Drupal.detachBehaviors = function(context, settings, trigger) {
     context = context || document;
     settings = settings || drupalSettings;
     trigger = trigger || 'unload';
     const behaviors = Drupal.behaviors;
     // Execute all of them.
-    Object.keys(behaviors || {}).forEach((i) => {
+    Object.keys(behaviors || {}).forEach(i => {
       if (typeof behaviors[i].detach === 'function') {
         // Don't stop the execution of behaviors in case of an error.
         try {
@@ -241,7 +234,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    *
    * @ingroup sanitization
    */
-  Drupal.checkPlain = function (str) {
+  Drupal.checkPlain = function(str) {
     str = str
       .toString()
       .replace(/&/g, '&amp;')
@@ -272,11 +265,11 @@ window.Drupal = { behaviors: {}, locale: {} };
    *
    * @see Drupal.t
    */
-  Drupal.formatString = function (str, args) {
+  Drupal.formatString = function(str, args) {
     // Keep args intact.
     const processedArgs = {};
     // Transform arguments before inserting them.
-    Object.keys(args || {}).forEach((key) => {
+    Object.keys(args || {}).forEach(key => {
       switch (key.charAt(0)) {
         // Escaped only.
         case '@':
@@ -314,7 +307,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @return {string}
    *   The replaced string.
    */
-  Drupal.stringReplace = function (str, args, keys) {
+  Drupal.stringReplace = function(str, args, keys) {
     if (str.length === 0) {
       return str;
     }
@@ -365,7 +358,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    *   The formatted string.
    *   The translated string.
    */
-  Drupal.t = function (str, args, options) {
+  Drupal.t = function(str, args, options) {
     options = options || {};
     options.context = options.context || '';
 
@@ -394,7 +387,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @return {string}
    *   The full URL.
    */
-  Drupal.url = function (path) {
+  Drupal.url = function(path) {
     return drupalSettings.path.baseUrl + drupalSettings.path.pathPrefix + path;
   };
 
@@ -411,7 +404,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @see https://grack.com/blog/2009/11/17/absolutizing-url-in-javascript
    * @see https://github.com/jquery/jquery-ui/blob/1.11.4/ui/tabs.js#L53
    */
-  Drupal.url.toAbsolute = function (url) {
+  Drupal.url.toAbsolute = function(url) {
     const urlParsingNode = document.createElement('a');
 
     // Decode the URL first; this is required by IE <= 6. Decoding non-UTF-8
@@ -440,7 +433,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    *
    * @see https://github.com/jquery/jquery-ui/blob/1.11.4/ui/tabs.js#L58
    */
-  Drupal.url.isLocal = function (url) {
+  Drupal.url.isLocal = function(url) {
     // Always use browser-derived absolute URLs in the comparison, to avoid
     // attempts to break out of the base path using directory traversal.
     let absoluteUrl = Drupal.url.toAbsolute(url);
@@ -505,7 +498,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @return {string}
    *   A translated string.
    */
-  Drupal.formatPlural = function (count, singular, plural, args, options) {
+  Drupal.formatPlural = function(count, singular, plural, args, options) {
     args = args || {};
     args['@count'] = count;
 
@@ -544,7 +537,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @return {string}
    *   The encoded path.
    */
-  Drupal.encodePath = function (item) {
+  Drupal.encodePath = function(item) {
     return window.encodeURIComponent(item).replace(/%2F/g, '/');
   };
 
@@ -627,7 +620,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    *   Any data the theme function returns. This could be a plain HTML string,
    *   but also a complex object.
    */
-  Drupal.theme = function (func, ...args) {
+  Drupal.theme = function(func, ...args) {
     if (func in Drupal.theme) {
       return Drupal.theme[func](...args);
     }
@@ -642,7 +635,7 @@ window.Drupal = { behaviors: {}, locale: {} };
    * @return {string}
    *   The formatted text (html).
    */
-  Drupal.theme.placeholder = function (str) {
+  Drupal.theme.placeholder = function(str) {
     return `<em class="placeholder">${Drupal.checkPlain(str)}</em>`;
   };
 })(

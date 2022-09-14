@@ -8,9 +8,7 @@
 (function ($, Drupal) {
   Drupal.behaviors.tableSelect = {
     attach: function attach(context, settings) {
-      once('table-select', $(context).find('th.select-all').closest('table')).forEach(function (table) {
-        return Drupal.tableSelect.call(table);
-      });
+      $(context).find('th.select-all').closest('table').once('table-select').each(Drupal.tableSelect);
     }
   };
 
@@ -20,18 +18,18 @@
     }
 
     var table = this;
-    var checkboxes;
-    var lastChecked;
+    var checkboxes = void 0;
+    var lastChecked = void 0;
     var $table = $(table);
     var strings = {
       selectAll: Drupal.t('Select all rows in this table'),
       selectNone: Drupal.t('Deselect all rows in this table')
     };
-
     var updateSelectAll = function updateSelectAll(state) {
       $table.prev('table.sticky-header').addBack().find('th.select-all input[type="checkbox"]').each(function () {
         var $checkbox = $(this);
         var stateChanged = $checkbox.prop('checked') !== state;
+
         $checkbox.attr('title', state ? strings.selectNone : strings.selectAll);
 
         if (stateChanged) {
@@ -52,9 +50,11 @@
 
           $checkbox.closest('tr').toggleClass('selected', this.checked);
         });
+
         updateSelectAll(event.target.checked);
       }
     });
+
     checkboxes = $table.find('td input[type="checkbox"]:enabled').on('click', function (e) {
       $(this).closest('tr').toggleClass('selected', this.checked);
 
@@ -63,8 +63,10 @@
       }
 
       updateSelectAll(checkboxes.length === checkboxes.filter(':checked').length);
+
       lastChecked = e.target;
     });
+
     updateSelectAll(checkboxes.length === checkboxes.filter(':checked').length);
   };
 
@@ -86,8 +88,8 @@
           break;
         }
       } else if ($.filter(to, [i]).r.length) {
-        break;
-      }
+          break;
+        }
     }
   };
 })(jQuery, Drupal);

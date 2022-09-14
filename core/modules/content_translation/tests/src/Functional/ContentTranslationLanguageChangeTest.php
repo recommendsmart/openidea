@@ -22,7 +22,7 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'content_translation',
     'content_translation_test',
@@ -40,7 +40,7 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $langcodes = ['de', 'fr'];
     foreach ($langcodes as $langcode) {
@@ -68,8 +68,7 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
       'settings[node][article][translatable]' => TRUE,
       'settings[node][article][settings][language][language_alterable]' => TRUE,
     ];
-    $this->drupalGet('admin/config/regional/content-language');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/config/regional/content-language', $edit, t('Save configuration'));
 
     // Add an image field.
     $this->drupalGet('admin/structure/types/manage/article/fields/add-field');
@@ -78,13 +77,13 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
       'field_name' => 'image_field',
       'label' => 'image_field',
     ];
-    $this->submitForm($edit, 'Save and continue');
-    $this->submitForm([], 'Save field settings');
-    $this->submitForm([], 'Save settings');
+    $this->drupalPostForm(NULL, $edit, t('Save and continue'));
+    $this->drupalPostForm(NULL, [], t('Save field settings'));
+    $this->drupalPostForm(NULL, [], t('Save settings'));
   }
 
   /**
-   * Tests that the source language is properly set when changing.
+   * Test that the source language is properly set when changing.
    */
   public function testLanguageChange() {
     // Create a node in English.
@@ -92,12 +91,12 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
     $edit = [
       'title[0][value]' => 'english_title',
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
 
     // Create a translation in French.
     $this->clickLink('Translate');
     $this->clickLink('Add');
-    $this->submitForm([], 'Save (this translation)');
+    $this->drupalPostForm(NULL, [], t('Save (this translation)'));
     $this->clickLink('Translate');
 
     // Edit English translation.
@@ -108,18 +107,18 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
       'langcode[0][value]' => 'de',
       'files[field_image_field_0]' => $images->uri,
     ];
-    $this->submitForm($edit, 'Upload');
-    $this->submitForm(['field_image_field[0][alt]' => 'alternative_text'], 'Save (this translation)');
+    $this->drupalPostForm(NULL, $edit, t('Upload'));
+    $this->drupalPostForm(NULL, ['field_image_field[0][alt]' => 'alternative_text'], t('Save (this translation)'));
 
     // Check that the translation languages are correct.
     $node = $this->getNodeByTitle('english_title');
-    $translation_languages = $node->getTranslationLanguages();
-    $this->assertArrayHasKey('fr', $translation_languages);
-    $this->assertArrayHasKey('de', $translation_languages);
+    $translation_languages = array_keys($node->getTranslationLanguages());
+    $this->assertTrue(in_array('fr', $translation_languages));
+    $this->assertTrue(in_array('de', $translation_languages));
   }
 
   /**
-   * Tests that title does not change on ajax call with new language value.
+   * Test that title does not change on ajax call with new language value.
    */
   public function testTitleDoesNotChangesOnChangingLanguageWidgetAndTriggeringAjaxCall() {
     // Create a node in English.
@@ -128,41 +127,41 @@ class ContentTranslationLanguageChangeTest extends NodeTestBase {
       'title[0][value]' => 'english_title',
       'test_field_only_en_fr' => 'node created',
     ];
-    $this->submitForm($edit, 'Save');
-    $this->assertEquals('node created', \Drupal::state()->get('test_field_only_en_fr'));
+    $this->drupalPostForm(NULL, $edit, t('Save'));
+    $this->assertEqual('node created', \Drupal::state()->get('test_field_only_en_fr'));
 
     // Create a translation in French.
     $this->clickLink('Translate');
     $this->clickLink('Add');
-    $this->submitForm([], 'Save (this translation)');
+    $this->drupalPostForm(NULL, [], t('Save (this translation)'));
     $this->clickLink('Translate');
 
     // Edit English translation.
     $node = $this->getNodeByTitle('english_title');
     $this->drupalGet('node/' . $node->id() . '/edit');
     // Test the expected title when loading the form.
-    $this->assertSession()->titleEquals('Edit Article english_title | Drupal');
+    $this->assertRaw('<title>Edit Article english_title | Drupal</title>');
     // Upload and image after changing the node language.
     $images = $this->drupalGetTestFiles('image')[1];
     $edit = [
       'langcode[0][value]' => 'de',
       'files[field_image_field_0]' => $images->uri,
     ];
-    $this->submitForm($edit, 'Upload');
+    $this->drupalPostForm(NULL, $edit, t('Upload'));
     // Test the expected title after triggering an ajax call with a new
     // language selected.
-    $this->assertSession()->titleEquals('Edit Article english_title | Drupal');
+    $this->assertRaw('<title>Edit Article english_title | Drupal</title>');
     $edit = [
       'langcode[0][value]' => 'en',
       'field_image_field[0][alt]' => 'alternative_text',
     ];
-    $this->submitForm($edit, 'Save (this translation)');
+    $this->drupalPostForm(NULL, $edit, t('Save (this translation)'));
 
     // Check that the translation languages are correct.
     $node = $this->getNodeByTitle('english_title');
-    $translation_languages = $node->getTranslationLanguages();
-    $this->assertArrayHasKey('fr', $translation_languages);
-    $this->assertArrayNotHasKey('de', $translation_languages);
+    $translation_languages = array_keys($node->getTranslationLanguages());
+    $this->assertTrue(in_array('fr', $translation_languages));
+    $this->assertTrue(!in_array('de', $translation_languages));
   }
 
 }

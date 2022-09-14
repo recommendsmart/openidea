@@ -8,7 +8,6 @@ dependencies:
   module:
     - text
     - user
-third_party_settings: {  }
 id: node.options_install_test.teaser
 targetEntityType: node
 bundle: options_install_test
@@ -18,12 +17,13 @@ content:
     weight: 100
     region: content
   body:
-    type: text_summary_or_trimmed
     label: hidden
+    type: text_summary_or_trimmed
+    weight: 101
+    region: content
     settings:
       trim_length: 600
     third_party_settings: {  }
-    weight: 101
-    region: content
 hidden:
   langcode: true
+third_party_settings: {  }

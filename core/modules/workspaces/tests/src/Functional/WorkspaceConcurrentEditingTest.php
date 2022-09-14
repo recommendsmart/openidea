@@ -16,7 +16,7 @@ class WorkspaceConcurrentEditingTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['block', 'node', 'workspaces'];
+  public static $modules = ['block', 'node', 'workspaces'];
 
   /**
    * {@inheritdoc}
@@ -24,7 +24,7 @@ class WorkspaceConcurrentEditingTest extends BrowserTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * Tests editing a node in multiple workspaces.
+   * Test editing a node in multiple workspaces.
    */
   public function testConcurrentEditing() {
     // Create a test node.
@@ -89,7 +89,7 @@ class WorkspaceConcurrentEditingTest extends BrowserTestBase {
     $this->assertCount(1, $violations);
     $this->assertEquals('The content is being edited in the <em class="placeholder">Vultures</em> workspace. As a result, your changes cannot be saved.', $violations->get(0)->getMessage());
 
-    // Publish the changes from the 'Vultures' workspace and check that the node
+    // Deploy the changes from the 'Vultures' workspace and check that the node
     // can be edited again in other workspaces.
     $vultures->publish();
     $this->switchToWorkspace($gravity);

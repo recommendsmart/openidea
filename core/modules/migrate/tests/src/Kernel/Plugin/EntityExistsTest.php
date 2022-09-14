@@ -17,19 +17,19 @@ class EntityExistsTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['migrate', 'system', 'user'];
+  public static $modules = ['migrate', 'system', 'user'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installSchema('system', ['sequences']);
     $this->installEntitySchema('user');
   }
 
   /**
-   * Tests the EntityExists plugin.
+   * Test the EntityExists plugin.
    */
   public function testEntityExists() {
     $user = User::create([

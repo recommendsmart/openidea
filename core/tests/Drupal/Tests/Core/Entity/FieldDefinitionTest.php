@@ -50,7 +50,7 @@ class FieldDefinitionTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->fieldType = $this->randomMachineName();
     $this->fieldTypeDefinition = [
       'id' => $this->fieldType,
@@ -270,7 +270,7 @@ class FieldDefinitionTest extends UnitTestCase {
    */
   public function testDefaultValueCallback($factory_name) {
     $definition = $this->initializeFieldUsingFactory($factory_name);
-    $callback = static::class . '::mockDefaultValueCallback';
+    $callback = get_class($this) . '::mockDefaultValueCallback';
     // setDefaultValueCallback returns $this.
     $this->assertSame($definition, $definition->setDefaultValueCallback($callback));
     $this->assertSame($callback, $definition->getDefaultValueCallback());
@@ -286,7 +286,7 @@ class FieldDefinitionTest extends UnitTestCase {
     $definition = $this->initializeFieldUsingFactory($factory_name);
     // setDefaultValueCallback returns $this.
     $this->expectException(\InvalidArgumentException::class);
-    $definition->setDefaultValueCallback([static::class, 'mockDefaultValueCallback']);
+    $definition->setDefaultValueCallback([get_class($this), 'mockDefaultValueCallback']);
   }
 
   /**

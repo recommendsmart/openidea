@@ -10,7 +10,7 @@ abstract class RoleResourceTestBase extends EntityResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user'];
+  public static $modules = ['user'];
 
   /**
    * {@inheritdoc}
@@ -35,7 +35,7 @@ abstract class RoleResourceTestBase extends EntityResourceTestBase {
   protected function createEntity() {
     $role = Role::create([
       'id' => 'llama',
-      'label' => 'Llama',
+      'name' => $this->randomString(),
     ]);
     $role->save();
 
@@ -53,7 +53,7 @@ abstract class RoleResourceTestBase extends EntityResourceTestBase {
       'status' => TRUE,
       'dependencies' => [],
       'id' => 'llama',
-      'label' => 'Llama',
+      'label' => NULL,
       'is_admin' => NULL,
       'permissions' => [],
     ];

@@ -16,7 +16,7 @@ class NodeAccessLanguageFallbackTest extends NodeTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'node_access_test',
     'content_translation',
@@ -30,7 +30,7 @@ class NodeAccessLanguageFallbackTest extends NodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // After enabling a node access module, the {node_access} table has to be
@@ -129,7 +129,7 @@ class NodeAccessLanguageFallbackTest extends NodeTestBase {
       ->condition('na.gid', 8888, '=');
     $records = $select->execute()->fetchAll();
     // Check that the expected record count is returned.
-    $this->assertCount($count, $records);
+    $this->assertEquals(count($records), $count);
     // The fallback value is 'hu' and should be set to 1. For other languages,
     // it should be set to 0. Casting to boolean lets us run that comparison.
     foreach ($records as $record) {

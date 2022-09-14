@@ -19,7 +19,7 @@ class TranslationWebTest extends FieldTestBase {
    *
    * @var array
    */
-  protected static $modules = ['language', 'field_test', 'entity_test'];
+  public static $modules = ['language', 'field_test', 'entity_test'];
 
   /**
    * {@inheritdoc}
@@ -54,7 +54,7 @@ class TranslationWebTest extends FieldTestBase {
    */
   protected $field;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->fieldName = mb_strtolower($this->randomMachineName() . '_field_name');
@@ -92,10 +92,7 @@ class TranslationWebTest extends FieldTestBase {
    * Tests field translations when creating a new revision.
    */
   public function testFieldFormTranslationRevisions() {
-    $web_user = $this->drupalCreateUser([
-      'view test entity',
-      'administer entity_test content',
-    ]);
+    $web_user = $this->drupalCreateUser(['view test entity', 'administer entity_test content']);
     $this->drupalLogin($web_user);
 
     // Prepare the field translations.
@@ -120,8 +117,7 @@ class TranslationWebTest extends FieldTestBase {
       "{$field_name}[0][value]" => $entity->{$field_name}->value,
       'revision' => TRUE,
     ];
-    $this->drupalGet($this->entityTypeId . '/manage/' . $entity->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm($this->entityTypeId . '/manage/' . $entity->id() . '/edit', $edit, t('Save'));
 
     // Check translation revisions.
     $this->checkTranslationRevisions($entity->id(), $entity->getRevisionId(), $available_langcodes);

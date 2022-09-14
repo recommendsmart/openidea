@@ -1,5 +1,5 @@
 <?php
-// phpcs:ignoreFile
+// @codingStandardsIgnoreFile
 
 namespace Drupal\Core\Database;
 

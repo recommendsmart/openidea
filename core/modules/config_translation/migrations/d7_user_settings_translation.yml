@@ -15,7 +15,3 @@ destination:
   plugin: config
   config_name: user.settings
   translations: true
-migration_dependencies:
-  required:
-    - language
-    - d7_user_settings

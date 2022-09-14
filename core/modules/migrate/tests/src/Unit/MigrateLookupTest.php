@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\migrate\Unit;
 
-use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\migrate\MigrateLookup;
 use Drupal\migrate\Plugin\MigrateDestinationInterface;
@@ -48,63 +47,14 @@ class MigrateLookupTest extends MigrateTestCase {
   }
 
   /**
-   * Tests message logged when a single migration is not found.
-   *
-   * @dataProvider providerExceptionOnMigrationNotFound
+   * Tests that an appropriate message is logged if a PluginException is thrown.
    */
-  public function testExceptionOnMigrationNotFound($migrations, $message) {
+  public function testExceptionOnMigrationNotFound() {
     $migration_plugin_manager = $this->prophesize(MigrationPluginManagerInterface::class);
-    $migration_plugin_manager->createInstances($migrations)->willReturn([]);
+    $migration_plugin_manager->createInstances('bad_plugin')->willReturn([]);
     $this->expectException(PluginNotFoundException::class);
-    $this->expectExceptionMessage($message);
     $lookup = new MigrateLookup($migration_plugin_manager->reveal());
-    $lookup->lookup($migrations, [1]);
-  }
-
-  /**
-   * Provides data for testExceptionOnMigrationNotFound.
-   */
-  public function providerExceptionOnMigrationNotFound() {
-    return [
-      'string' => [
-        'bad_plugin',
-        "Plugin ID 'bad_plugin' was not found.",
-      ],
-      'array one item' => [
-        ['bad_plugin'],
-        "Plugin ID 'bad_plugin' was not found.",
-      ],
-    ];
-  }
-
-  /**
-   * Tests message logged when multiple migrations are not found.
-   *
-   * @dataProvider providerExceptionOnMultipleMigrationsNotFound
-   */
-  public function testExceptionOnMultipleMigrationsNotFound($migrations, $message) {
-    $migration_plugin_manager = $this->prophesize(MigrationPluginManagerInterface::class);
-    $migration_plugin_manager->createInstances($migrations)->willReturn([]);
-    $this->expectException(PluginException::class);
-    $this->expectExceptionMessage($message);
-    $lookup = new MigrateLookup($migration_plugin_manager->reveal());
-    $lookup->lookup($migrations, [1]);
-  }
-
-  /**
-   * Provides data for testExceptionOnMultipleMigrationsNotFound.
-   */
-  public function providerExceptionOnMultipleMigrationsNotFound() {
-    return [
-      'array two items' => [
-        ['foo', 'bar'],
-        "Plugin IDs 'foo', 'bar' were not found.",
-      ],
-      'empty array' => [
-        [],
-        "Plugin IDs '' were not found.",
-      ],
-    ];
+    $lookup->lookup('bad_plugin', [1]);
   }
 
 }

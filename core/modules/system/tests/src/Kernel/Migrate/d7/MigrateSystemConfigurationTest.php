@@ -11,10 +11,12 @@ use Drupal\Tests\migrate_drupal\Kernel\d7\MigrateDrupal7TestBase;
  */
 class MigrateSystemConfigurationTest extends MigrateDrupal7TestBase {
 
-  protected static $modules = ['action', 'file', 'system'];
+  public static $modules = ['action', 'file', 'system'];
 
   protected $expectedConfig = [
-    'system.authorize' => [],
+    'system.authorize' => [
+      'filetransfer_default' => 'ftp',
+    ],
     'system.cron' => [
       'threshold' => [
         // autorun is not handled by the migration.
@@ -25,17 +27,17 @@ class MigrateSystemConfigurationTest extends MigrateDrupal7TestBase {
       'logging' => 1,
     ],
     'system.date' => [
-      'first_day' => 1,
       'country' => [
         'default' => 'US',
       ],
+      'first_day' => 1,
       'timezone' => [
         'default' => 'America/Chicago',
         'user' => [
           'configurable' => TRUE,
+          'warn' => TRUE,
           // DRUPAL_USER_TIMEZONE_SELECT (D7 API)
           'default' => 2,
-          'warn' => TRUE,
         ],
       ],
     ],
@@ -61,9 +63,9 @@ class MigrateSystemConfigurationTest extends MigrateDrupal7TestBase {
       ],
     ],
     'system.maintenance' => [
+      'message' => 'This is a custom maintenance mode message.',
       // langcode is not handled by the migration.
       'langcode' => 'en',
-      'message' => 'This is a custom maintenance mode message.',
     ],
     'system.performance' => [
       'cache' => [
@@ -92,25 +94,30 @@ class MigrateSystemConfigurationTest extends MigrateDrupal7TestBase {
       'stale_file_threshold' => 2592000,
     ],
     'system.rss' => [
+      'channel' => [
+        'description' => '',
+      ],
       'items' => [
+        'limit' => 27,
         'view_mode' => 'fulltext',
       ],
+      'langcode' => 'en',
     ],
     'system.site' => [
-      // langcode and default_langcode are not handled by the migration.
-      'langcode' => 'en',
       // uuid is not handled by the migration.
       'uuid' => '',
       'name' => 'The Site Name',
       'mail' => 'joseph@flattandsons.com',
       'slogan' => 'The Slogan',
       'page' => [
-        '403' => '',
+        '403' => '/node',
         '404' => '/node',
         'front' => '/node',
       ],
       'admin_compact_mode' => TRUE,
-      'weight_select_max' => 100,
+      'weight_select_max' => 40,
+      // langcode and default_langcode are not handled by the migration.
+      'langcode' => 'en',
       'default_langcode' => 'en',
     ],
   ];
@@ -118,35 +125,8 @@ class MigrateSystemConfigurationTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-
-    // The system_maintenance migration gets both the Drupal 6 and Drupal 7
-    // site maintenance message. Add a row with the Drupal 6 version of the
-    // maintenance message to confirm that the Drupal 7 variable is selected in
-    // the migration.
-    // See https://www.drupal.org/project/drupal/issues/3096676
-    $this->sourceDatabase->insert('variable')
-      ->fields([
-        'name' => 'site_offline_message',
-        'value' => 's:16:"Drupal 6 message";',
-      ])
-      ->execute();
-
-    // Delete 'site_403' in order to test the migration of a non-existing error
-    // page link.
-    $this->sourceDatabase->delete('variable')
-      ->condition('name', 'site_403')
-      ->execute();
-    // Delete 'drupal_weight_select_max ' in order to test the migration when it
-    // is not set.
-    $this->sourceDatabase->delete('variable')
-      ->condition('name', 'drupal_weight_select_max')
-      ->execute();
-
-    $this->config('system.site')
-      ->set('weight_select_max', 5)
-      ->save();
 
     $migrations = [
       'd7_system_authorize',
@@ -177,11 +157,8 @@ class MigrateSystemConfigurationTest extends MigrateDrupal7TestBase {
         $actual = \Drupal::config($config_id)->get();
       }
       unset($actual['_core']);
-      $this->assertSame($values, $actual, $config_id . ' matches expected values.');
+      $this->assertSame($actual, $values, $config_id . ' matches expected values.');
     }
-    // The d7_system_authorize migration should not create the system.authorize
-    // config.
-    $this->assertTrue($this->config('system.authorize')->isNew());
   }
 
 }

@@ -4,6 +4,7 @@ namespace Drupal\Tests\Core\Entity\Sql;
 
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorageException;
+use Drupal\Core\Entity\Sql\TemporaryTableMapping;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -22,7 +23,7 @@ class DefaultTableMappingTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->entityType = $this->createMock('\Drupal\Core\Entity\ContentEntityTypeInterface');
@@ -317,7 +318,7 @@ class DefaultTableMappingTest extends UnitTestCase {
    * Provides test data for testGetFieldColumnName().
    *
    * @return array[]
-   *   A nested array where each inner array has the following values: test
+   *   An nested array where each inner array has the following values: test
    *   field name, base field status, list of field columns, name of the column
    *   to be retrieved, expected result, whether an exception is expected.
    */
@@ -362,24 +363,21 @@ class DefaultTableMappingTest extends UnitTestCase {
       ->expects($this->any())
       ->method('getColumns')
       ->willReturn($columns);
-    $definition->expects($this->any())
-      ->method('getTargetEntityTypeId')
-      ->willReturn('entity_test');
 
     $this->entityType
       ->expects($this->any())
       ->method('getBaseTable')
-      ->willReturn($table_names['base'] ?? 'entity_test');
+      ->willReturn(isset($table_names['base']) ? $table_names['base'] : 'entity_test');
 
     $this->entityType
       ->expects($this->any())
       ->method('getDataTable')
-      ->willReturn($table_names['data'] ?? FALSE);
+      ->willReturn(isset($table_names['data']) ? $table_names['data'] : FALSE);
 
     $this->entityType
       ->expects($this->any())
       ->method('getRevisionTable')
-      ->willReturn($table_names['revision'] ?? FALSE);
+      ->willReturn(isset($table_names['revision']) ? $table_names['revision'] : FALSE);
 
     $this->entityType
       ->expects($this->any())
@@ -575,15 +573,23 @@ class DefaultTableMappingTest extends UnitTestCase {
   }
 
   /**
+   * @coversDefaultClass \Drupal\Core\Entity\Sql\TemporaryTableMapping
+   *
+   * @expectedDeprecation Drupal\Core\Entity\Sql\TemporaryTableMapping is deprecated in Drupal 8.7.x and will be removed before Drupal 9.0.0. Use the default table mapping with a prefix instead.
+   * @group legacy
+   */
+  public function testTemporaryTableMapping() {
+    $table_mapping = new TemporaryTableMapping($this->entityType, [], '');
+    $this->assertTrue($table_mapping instanceof DefaultTableMapping);
+  }
+
+  /**
    * Sets up a field storage definition for the test.
    *
    * @param string $name
    *   The field name.
    * @param array $column_names
    *   An array of column names for the storage definition.
-   * @param bool $base_field
-   *   Flag indicating whether the field should be treated as a base or bundle
-   *   field.
    *
    * @return \Drupal\Core\Field\FieldStorageDefinitionInterface|\PHPUnit\Framework\MockObject\MockObject
    */

@@ -16,7 +16,7 @@ class BlockTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['block'];
+  public static $modules = ['block'];
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,7 @@ class BlockTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   /**
    * {@inheritdoc}
@@ -59,7 +59,7 @@ class BlockTest extends ResourceTestBase {
       'plugin' => 'llama_block',
       'region' => 'header',
       'id' => 'llama',
-      'theme' => 'stark',
+      'theme' => 'classy',
     ]);
     // All blocks can be viewed by the anonymous user by default. An interesting
     // side effect of this is that any anonymous user is also able to read the
@@ -111,10 +111,10 @@ class BlockTest extends ResourceTestBase {
           'status' => TRUE,
           'dependencies' => [
             'theme' => [
-              'stark',
+              'classy',
             ],
           ],
-          'theme' => 'stark',
+          'theme' => 'classy',
           'region' => 'header',
           'provider' => NULL,
           'plugin' => 'llama_block',

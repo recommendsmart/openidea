@@ -18,7 +18,7 @@ class MenuLinkContentDeriverTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'menu_link_content',
     'link',
     'system',
@@ -29,7 +29,7 @@ class MenuLinkContentDeriverTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('user');
@@ -53,10 +53,10 @@ class MenuLinkContentDeriverTest extends KernelTestBase {
     ]);
     $parent->save();
     $menu_tree = \Drupal::menuTree()->load('tools', new MenuTreeParameters());
-    $this->assertCount(1, $menu_tree);
+    $this->assertEqual(1, count($menu_tree));
     /** @var \Drupal\Core\Menu\MenuLinkTreeElement $tree_element */
     $tree_element = reset($menu_tree);
-    $this->assertEquals('route_name_1', $tree_element->link->getRouteName());
+    $this->assertEqual('route_name_1', $tree_element->link->getRouteName());
 
     // Change the underlying route and trigger the rediscovering.
     \Drupal::state()->set('menu_link_content_dynamic_route.routes', [
@@ -66,13 +66,13 @@ class MenuLinkContentDeriverTest extends KernelTestBase {
 
     // Ensure that the new route name / parameters are captured by the tree.
     $menu_tree = \Drupal::menuTree()->load('tools', new MenuTreeParameters());
-    $this->assertCount(1, $menu_tree);
+    $this->assertEqual(1, count($menu_tree));
     /** @var \Drupal\Core\Menu\MenuLinkTreeElement $tree_element */
     $tree_element = reset($menu_tree);
-    $this->assertEquals('route_name_2', $tree_element->link->getRouteName());
+    $this->assertEqual('route_name_2', $tree_element->link->getRouteName());
     $title = $tree_element->link->getTitle();
-    $this->assertNotInstanceOf(TranslatableMarkup::class, $title);
-    $this->assertSame('<script>alert("Welcome to the discovered jungle!")</script>', $title);
+    $this->assertFalse($title instanceof TranslatableMarkup);
+    $this->assertIdentical('<script>alert("Welcome to the discovered jungle!")</script>', $title);
 
     // Create a hierarchy.
     \Drupal::state()->set('menu_link_content_dynamic_route.routes', [
@@ -89,11 +89,11 @@ class MenuLinkContentDeriverTest extends KernelTestBase {
     $parent->set('link', [['uri' => 'entity:/example-path']]);
     $parent->save();
     $menu_tree = \Drupal::menuTree()->load('tools', new MenuTreeParameters());
-    $this->assertCount(1, $menu_tree);
+    $this->assertEqual(1, count($menu_tree));
     /** @var \Drupal\Core\Menu\MenuLinkTreeElement $tree_element */
     $tree_element = reset($menu_tree);
     $this->assertTrue($tree_element->hasChildren);
-    $this->assertCount(1, $tree_element->subtree);
+    $this->assertEqual(1, count($tree_element->subtree));
 
     // Edit child element link to use 'internal' instead of 'entity'.
     $child->set('link', [['uri' => 'internal:/example-path/child']]);
@@ -101,11 +101,11 @@ class MenuLinkContentDeriverTest extends KernelTestBase {
     \Drupal::service('plugin.manager.menu.link')->rebuild();
 
     $menu_tree = \Drupal::menuTree()->load('tools', new MenuTreeParameters());
-    $this->assertCount(1, $menu_tree);
+    $this->assertEqual(1, count($menu_tree));
     /** @var \Drupal\Core\Menu\MenuLinkTreeElement $tree_element */
     $tree_element = reset($menu_tree);
     $this->assertTrue($tree_element->hasChildren);
-    $this->assertCount(1, $tree_element->subtree);
+    $this->assertEqual(1, count($tree_element->subtree));
   }
 
 }

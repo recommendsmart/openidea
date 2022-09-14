@@ -74,7 +74,7 @@ class Translation extends AnnotationBase {
    */
   public function __construct(array $values) {
     $string = $values['value'];
-    $arguments = $values['arguments'] ?? [];
+    $arguments = isset($values['arguments']) ? $values['arguments'] : [];
     $options = [];
     if (!empty($values['context'])) {
       $options = [

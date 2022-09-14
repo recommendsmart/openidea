@@ -2,6 +2,8 @@
 
 namespace Drupal\Component\ClassFinder;
 
+use Doctrine\Common\Reflection\ClassFinderInterface;
+
 /**
  * A Utility class that uses active autoloaders to find a file for a class.
  */
@@ -17,7 +19,7 @@ class ClassFinder implements ClassFinderInterface {
         $file = call_user_func_array([$loader[0], 'findFile'], [$class]);
         // Different implementations return different empty values. For example,
         // \Composer\Autoload\ClassLoader::findFile() returns FALSE whilst
-        // \Drupal\Component\ClassFinder\ClassFinderInterface::findFile()
+        // \Doctrine\Common\Reflection\ClassFinderInterface::findFile()
         // documents that a NULL should be returned.
         if (!empty($file)) {
           return $file;

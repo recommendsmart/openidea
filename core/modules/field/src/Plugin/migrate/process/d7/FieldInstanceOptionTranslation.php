@@ -20,7 +20,7 @@ class FieldInstanceOptionTranslation extends ProcessPluginBase {
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    [$type, $data] = $value;
+    list($type, $data) = $value;
 
     $data = unserialize($data);
     $property = $row->getSourceProperty('property');

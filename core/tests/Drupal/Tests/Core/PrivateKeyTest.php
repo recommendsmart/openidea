@@ -37,7 +37,7 @@ class PrivateKeyTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->key = Crypt::randomBytesBase64(55);
 
@@ -62,7 +62,7 @@ class PrivateKeyTest extends UnitTestCase {
    * Tests PrivateKey::get() with no private key from state.
    */
   public function testGetNoState() {
-    $this->assertIsString($this->privateKey->get());
+    $this->assertInternalType('string', $this->privateKey->get());
   }
 
   /**

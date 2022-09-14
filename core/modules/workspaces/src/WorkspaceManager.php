@@ -22,12 +22,16 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   use StringTranslationTrait;
 
   /**
-   * An array of which entity types are supported.
+   * An array of entity type IDs that can not belong to a workspace.
+   *
+   * By default, only entity types which are revisionable and publishable can
+   * belong to a workspace.
    *
    * @var string[]
    */
-  protected $supported = [
-    'workspace' => FALSE,
+  protected $blacklist = [
+    'workspace_association' => 'workspace_association',
+    'workspace' => 'workspace',
   ];
 
   /**
@@ -138,13 +142,19 @@ class WorkspaceManager implements WorkspaceManagerInterface {
    * {@inheritdoc}
    */
   public function isEntityTypeSupported(EntityTypeInterface $entity_type) {
-    $entity_type_id = $entity_type->id();
-    if (!isset($this->supported[$entity_type_id])) {
-      // Only entity types which are revisionable and publishable can belong
-      // to a workspace.
-      $this->supported[$entity_type_id] = $entity_type->entityClassImplements(EntityPublishedInterface::class) && $entity_type->isRevisionable();
+    // First, check if we already determined whether this entity type is
+    // supported or not.
+    if (isset($this->blacklist[$entity_type->id()])) {
+      return FALSE;
     }
-    return $this->supported[$entity_type_id];
+
+    if ($entity_type->entityClassImplements(EntityPublishedInterface::class) && $entity_type->isRevisionable()) {
+      return TRUE;
+    }
+
+    // This entity type can not belong to a workspace, add it to the blacklist.
+    $this->blacklist[$entity_type->id()] = $entity_type->id();
+    return FALSE;
   }
 
   /**

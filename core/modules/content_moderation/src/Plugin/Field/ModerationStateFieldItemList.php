@@ -75,14 +75,12 @@ class ModerationStateFieldItemList extends FieldItemList {
     $content_moderation_storage = \Drupal::entityTypeManager()->getStorage('content_moderation_state');
 
     $revisions = $content_moderation_storage->getQuery()
-      ->accessCheck(FALSE)
       ->condition('content_entity_type_id', $entity->getEntityTypeId())
       ->condition('content_entity_id', $entity->id())
       // Ensure the correct revision is loaded in scenarios where a revision is
       // being reverted.
       ->condition('content_entity_revision_id', $entity->isNewRevision() ? $entity->getLoadedRevisionId() : $entity->getRevisionId())
       ->condition('workflow', $moderation_info->getWorkflowForEntity($entity)->id())
-      ->condition('langcode', $entity->language()->getId())
       ->allRevisions()
       ->sort('revision_id', 'DESC')
       ->execute();
@@ -173,14 +171,6 @@ class ModerationStateFieldItemList extends FieldItemList {
         $published_state ? $entity->setPublished() : $entity->setUnpublished();
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function generateSampleItems($count = 1) {
-    // No sample items generated since the starting moderation state is always
-    // computed based on the default state of the associated workflow.
   }
 
 }

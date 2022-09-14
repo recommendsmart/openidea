@@ -14,7 +14,6 @@ namespace Symfony\Component\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
-use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 /**
  * @author Bernhard Schussek <bschussek@gmail.com>
@@ -27,7 +26,7 @@ class CountValidator extends ConstraintValidator
     public function validate($value, Constraint $constraint)
     {
         if (!$constraint instanceof Count) {
-            throw new UnexpectedTypeException($constraint, Count::class);
+            throw new UnexpectedTypeException($constraint, __NAMESPACE__.'\Count');
         }
 
         if (null === $value) {
@@ -35,7 +34,7 @@ class CountValidator extends ConstraintValidator
         }
 
         if (!\is_array($value) && !$value instanceof \Countable) {
-            throw new UnexpectedValueException($value, 'array|\Countable');
+            throw new UnexpectedTypeException($value, 'array or \Countable');
         }
 
         $count = \count($value);

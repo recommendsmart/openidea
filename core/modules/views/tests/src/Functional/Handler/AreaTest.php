@@ -27,14 +27,14 @@ class AreaTest extends ViewTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'views_ui'];
+  public static $modules = ['node', 'views_ui'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     $this->enableViewsTestModule();
@@ -54,13 +54,10 @@ class AreaTest extends ViewTestBase {
   }
 
   /**
-   * Tests the generic UI of an area handler.
+   * Tests the generic UI of a area handler.
    */
   public function testUI() {
-    $admin_user = $this->drupalCreateUser([
-      'administer views',
-      'administer site configuration',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer views', 'administer site configuration']);
     $this->drupalLogin($admin_user);
 
     $types = ['header', 'footer', 'empty'];
@@ -69,22 +66,20 @@ class AreaTest extends ViewTestBase {
       $edit_path = 'admin/structure/views/nojs/handler/test_example_area/default/' . $type . '/test_example';
 
       // First setup an empty label.
-      $this->drupalGet($edit_path);
-      $this->submitForm([], 'Apply');
-      $this->assertSession()->pageTextContains('Test Example area');
+      $this->drupalPostForm($edit_path, [], t('Apply'));
+      $this->assertText('Test Example area');
 
       // Then setup a no empty label.
       $labels[$type] = $this->randomMachineName();
-      $this->drupalGet($edit_path);
-      $this->submitForm(['options[admin_label]' => $labels[$type]], 'Apply');
+      $this->drupalPostForm($edit_path, ['options[admin_label]' => $labels[$type]], t('Apply'));
       // Make sure that the new label appears on the site.
-      $this->assertSession()->pageTextContains($labels[$type]);
+      $this->assertText($labels[$type]);
 
       // Test that the settings (empty/admin_label) are accessible.
       $this->drupalGet($edit_path);
-      $this->assertSession()->fieldExists('options[admin_label]');
+      $this->assertField('options[admin_label]');
       if ($type !== 'empty') {
-        $this->assertSession()->fieldExists('options[empty]');
+        $this->assertField('options[empty]');
       }
     }
   }
@@ -114,10 +109,10 @@ class AreaTest extends ViewTestBase {
     // Check whether the strings exist in the output and are sanitized.
     $output = $view->preview();
     $output = $this->container->get('renderer')->renderRoot($output);
-    $this->assertStringContainsString(Xss::filterAdmin($header_string), $output, 'Views header exists in the output and is sanitized');
-    $this->assertStringContainsString(Xss::filterAdmin($footer_string), $output, 'Views footer exists in the output and is sanitized');
-    $this->assertStringContainsString(Xss::filterAdmin($empty_string), $output, 'Views empty exists in the output and is sanitized');
-    $this->assertStringNotContainsString('<script', $output, 'Script tags were escaped');
+    $this->assertTrue(strpos($output, Xss::filterAdmin($header_string)) !== FALSE, 'Views header exists in the output and is sanitized');
+    $this->assertTrue(strpos($output, Xss::filterAdmin($footer_string)) !== FALSE, 'Views footer exists in the output and is sanitized');
+    $this->assertTrue(strpos($output, Xss::filterAdmin($empty_string)) !== FALSE, 'Views empty exists in the output and is sanitized');
+    $this->assertTrue(strpos($output, '<script') === FALSE, 'Script tags were escaped');
   }
 
   /**
@@ -129,12 +124,12 @@ class AreaTest extends ViewTestBase {
     $view->initDisplay();
     $view->initHandlers();
     $handlers = $view->display_handler->getHandlers('empty');
-    $this->assertCount(0, $handlers);
+    $this->assertEqual(0, count($handlers));
 
     $output = $view->preview();
     $output = \Drupal::service('renderer')->renderRoot($output);
     // The area output should not be present since access was denied.
-    $this->assertStringNotContainsString('a custom string', $output);
+    $this->assertFalse(strpos($output, 'a custom string') !== FALSE);
     $view->destroy();
 
     // Test with access granted for the area handler.
@@ -155,18 +150,15 @@ class AreaTest extends ViewTestBase {
 
     $output = $view->preview();
     $output = \Drupal::service('renderer')->renderRoot($output);
-    $this->assertStringContainsString('a custom string', $output);
-    $this->assertCount(1, $handlers);
+    $this->assertTrue(strpos($output, 'a custom string') !== FALSE);
+    $this->assertEqual(1, count($handlers));
   }
 
   /**
    * Tests global tokens.
    */
   public function testRenderAreaToken() {
-    $admin_user = $this->drupalCreateUser([
-      'administer views',
-      'administer site configuration',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer views', 'administer site configuration']);
     $this->drupalLogin($admin_user);
 
     $view = Views::getView('test_example_area');
@@ -183,12 +175,10 @@ class AreaTest extends ViewTestBase {
     // Test the list of available tokens.
     $available = $empty_handler->getAvailableGlobalTokens();
     foreach (['site', 'view'] as $type) {
-      $this->assertNotEmpty($available[$type]);
-      $this->assertIsArray($available[$type]);
-
+      $this->assertTrue(!empty($available[$type]) && is_array($available[$type]));
       // Test that each item exists in the list.
       foreach ($available[$type] as $token => $info) {
-        $this->assertSession()->pageTextContains("[$type:$token]");
+        $this->assertText("[$type:$token]");
       }
     }
 
@@ -199,7 +189,7 @@ class AreaTest extends ViewTestBase {
     $output = $view->preview();
     $output = $this->container->get('renderer')->renderRoot($output);
     $expected = \Drupal::token()->replace('[site:name]');
-    $this->assertStringContainsString($expected, $output);
+    $this->assertTrue(strpos($output, $expected) !== FALSE);
   }
 
   /**
@@ -225,7 +215,7 @@ class AreaTest extends ViewTestBase {
     $view->storage->enable()->save();
 
     $this->drupalGet('node');
-    $this->assertSession()->pageTextContains('Overridden title');
+    $this->assertText('Overridden title', 'Overridden title found.');
   }
 
 }

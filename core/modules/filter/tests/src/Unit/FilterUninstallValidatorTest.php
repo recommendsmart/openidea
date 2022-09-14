@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\filter\Unit;
 
+use Drupal\Tests\AssertHelperTrait;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -9,6 +10,8 @@ use Drupal\Tests\UnitTestCase;
  * @group filter
  */
 class FilterUninstallValidatorTest extends UnitTestCase {
+
+  use AssertHelperTrait;
 
   /**
    * @var \Drupal\filter\FilterUninstallValidator|\PHPUnit\Framework\MockObject\MockObject
@@ -18,11 +21,11 @@ class FilterUninstallValidatorTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->filterUninstallValidator = $this->getMockBuilder('Drupal\filter\FilterUninstallValidator')
       ->disableOriginalConstructor()
-      ->onlyMethods(['getFilterDefinitionsByProvider', 'getEnabledFilterFormats'])
+      ->setMethods(['getFilterDefinitionsByProvider', 'getEnabledFilterFormats'])
       ->getMock();
     $this->filterUninstallValidator->setStringTranslation($this->getStringTranslationStub());
   }
@@ -40,7 +43,7 @@ class FilterUninstallValidatorTest extends UnitTestCase {
     $module = $this->randomMachineName();
     $expected = [];
     $reasons = $this->filterUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
+    $this->assertSame($expected, $this->castSafeStrings($reasons));
   }
 
   /**
@@ -62,7 +65,7 @@ class FilterUninstallValidatorTest extends UnitTestCase {
     $module = $this->randomMachineName();
     $expected = [];
     $reasons = $this->filterUninstallValidator->validate($module);
-    $this->assertEquals($expected, $reasons);
+    $this->assertSame($expected, $this->castSafeStrings($reasons));
   }
 
   /**
@@ -157,7 +160,7 @@ class FilterUninstallValidatorTest extends UnitTestCase {
       'Provides a filter plugin that is in use in the following filter formats: <em class="placeholder">Filter Format 1 Label, Filter Format 2 Label</em>',
     ];
     $reasons = $this->filterUninstallValidator->validate($this->randomMachineName());
-    $this->assertEquals($expected, $reasons);
+    $this->assertSame($expected, $this->castSafeStrings($reasons));
   }
 
 }

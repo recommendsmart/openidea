@@ -19,7 +19,7 @@ class LanguageConfigSchemaTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['language', 'menu_link_content'];
+  public static $modules = ['language', 'menu_link_content'];
 
   /**
    * {@inheritdoc}
@@ -36,7 +36,7 @@ class LanguageConfigSchemaTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create user.
@@ -50,7 +50,7 @@ class LanguageConfigSchemaTest extends BrowserTestBase {
   public function testValidLanguageConfigSchema() {
     // Make sure no language configuration available by default.
     $config_data = $this->config('language.settings')->get();
-    $this->assertEmpty($config_data);
+    $this->assertTrue(empty($config_data));
 
     $settings_path = 'admin/config/regional/content-language';
 
@@ -63,8 +63,7 @@ class LanguageConfigSchemaTest extends BrowserTestBase {
     $edit['settings[user][user][settings][language][language_alterable]'] = TRUE;
     $edit['settings[user][user][settings][language][langcode]'] = 'en';
 
-    $this->drupalGet($settings_path);
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm($settings_path, $edit, t('Save configuration'));
 
     $config_data = $this->config('language.content_settings.menu_link_content.menu_link_content');
     // Make sure configuration saved correctly.

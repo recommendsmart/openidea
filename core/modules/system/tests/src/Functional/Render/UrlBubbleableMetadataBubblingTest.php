@@ -20,7 +20,7 @@ class UrlBubbleableMetadataBubblingTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['cache_test'];
+  public static $modules = ['cache_test'];
 
   /**
    * {@inheritdoc}
@@ -30,7 +30,7 @@ class UrlBubbleableMetadataBubblingTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
   }
 
@@ -43,7 +43,7 @@ class UrlBubbleableMetadataBubblingTest extends BrowserTestBase {
     $url = Url::fromRoute('cache_test.url_bubbling');
     $this->drupalGet($url);
     $this->assertCacheContext('url.site');
-    $this->assertSession()->responseContains($url->setAbsolute()->toString());
+    $this->assertRaw($url->setAbsolute()->toString());
   }
 
 }

@@ -5,7 +5,6 @@
  * Mass import-export and batch import functionality for Gettext .po files.
  */
 
-use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Url;
 use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\Language\LanguageInterface;
@@ -144,24 +143,28 @@ function locale_translate_batch_build(array $files, array $options) {
     'finish_feedback' => TRUE,
   ];
   if (count($files)) {
-    $batch_builder = (new BatchBuilder())
-      ->setFile(\Drupal::service('extension.list.module')->getPath('locale') . '/locale.bulk.inc')
-      ->setTitle(t('Importing interface translations'))
-      ->setErrorMessage(t('Error importing interface translations'));
+    $operations = [];
     foreach ($files as $file) {
       // We call locale_translate_batch_import for every batch operation.
-      $batch_builder->addOperation('locale_translate_batch_import', [$file, $options]);
+      $operations[] = ['locale_translate_batch_import', [$file, $options]];
     }
     // Save the translation status of all files.
-    $batch_builder->addOperation('locale_translate_batch_import_save', []);
+    $operations[] = ['locale_translate_batch_import_save', []];
 
     // Add a final step to refresh JavaScript and configuration strings.
-    $batch_builder->addOperation('locale_translate_batch_refresh', []);
+    $operations[] = ['locale_translate_batch_refresh', []];
 
+    $batch = [
+      'operations'    => $operations,
+      'title'         => t('Importing interface translations'),
+      'progress_message' => '',
+      'error_message' => t('Error importing interface translations'),
+      'file'          => drupal_get_path('module', 'locale') . '/locale.bulk.inc',
+    ];
     if ($options['finish_feedback']) {
-      $batch_builder->setFinishCallback('locale_translate_batch_finished');
+      $batch['finished'] = 'locale_translate_batch_finished';
     }
-    return $batch_builder->toArray();
+    return $batch;
   }
   return FALSE;
 }
@@ -366,7 +369,7 @@ function locale_translate_batch_refresh(&$context) {
 function locale_translate_batch_finished($success, array $results) {
   $logger = \Drupal::logger('locale');
   if ($success) {
-    $additions = $updates = $deletes = $skips = 0;
+    $additions = $updates = $deletes = $skips = $config = 0;
     if (isset($results['failed_files'])) {
       if (\Drupal::moduleHandler()->moduleExists('dblog') && \Drupal::currentUser()->hasPermission('access site reports')) {
         $message = \Drupal::translation()->formatPlural(count($results['failed_files']), 'One translation file could not be imported. <a href=":url">See the log</a> for details.', '@count translation files could not be imported. <a href=":url">See the log</a> for details.', [':url' => Url::fromRoute('dblog.overview')->toString()]);
@@ -484,7 +487,7 @@ function locale_translate_file_attach_properties($file, array $options = []) {
   if (isset($matches[5])) {
     $file->project = $matches[2] . $matches[3];
     $file->version = $matches[4];
-    $file->langcode = $options['langcode'] ?? $matches[5];
+    $file->langcode = isset($options['langcode']) ? $options['langcode'] : $matches[5];
   }
   else {
     $file->langcode = LanguageInterface::LANGCODE_NOT_SPECIFIED;
@@ -566,13 +569,9 @@ function locale_config_batch_update_components(array $options, array $langcodes 
  */
 function locale_config_batch_build(array $names, array $langcodes, array $options = []) {
   $options += ['finish_feedback' => TRUE];
-  $batch_builder = (new BatchBuilder())
-    ->setFile(\Drupal::service('extension.list.module')->getPath('locale') . '/locale.bulk.inc')
-    ->setTitle(t('Updating configuration translations'))
-    ->setInitMessage(t('Starting configuration update'))
-    ->setErrorMessage(t('Error updating configuration translations'));
   $i = 0;
   $batch_names = [];
+  $operations = [];
   foreach ($names as $name) {
     $batch_names[] = $name;
     $i++;
@@ -581,17 +580,24 @@ function locale_config_batch_build(array $names, array $langcodes, array $option
     // request. We batch a small number of configuration object upgrades
     // together to improve the overall performance of the process.
     if ($i % 20 == 0) {
-      $batch_builder->addOperation('locale_config_batch_refresh_name', [$batch_names, $langcodes]);
+      $operations[] = ['locale_config_batch_refresh_name', [$batch_names, $langcodes]];
       $batch_names = [];
     }
   }
   if (!empty($batch_names)) {
-    $batch_builder->addOperation('locale_config_batch_refresh_name', [$batch_names, $langcodes]);
+    $operations[] = ['locale_config_batch_refresh_name', [$batch_names, $langcodes]];
   }
+  $batch = [
+    'operations'    => $operations,
+    'title'         => t('Updating configuration translations'),
+    'init_message'  => t('Starting configuration update'),
+    'error_message' => t('Error updating configuration translations'),
+    'file'          => drupal_get_path('module', 'locale') . '/locale.bulk.inc',
+  ];
   if (!empty($options['finish_feedback'])) {
-    $batch_builder->setFinishCallback('locale_config_batch_finished');
+    $batch['completed'] = 'locale_config_batch_finished';
   }
-  return $batch_builder->toArray();
+  return $batch;
 }
 
 /**
@@ -634,7 +640,7 @@ function locale_config_batch_refresh_name(array $names, array $langcodes, &$cont
  */
 function locale_config_batch_finished($success, array $results) {
   if ($success) {
-    $configuration = $results['stats']['config'] ?? 0;
+    $configuration = isset($results['stats']['config']) ? $results['stats']['config'] : 0;
     if ($configuration) {
       \Drupal::messenger()->addStatus(t('The configuration was successfully updated. There are %number configuration objects updated.', ['%number' => $configuration]));
       \Drupal::logger('locale')->notice('The configuration was successfully updated. %number configuration objects updated.', ['%number' => $configuration]);

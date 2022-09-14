@@ -74,7 +74,7 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
     // individual revisions to have specific access control and be cached
     // separately.
     if ($entity instanceof RevisionableInterface) {
-      /** @var \Drupal\Core\Entity\RevisionableInterface $entity */
+      /** @var $entity \Drupal\Core\Entity\RevisionableInterface */
       $cid .= ':' . $entity->getRevisionId();
     }
 

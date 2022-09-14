@@ -4,7 +4,7 @@ namespace Drupal\config_translation\Event;
 
 use Drupal\config_translation\ConfigMapperInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Provides a class for events related to configuration translation mappers.

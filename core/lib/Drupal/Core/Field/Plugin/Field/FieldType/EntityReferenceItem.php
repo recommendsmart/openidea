@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\TypedData\EntityDataDefinition;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldException;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface;
@@ -67,12 +66,6 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     $settings = $field_definition->getSettings();
     $target_type_info = \Drupal::entityTypeManager()->getDefinition($settings['target_type']);
-
-    // If the target entity type doesn't have an ID key, we cannot determine
-    // the target_id data type.
-    if (!$target_type_info->hasKey('id')) {
-      throw new FieldException('Entity type "' . $target_type_info->id() . '" has no ID key and cannot be targeted by entity reference field "' . $field_definition->getName() . '"');
-    }
 
     $target_id_data_type = 'string';
     if ($target_type_info->entityClassImplements(FieldableEntityInterface::class)) {
@@ -363,23 +356,13 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
     $element['target_type'] = [
       '#type' => 'select',
       '#title' => t('Type of item to reference'),
+      '#options' => \Drupal::service('entity_type.repository')->getEntityTypeLabels(TRUE),
       '#default_value' => $this->getSetting('target_type'),
       '#required' => TRUE,
       '#disabled' => $has_data,
       '#size' => 1,
     ];
 
-    // Only allow the field to target entity types that have an ID key. This
-    // is enforced in ::propertyDefinitions().
-    $entity_type_manager = \Drupal::entityTypeManager();
-    $filter = function (string $entity_type_id) use ($entity_type_manager): bool {
-      return $entity_type_manager->getDefinition($entity_type_id)
-        ->hasKey('id');
-    };
-    $options = \Drupal::service('entity_type.repository')->getEntityTypeLabels(TRUE);
-    foreach ($options as $group_name => $group) {
-      $element['target_type']['#options'][$group_name] = array_filter($group, $filter, ARRAY_FILTER_USE_KEY);
-    }
     return $element;
   }
 
@@ -407,8 +390,8 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
 
     $form = [
       '#type' => 'container',
-      '#process' => [[static::class, 'fieldSettingsAjaxProcess']],
-      '#element_validate' => [[static::class, 'fieldSettingsFormValidate']],
+      '#process' => [[get_class($this), 'fieldSettingsAjaxProcess']],
+      '#element_validate' => [[get_class($this), 'fieldSettingsFormValidate']],
 
     ];
     $form['handler'] = [
@@ -416,7 +399,7 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
       '#title' => t('Reference type'),
       '#open' => TRUE,
       '#tree' => TRUE,
-      '#process' => [[static::class, 'formProcessMergeParent']],
+      '#process' => [[get_class($this), 'formProcessMergeParent']],
     ];
 
     $form['handler']['handler'] = [
@@ -435,7 +418,7 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
       '#attributes' => [
         'class' => ['js-hide'],
       ],
-      '#submit' => [[static::class, 'settingsAjaxSubmit']],
+      '#submit' => [[get_class($this), 'settingsAjaxSubmit']],
     ];
 
     $form['handler']['handler_settings'] = [
@@ -635,9 +618,8 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
   }
 
   /**
-   * Render API callback: Processes the field settings form.
-   *
-   * Allows access to the form state.
+   * Render API callback: Processes the field settings form and allows access to
+   * the form state.
    *
    * @see static::fieldSettingsForm()
    */
@@ -655,7 +637,7 @@ class EntityReferenceItem extends FieldItemBase implements OptionsProviderInterf
   public static function fieldSettingsAjaxProcessElement(&$element, $main_form) {
     if (!empty($element['#ajax'])) {
       $element['#ajax'] = [
-        'callback' => [static::class, 'settingsAjax'],
+        'callback' => [get_called_class(), 'settingsAjax'],
         'wrapper' => $main_form['#id'],
         'element' => $main_form['#array_parents'],
       ];

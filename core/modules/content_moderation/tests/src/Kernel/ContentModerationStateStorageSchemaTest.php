@@ -21,7 +21,7 @@ class ContentModerationStateStorageSchemaTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'content_moderation',
     'user',
@@ -34,7 +34,7 @@ class ContentModerationStateStorageSchemaTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installSchema('node', 'node_access');
@@ -53,7 +53,7 @@ class ContentModerationStateStorageSchemaTest extends KernelTestBase {
   }
 
   /**
-   * Tests the ContentModerationState unique keys.
+   * Test the ContentModerationState unique keys.
    *
    * @covers ::getEntitySchema
    */
@@ -124,10 +124,8 @@ class ContentModerationStateStorageSchemaTest extends KernelTestBase {
    *   An array of entity values.
    * @param bool $has_exception
    *   If an exception should be triggered when saving the entity.
-   *
-   * @internal
    */
-  protected function assertStorageException(array $values, bool $has_exception): void {
+  protected function assertStorageException(array $values, $has_exception) {
     $defaults = [
       'moderation_state' => 'draft',
       'workflow' => 'editorial',

@@ -22,7 +22,7 @@ class MigrateMessageTest extends KernelTestBase implements MigrateMessageInterfa
    *
    * @var array
    */
-  protected static $modules = ['migrate', 'system'];
+  public static $modules = ['migrate', 'system'];
 
   /**
    * Migration to run.
@@ -41,7 +41,7 @@ class MigrateMessageTest extends KernelTestBase implements MigrateMessageInterfa
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installConfig(['system']);
@@ -81,7 +81,7 @@ class MigrateMessageTest extends KernelTestBase implements MigrateMessageInterfa
     // We don't ask for messages to be teed, so don't expect any.
     $executable = new MigrateExecutable($this->migration, $this);
     $executable->import();
-    $this->assertCount(0, $this->messages);
+    $this->assertIdentical(count($this->messages), 0);
   }
 
   /**
@@ -93,9 +93,8 @@ class MigrateMessageTest extends KernelTestBase implements MigrateMessageInterfa
       [$this, 'mapMessageRecorder']);
     $executable = new MigrateExecutable($this->migration, $this);
     $executable->import();
-    $this->assertCount(1, $this->messages);
-    $id = $this->migration->getPluginId();
-    $this->assertSame("source_message: $id:message: 'a message' is not an array", reset($this->messages));
+    $this->assertIdentical(count($this->messages), 1);
+    $this->assertIdentical(reset($this->messages), "source_message: 'a message' is not an array");
   }
 
   /**
@@ -105,23 +104,22 @@ class MigrateMessageTest extends KernelTestBase implements MigrateMessageInterfa
    * objects have the expected keys.
    */
   public function testGetMessages() {
-    $id = $this->migration->getPluginId();
     $expected_message = (object) [
       'src_name' => 'source_message',
       'dest_config_name' => NULL,
       'msgid' => '1',
       Sql::SOURCE_IDS_HASH => '170cde81762e22552d1b1578cf3804c89afefe9efbc7cc835185d7141060b032',
       'level' => '1',
-      'message' => "$id:message: 'a message' is not an array",
+      'message' => "'a message' is not an array",
     ];
     $executable = new MigrateExecutable($this->migration, $this);
     $executable->import();
     $count = 0;
     foreach ($this->migration->getIdMap()->getMessages() as $message) {
       ++$count;
-      $this->assertEquals($expected_message, $message);
+      $this->assertEqual($message, $expected_message);
     }
-    $this->assertEquals(1, $count);
+    $this->assertEqual($count, 1);
   }
 
   /**

@@ -14,7 +14,7 @@ class TaxonomyTermIndentationTest extends TaxonomyTestBase {
    *
    * @var array
    */
-  protected static $modules = ['taxonomy'];
+  public static $modules = ['taxonomy'];
 
   /**
    * {@inheritdoc}
@@ -28,12 +28,9 @@ class TaxonomyTermIndentationTest extends TaxonomyTestBase {
    */
   protected $vocabulary;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-    $this->drupalLogin($this->drupalCreateUser([
-      'administer taxonomy',
-      'bypass node access',
-    ]));
+    $this->drupalLogin($this->drupalCreateUser(['administer taxonomy', 'bypass node access']));
     $this->vocabulary = $this->createVocabulary();
   }
 
@@ -67,12 +64,12 @@ class TaxonomyTermIndentationTest extends TaxonomyTestBase {
       'terms[tid:' . $term2->id() . ':0][weight]' => 1,
     ];
     // Submit the edited form and check for HTML indentation element presence.
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->responseMatches('|<div class="js-indentation indentation">&nbsp;</div>|');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
+    $this->assertPattern('|<div class="js-indentation indentation">&nbsp;</div>|');
 
     // Check explicitly that term 2's parent is term 1.
     $parents = $taxonomy_storage->loadParents($term2->id());
-    $this->assertEquals(1, key($parents), 'Term 1 is the term 2\'s parent');
+    $this->assertEqual(key($parents), 1, 'Term 1 is the term 2\'s parent');
 
     // Move the second term back out to the root level.
     $this->drupalGet('admin/structure/taxonomy/manage/' . $this->vocabulary->get('vid') . '/overview');
@@ -90,14 +87,14 @@ class TaxonomyTermIndentationTest extends TaxonomyTestBase {
     $edit = [
       'terms[tid:' . $term2->id() . ':0][weight]' => 1,
     ];
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm(NULL, $edit, t('Save'));
     // All terms back at the root level, no indentation should be present.
     $this->assertSession()->responseNotMatches('|<div class="js-indentation indentation">&nbsp;</div>|');
 
     // Check explicitly that term 2 has no parents.
     \Drupal::entityTypeManager()->getStorage('taxonomy_term')->resetCache();
     $parents = $taxonomy_storage->loadParents($term2->id());
-    $this->assertEmpty($parents, 'Term 2 has no parents now');
+    $this->assertTrue(empty($parents), 'Term 2 has no parents now');
   }
 
 }

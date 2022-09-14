@@ -5,7 +5,6 @@ namespace Drupal\Tests\filter\Kernel\Plugin\migrate\process;
 use Drupal\filter\Plugin\migrate\process\FilterID;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\migrate\MigrateExecutableInterface;
-use Drupal\migrate\MigrateSkipProcessException;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
 
@@ -20,7 +19,7 @@ class FilterIdTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['filter'];
+  public static $modules = ['filter'];
 
   /**
    * The mocked MigrateExecutable.
@@ -32,7 +31,7 @@ class FilterIdTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executable = $this->createMock(MigrateExecutableInterface::class);
   }
@@ -47,15 +46,12 @@ class FilterIdTest extends KernelTestBase {
    * @param string $invalid_id
    *   (optional) The invalid plugin ID which is expected to be logged by the
    *   MigrateExecutable object.
-   * @param bool $skip_exception
-   *   (optional) Set to TRUE if we expect the filter to be skipped because it
-   *   is a transformation-only filter.
    *
    * @dataProvider provideFilters
    *
    * @covers ::transform
    */
-  public function testTransform($value, $expected_value, $invalid_id = NULL, $skip_exception = FALSE) {
+  public function testTransform($value, $expected_value, $invalid_id = NULL) {
     $configuration = [
       'bypass' => TRUE,
       'map' => [
@@ -64,18 +60,6 @@ class FilterIdTest extends KernelTestBase {
       ],
     ];
     $plugin = FilterID::create($this->container, $configuration, 'filter_id', []);
-
-    if ($skip_exception) {
-      $this->executable
-        ->expects($this->exactly(1))
-        ->method('saveMessage')
-        ->with(
-          sprintf('Filter %s could not be mapped to an existing filter plugin; omitted since it is a transformation-only filter. Install and configure a successor after the migration.', $value),
-          MigrationInterface::MESSAGE_INFORMATIONAL
-        );
-      $this->expectException(MigrateSkipProcessException::class);
-      $this->expectExceptionMessage(sprintf("The transformation-only filter %s was skipped.", $value));
-    }
 
     if (isset($invalid_id)) {
       $this->executable
@@ -97,7 +81,7 @@ class FilterIdTest extends KernelTestBase {
    * Provides filter ids for testing transformations.
    *
    * @return array
-   *   Formatted as $source_id, $transformed_id, $invalid_id.
+   *   Formatted as $source_id, $tranformed_id, $invalid_id.
    *   When $invalid_id is provided the transformation should fail with the
    *   supplied id.
    */
@@ -125,16 +109,6 @@ class FilterIdTest extends KernelTestBase {
         ['filter', 1],
         'filter_null',
         'filter:1',
-      ],
-      'transformation-only D7 contrib filter' => [
-        'editor_align',
-        '',
-        NULL,
-        TRUE,
-      ],
-      'non-transformation-only D7 contrib filter' => [
-        'bbcode',
-        'filter_null',
       ],
     ];
   }

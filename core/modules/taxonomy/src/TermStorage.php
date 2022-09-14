@@ -80,6 +80,7 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
    * {@inheritdoc}
    */
   public function resetCache(array $ids = NULL) {
+    drupal_static_reset('taxonomy_term_count_nodes');
     $this->ancestors = [];
     $this->treeChildren = [];
     $this->treeParents = [];
@@ -148,7 +149,6 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
 
     if ($ids) {
       $query = \Drupal::entityQuery('taxonomy_term')
-        ->accessCheck(TRUE)
         ->condition('tid', $ids, 'IN');
 
       $loaded_parents = static::loadMultiple($query->execute());
@@ -210,7 +210,6 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
    */
   public function getChildren(TermInterface $term) {
     $query = \Drupal::entityQuery('taxonomy_term')
-      ->accessCheck(TRUE)
       ->condition('parent', $term->id());
     return static::loadMultiple($query->execute());
   }
@@ -218,35 +217,30 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
   /**
    * {@inheritdoc}
    */
-  public function loadTree($vid, $parent = 0, $max_depth = NULL, $load_entities = FALSE, $langcode = NULL) {
+  public function loadTree($vid, $parent = 0, $max_depth = NULL, $load_entities = FALSE) {
     $cache_key = implode(':', func_get_args());
     if (!isset($this->trees[$cache_key])) {
       // We cache trees, so it's not CPU-intensive to call on a term and its
       // children, too.
-      if (!isset($this->treeChildren[$vid . ':' . $langcode])) {
-        $this->treeChildren[$vid . ':' . $langcode] = [];
-        $this->treeParents[$vid . ':' . $langcode] = [];
-        $this->treeTerms[$vid . ':' . $langcode] = [];
+      if (!isset($this->treeChildren[$vid])) {
+        $this->treeChildren[$vid] = [];
+        $this->treeParents[$vid] = [];
+        $this->treeTerms[$vid] = [];
         $query = $this->database->select($this->getDataTable(), 't');
-        $query->join('taxonomy_term__parent', 'p', '[t].[tid] = [p].[entity_id]');
-        $query->addExpression('[parent_target_id]', 'parent');
-        $query->addTag('taxonomy_term_access')
+        $query->join('taxonomy_term__parent', 'p', 't.tid = p.entity_id');
+        $query->addExpression('parent_target_id', 'parent');
+        $result = $query
+          ->addTag('taxonomy_term_access')
           ->fields('t')
-          ->condition('t.vid', $vid);
-        // Retrieve Trees by language.
-        if (!empty($langcode)) {
-          $query->condition('t.langcode', $langcode, 'IN');
-        }
-        else {
-          $query->condition('t.default_langcode', 1);
-        }
-        $result = $query->orderBy('t.weight')
+          ->condition('t.vid', $vid)
+          ->condition('t.default_langcode', 1)
+          ->orderBy('t.weight')
           ->orderBy('t.name')
           ->execute();
         foreach ($result as $term) {
-          $this->treeChildren[$vid . ':' . $langcode][$term->parent][] = $term->tid;
-          $this->treeParents[$vid . ':' . $langcode][$term->tid][] = $term->parent;
-          $this->treeTerms[$vid . ':' . $langcode][$term->tid] = $term;
+          $this->treeChildren[$vid][$term->parent][] = $term->tid;
+          $this->treeParents[$vid][$term->tid][] = $term->parent;
+          $this->treeTerms[$vid][$term->tid] = $term;
         }
       }
 
@@ -254,10 +248,10 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
       // caches the results.
       $term_entities = [];
       if ($load_entities) {
-        $term_entities = $this->loadMultiple(array_keys($this->treeTerms[$vid . ':' . $langcode]));
+        $term_entities = $this->loadMultiple(array_keys($this->treeTerms[$vid]));
       }
 
-      $max_depth = (!isset($max_depth)) ? count($this->treeChildren[$vid . ':' . $langcode]) : $max_depth;
+      $max_depth = (!isset($max_depth)) ? count($this->treeChildren[$vid]) : $max_depth;
       $tree = [];
 
       // Keeps track of the parents we have to process, the last entry is used
@@ -271,15 +265,15 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
         $parent = array_pop($process_parents);
         // The number of parents determines the current depth.
         $depth = count($process_parents);
-        if ($max_depth > $depth && !empty($this->treeChildren[$vid . ':' . $langcode][$parent])) {
+        if ($max_depth > $depth && !empty($this->treeChildren[$vid][$parent])) {
           $has_children = FALSE;
-          $child = current($this->treeChildren[$vid . ':' . $langcode][$parent]);
+          $child = current($this->treeChildren[$vid][$parent]);
           do {
             if (empty($child)) {
               break;
             }
-            $term = $load_entities ? $term_entities[$child] : $this->treeTerms[$vid . ':' . $langcode][$child];
-            if (isset($this->treeParents[$vid . ':' . $langcode][$load_entities ? $term->id() : $term->tid])) {
+            $term = $load_entities ? $term_entities[$child] : $this->treeTerms[$vid][$child];
+            if (isset($this->treeParents[$vid][$load_entities ? $term->id() : $term->tid])) {
               // Clone the term so that the depth attribute remains correct
               // in the event of multiple parents.
               $term = clone $term;
@@ -289,9 +283,9 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
               unset($term->parent);
             }
             $tid = $load_entities ? $term->id() : $term->tid;
-            $term->parents = $this->treeParents[$vid . ':' . $langcode][$tid];
+            $term->parents = $this->treeParents[$vid][$tid];
             $tree[] = $term;
-            if (!empty($this->treeChildren[$vid . ':' . $langcode][$tid])) {
+            if (!empty($this->treeChildren[$vid][$tid])) {
               $has_children = TRUE;
 
               // We have to continue with this parent later.
@@ -301,17 +295,17 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
 
               // Reset pointers for child lists because we step in there more
               // often with multi parents.
-              reset($this->treeChildren[$vid . ':' . $langcode][$tid]);
+              reset($this->treeChildren[$vid][$tid]);
               // Move pointer so that we get the correct term the next time.
-              next($this->treeChildren[$vid . ':' . $langcode][$parent]);
+              next($this->treeChildren[$vid][$parent]);
               break;
             }
-          } while ($child = next($this->treeChildren[$vid . ':' . $langcode][$parent]));
+          } while ($child = next($this->treeChildren[$vid][$parent]));
 
           if (!$has_children) {
             // We processed all terms in this hierarchy-level, reset pointer
             // so that this function works the next time it gets called.
-            reset($this->treeChildren[$vid . ':' . $langcode][$parent]);
+            reset($this->treeChildren[$vid][$parent]);
           }
         }
       }
@@ -325,8 +319,8 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
    */
   public function nodeCount($vid) {
     $query = $this->database->select('taxonomy_index', 'ti');
-    $query->addExpression('COUNT(DISTINCT [ti].[nid])');
-    $query->leftJoin($this->getBaseTable(), 'td', '[ti].[tid] = [td].[tid]');
+    $query->addExpression('COUNT(DISTINCT ti.nid)');
+    $query->leftJoin($this->getBaseTable(), 'td', 'ti.tid = td.tid');
     $query->condition('td.vid', $vid);
     $query->addTag('vocabulary_node_count');
     return $query->execute()->fetchField();
@@ -347,7 +341,7 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
    */
   public function getNodeTerms(array $nids, array $vocabs = [], $langcode = NULL) {
     $query = $this->database->select($this->getDataTable(), 'td');
-    $query->innerJoin('taxonomy_index', 'tn', '[td].[tid] = [tn].[tid]');
+    $query->innerJoin('taxonomy_index', 'tn', 'td.tid = tn.tid');
     $query->fields('td', ['tid']);
     $query->addField('tn', 'nid', 'node_nid');
     $query->orderby('td.weight');
@@ -391,19 +385,19 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
 
     $query = $this->database->select($this->getRevisionDataTable(), 'tfr');
     $query->fields('tfr', [$id_field]);
-    $query->addExpression("MAX([tfr].[$revision_field])", $revision_field);
+    $query->addExpression("MAX(tfr.$revision_field)", $revision_field);
 
-    $query->join($this->getRevisionTable(), 'tr', "[tfr].[$revision_field] = [tr].[$revision_field] AND [tr].[$revision_default_field] = 0");
+    $query->join($this->getRevisionTable(), 'tr', "tfr.$revision_field = tr.$revision_field AND tr.$revision_default_field = 0");
 
     $inner_select = $this->database->select($this->getRevisionDataTable(), 't');
     $inner_select->condition("t.$rta_field", '1');
     $inner_select->fields('t', [$id_field, $langcode_field]);
-    $inner_select->addExpression("MAX([t].[$revision_field])", $revision_field);
+    $inner_select->addExpression("MAX(t.$revision_field)", $revision_field);
     $inner_select
       ->groupBy("t.$id_field")
       ->groupBy("t.$langcode_field");
 
-    $query->join($inner_select, 'mr', "[tfr].[$revision_field] = [mr].[$revision_field] AND [tfr].[$langcode_field] = [mr].[$langcode_field]");
+    $query->join($inner_select, 'mr', "tfr.$revision_field = mr.$revision_field AND tfr.$langcode_field = mr.$langcode_field");
 
     $query->groupBy("tfr.$id_field");
 
@@ -426,8 +420,8 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
     $delta_column = $table_mapping->getFieldColumnName($parent_field_storage, TableMappingInterface::DELTA);
 
     $query = $this->database->select($table_mapping->getFieldTableName('parent'), 'p');
-    $query->addExpression("MAX([$target_id_column])", 'max_parent_id');
-    $query->addExpression("MAX([$delta_column])", 'max_delta');
+    $query->addExpression("MAX($target_id_column)", 'max_parent_id');
+    $query->addExpression("MAX($delta_column)", 'max_delta');
     $query->condition('bundle', $vid);
 
     $result = $query->execute()->fetchAll();

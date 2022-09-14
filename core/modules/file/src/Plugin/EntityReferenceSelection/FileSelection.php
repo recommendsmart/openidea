@@ -3,7 +3,6 @@
 namespace Drupal\file\Plugin\EntityReferenceSelection;
 
 use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
-use Drupal\file\FileInterface;
 
 /**
  * Provides specific access control for the file entity type.
@@ -29,7 +28,7 @@ class FileSelection extends DefaultSelection {
     //   become "permanent" after the containing entity gets validated and
     //   saved.)
     $query->condition($query->orConditionGroup()
-      ->condition('status', FileInterface::STATUS_PERMANENT)
+      ->condition('status', FILE_STATUS_PERMANENT)
       ->condition('uid', $this->currentUser->id()));
     return $query;
   }

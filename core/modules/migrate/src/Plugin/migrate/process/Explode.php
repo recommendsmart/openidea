@@ -117,7 +117,7 @@ class Explode extends ProcessPluginBase {
       }
     }
 
-    $limit = $this->configuration['limit'] ?? PHP_INT_MAX;
+    $limit = isset($this->configuration['limit']) ? $this->configuration['limit'] : PHP_INT_MAX;
 
     return explode($this->configuration['delimiter'], $value, $limit);
   }

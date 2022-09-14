@@ -20,12 +20,12 @@ class MigrateInterruptionTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['migrate', 'migrate_events_test'];
+  public static $modules = ['migrate', 'migrate_events_test'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     \Drupal::service('event_dispatcher')->addListener(MigrateEvents::POST_ROW_SAVE,
       [$this, 'postRowSaveEventRecorder']);
@@ -60,10 +60,10 @@ class MigrateInterruptionTest extends KernelTestBase {
     // interruption.
     $result = $executable->import();
 
-    $this->assertEquals(MigrationInterface::RESULT_INCOMPLETE, $result);
+    $this->assertEqual($result, MigrationInterface::RESULT_INCOMPLETE);
 
     // The status should have been reset to IDLE.
-    $this->assertEquals(MigrationInterface::STATUS_IDLE, $migration->getStatus());
+    $this->assertEqual($migration->getStatus(), MigrationInterface::STATUS_IDLE);
   }
 
   /**

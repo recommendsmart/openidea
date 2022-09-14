@@ -76,7 +76,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityTypeManager = $this->createMock(EntityTypeManager::class);
     $this->entityFieldManager = $this->createMock(EntityFieldManager::class);
     $this->entityLastInstalledSchemaRepository = $this->createMock(EntityLastInstalledSchemaRepositoryInterface::class);
@@ -111,6 +111,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
    * @covers ::getFieldUniqueKeys
    * @covers ::getFieldForeignKeys
    * @covers ::getFieldSchemaData
+   * @covers ::processBaseTable
    * @covers ::processIdentifierSchema
    */
   public function testGetSchemaBase() {
@@ -404,6 +405,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
    * @covers ::initializeRevisionTable
    * @covers ::addTableDefaults
    * @covers ::getEntityIndexName
+   * @covers ::processRevisionTable
    * @covers ::processIdentifierSchema
    */
   public function testGetSchemaRevisionable() {
@@ -417,14 +419,14 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
           ],
         ],
       ])
-      ->onlyMethods(['getRevisionMetadataKeys'])
+      ->setMethods(['getRevisionMetadataKeys'])
       ->getMock();
 
     $this->entityType->expects($this->any())
       ->method('getRevisionMetadataKeys')
       ->will($this->returnValue([]));
 
-    $this->storage->expects($this->exactly(9))
+    $this->storage->expects($this->exactly(1))
       ->method('getRevisionTable')
       ->will($this->returnValue('entity_test_revision'));
 
@@ -635,7 +637,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
           'revision_data_table' => 'entity_test_revision_field_data',
         ],
       ])
-      ->onlyMethods(['isRevisionable', 'isTranslatable', 'getRevisionMetadataKeys'])
+      ->setMethods(['isRevisionable', 'isTranslatable', 'getRevisionMetadataKeys'])
       ->getMock();
 
     $this->entityType->expects($this->any())
@@ -645,7 +647,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
       ->method('isTranslatable')
       ->will($this->returnValue(TRUE));
 
-    $this->storage->expects($this->exactly(30))
+    $this->storage->expects($this->exactly(2))
       ->method('getRevisionTable')
       ->will($this->returnValue('entity_test_revision'));
 
@@ -1221,7 +1223,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
 
     $this->storageSchema = $this->getMockBuilder('Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema')
       ->setConstructorArgs([$this->entityTypeManager, $this->entityType, $this->storage, $connection, $this->entityFieldManager, $this->entityLastInstalledSchemaRepository])
-      ->onlyMethods(['installedStorageSchema', 'hasSharedTableStructureChange'])
+      ->setMethods(['installedStorageSchema', 'hasSharedTableStructureChange'])
       ->getMock();
 
     $this->storageSchema->expects($this->any())
@@ -1393,9 +1395,9 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
             return $expected_table_schemas[$invocation_count] == $table_schema;
           })
         )
-        ->willReturnCallback(function () use (&$invocation_count) {
+        ->will($this->returnCallback(function () use (&$invocation_count) {
           $invocation_count++;
-        });
+        }));
     }
 
     $connection = $this->getMockBuilder('Drupal\Core\Database\Connection')
@@ -1418,7 +1420,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
 
     $this->storageSchema = $this->getMockBuilder('Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema')
       ->setConstructorArgs([$this->entityTypeManager, $this->entityType, $this->storage, $connection, $this->entityFieldManager, $this->entityLastInstalledSchemaRepository])
-      ->onlyMethods(['installedStorageSchema', 'loadEntitySchemaData', 'hasSharedTableNameChanges', 'isTableEmpty', 'getTableMapping'])
+      ->setMethods(['installedStorageSchema', 'loadEntitySchemaData', 'hasSharedTableNameChanges', 'isTableEmpty', 'getTableMapping'])
       ->getMock();
     $this->storageSchema
       ->expects($this->any())
@@ -1471,7 +1473,7 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
   }
 
   /**
-   * ::onEntityTypeUpdate.
+   * ::onEntityTypeUpdate
    */
   public function testonEntityTypeUpdateWithNewIndex() {
     $this->entityType = $original_entity_type = new ContentEntityType([
@@ -1536,12 +1538,12 @@ class SqlContentEntityStorageSchemaTest extends UnitTestCase {
       ]);
 
     // The original indexes should be dropped before the new one is added.
-    $this->dbSchemaHandler->expects($this->exactly(3))
+    $this->dbSchemaHandler->expects($this->at(0))
       ->method('dropIndex')
-      ->withConsecutive(
-        ['entity_test', 'entity_test__b588603cb9'],
-        ['entity_test', 'entity_test__removed_field'],
-      );
+      ->with('entity_test', 'entity_test__b588603cb9');
+    $this->dbSchemaHandler->expects($this->at(1))
+      ->method('dropIndex')
+      ->with('entity_test', 'entity_test__removed_field');
 
     $this->dbSchemaHandler->expects($this->atLeastOnce())
       ->method('fieldExists')

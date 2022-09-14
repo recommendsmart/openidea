@@ -62,6 +62,6 @@ display:
       row:
         type: 'entity:node'
     display_plugin: default
-    display_title: Default
+    display_title: Master
     id: default
     position: 0

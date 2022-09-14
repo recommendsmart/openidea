@@ -135,7 +135,7 @@ class BlockPageVariant extends VariantBase implements PageVariantInterface, Cont
     // Load all region content assigned via blocks.
     $cacheable_metadata_list = [];
     foreach ($this->blockRepository->getVisibleBlocksPerRegion($cacheable_metadata_list) as $region => $blocks) {
-      /** @var \Drupal\block\BlockInterface[] $blocks */
+      /** @var $blocks \Drupal\block\BlockInterface[] */
       foreach ($blocks as $key => $block) {
         $block_plugin = $block->getPlugin();
         if ($block_plugin instanceof MainContentBlockPluginInterface) {

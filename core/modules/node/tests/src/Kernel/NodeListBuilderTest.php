@@ -15,9 +15,9 @@ class NodeListBuilderTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['node', 'user'];
+  public static $modules = ['node', 'user'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('node');
@@ -33,7 +33,7 @@ class NodeListBuilderTest extends KernelTestBase {
     $build = $list_builder->render();
     $this->container->get('renderer')->renderRoot($build);
 
-    $this->assertEqualsCanonicalizing(['languages:' . LanguageInterface::TYPE_INTERFACE, 'theme', 'url.query_args.pagers:0', 'user.node_grants:view', 'user.permissions'], $build['#cache']['contexts']);
+    $this->assertEqual(['languages:' . LanguageInterface::TYPE_INTERFACE, 'theme', 'url.query_args.pagers:0', 'user.node_grants:view', 'user.permissions'], $build['#cache']['contexts']);
   }
 
 }

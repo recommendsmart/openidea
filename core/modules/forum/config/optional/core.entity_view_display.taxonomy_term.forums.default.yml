@@ -13,10 +13,10 @@ mode: default
 content:
   description:
     type: text_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
     weight: 0
     region: content
+    settings: {  }
+    third_party_settings: {  }
+    label: above
 hidden:
   forum_container: true

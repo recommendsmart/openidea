@@ -4,7 +4,6 @@ namespace Drupal\media_library\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseDialogCommand;
-use Drupal\Core\Ajax\FocusFirstCommand;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
@@ -64,7 +63,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
   protected $openerResolver;
 
   /**
-   * Constructs an AddFormBase object.
+   * Constructs a AddFormBase object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -73,10 +72,14 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
    * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
    *   The opener resolver.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, OpenerResolverInterface $opener_resolver) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, OpenerResolverInterface $opener_resolver = NULL) {
     $this->entityTypeManager = $entity_type_manager;
     $this->libraryUiBuilder = $library_ui_builder;
     $this->viewBuilder = $this->entityTypeManager->getViewBuilder('media');
+    if (!$opener_resolver) {
+      @trigger_error('The media_library.opener_resolver service must be passed to AddFormBase::__construct(), it is required before Drupal 9.0.0.', E_USER_DEPRECATED);
+      $opener_resolver = \Drupal::service('media_library.opener_resolver');
+    }
     $this->openerResolver = $opener_resolver;
   }
 
@@ -255,7 +258,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
     // triggering element is not set correctly and the wrong media item is
     // removed.
     // @see ::removeButtonSubmit()
-    $parents = $form['#parents'] ?? [];
+    $parents = isset($form['#parents']) ? $form['#parents'] : [];
     $id_suffix = $parents ? '-' . implode('-', $parents) : '';
 
     $element = [
@@ -473,11 +476,13 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
     if ($this->isAdvancedUi()) {
       $actions['save_select']['#value'] = $this->t('Save and select');
       $actions['save_insert'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Save and insert'),
-        '#ajax' => [
-          'callback' => '::updateWidget',
-          'wrapper' => 'media-library-add-form-wrapper',
+        'save_insert' => [
+          '#type' => 'submit',
+          '#value' => $this->t('Save and insert'),
+          '#ajax' => [
+            'callback' => '::updateWidget',
+            'wrapper' => 'media-library-add-form-wrapper',
+          ],
         ],
       ];
     }
@@ -609,7 +614,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
       // source field).
       if (empty($added_media)) {
         $response->addCommand(new ReplaceCommand('#media-library-add-form-wrapper', $this->buildMediaLibraryUi($form_state)));
-        $response->addCommand(new FocusFirstCommand('#media-library-add-form-wrapper'));
+        $response->addCommand(new InvokeCommand('#media-library-add-form-wrapper :tabbable', 'focus'));
       }
       // When there are still more items, update the form and shift the focus to
       // the next media item. If the last list item is removed, shift focus to
@@ -739,7 +744,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
    *   The current form state.
    *
    * @return array|\Drupal\Core\Ajax\AjaxResponse
-   *   The form array when there are form errors or an AJAX response to select
+   *   The form array when there are form errors or a AJAX response to select
    *   the created items in the media library.
    */
   public function updateWidget(array &$form, FormStateInterface $form_state) {

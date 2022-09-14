@@ -23,7 +23,7 @@ class ToolbarMenuTranslationTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'toolbar',
     'toolbar_test',
     'locale',
@@ -35,16 +35,11 @@ class ToolbarMenuTranslationTest extends BrowserTestBase {
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create an administrative user and log it in.
-    $this->adminUser = $this->drupalCreateUser([
-      'access toolbar',
-      'translate interface',
-      'administer languages',
-      'access administration pages',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['access toolbar', 'translate interface', 'administer languages', 'access administration pages']);
     $this->drupalLogin($this->adminUser);
   }
 
@@ -56,8 +51,7 @@ class ToolbarMenuTranslationTest extends BrowserTestBase {
 
     // Add Spanish.
     $edit['predefined_langcode'] = $langcode;
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add language'));
 
     // The menu item 'Structure' in the toolbar will be translated.
     $menu_item = 'Structure';
@@ -71,23 +65,22 @@ class ToolbarMenuTranslationTest extends BrowserTestBase {
       'langcode' => $langcode,
       'translation' => 'untranslated',
     ];
-    $this->drupalGet('admin/config/regional/translate');
-    $this->submitForm($search, 'Filter');
+    $this->drupalPostForm('admin/config/regional/translate', $search, t('Filter'));
     // Make sure will be able to translate the menu item.
-    $this->assertSession()->pageTextNotContains('No strings available.');
+    $this->assertNoText('No strings available.', 'Search found the menu item as untranslated.');
 
     // Check that the class is on the item before we translate it.
-    $this->assertSession()->elementsCount('xpath', '//a[contains(@class, "icon-system-admin-structure")]', 1);
+    $xpath = $this->xpath('//a[contains(@class, "icon-system-admin-structure")]');
+    $this->assertEqual(count($xpath), 1, 'The menu item class ok before translation.');
 
     // Translate the menu item.
     $menu_item_translated = $this->randomMachineName();
-    $textarea = $this->assertSession()->elementExists('xpath', '//textarea');
+    $textarea = current($this->xpath('//textarea'));
     $lid = (string) $textarea->getAttribute('name');
     $edit = [
       $lid => $menu_item_translated,
     ];
-    $this->drupalGet('admin/config/regional/translate');
-    $this->submitForm($edit, 'Save translations');
+    $this->drupalPostForm('admin/config/regional/translate', $edit, t('Save translations'));
 
     // Search for the translated menu item.
     $search = [
@@ -95,19 +88,19 @@ class ToolbarMenuTranslationTest extends BrowserTestBase {
       'langcode' => $langcode,
       'translation' => 'translated',
     ];
-    $this->drupalGet('admin/config/regional/translate');
-    $this->submitForm($search, 'Filter');
+    $this->drupalPostForm('admin/config/regional/translate', $search, t('Filter'));
     // Make sure the menu item string was translated.
-    $this->assertSession()->pageTextContains($menu_item_translated);
+    $this->assertText($menu_item_translated, 'Search found the menu item as translated: ' . $menu_item_translated . '.');
 
     // Go to another page in the custom language and make sure the menu item
     // was translated.
     $this->drupalGet($langcode . '/admin/structure');
-    $this->assertSession()->pageTextContains($menu_item_translated);
+    $this->assertText($menu_item_translated, 'Found the menu translated.');
 
     // Toolbar icons are included based on the presence of a specific class on
     // the menu item. Ensure that class also exists for a translated menu item.
-    $this->assertSession()->elementsCount('xpath', '//a[contains(@class, "icon-system-admin-structure")]', 1);
+    $xpath = $this->xpath('//a[contains(@class, "icon-system-admin-structure")]');
+    $this->assertEqual(count($xpath), 1, 'The menu item class is the same.');
   }
 
 }

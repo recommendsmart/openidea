@@ -7,6 +7,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityForm;
 
 /**
@@ -37,6 +38,8 @@ abstract class DateFormatFormBase extends EntityForm {
    *   The date format storage.
    */
   public function __construct(DateFormatterInterface $date_formatter, ConfigEntityStorageInterface $date_format_storage) {
+    $date = new DrupalDateTime();
+
     $this->dateFormatter = $date_formatter;
     $this->dateFormatStorage = $date_format_storage;
   }
@@ -77,13 +80,13 @@ abstract class DateFormatFormBase extends EntityForm {
       '#type' => 'textfield',
       '#title' => 'Name',
       '#maxlength' => 100,
-      '#description' => $this->t('Name of the date format'),
+      '#description' => t('Name of the date format'),
       '#default_value' => $this->entity->label(),
     ];
 
     $form['id'] = [
       '#type' => 'machine_name',
-      '#description' => $this->t('A unique machine-readable name. Can only contain lowercase letters, numbers, and underscores.'),
+      '#description' => t('A unique machine-readable name. Can only contain lowercase letters, numbers, and underscores.'),
       '#disabled' => !$this->entity->isNew(),
       '#default_value' => $this->entity->id(),
       '#machine_name' => [
@@ -94,9 +97,9 @@ abstract class DateFormatFormBase extends EntityForm {
     ];
     $form['date_format_pattern'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Format string'),
+      '#title' => t('Format string'),
       '#maxlength' => 100,
-      '#description' => $this->t('A user-defined date format. See the <a href="https://www.php.net/manual/datetime.format.php#refsect1-datetime.format-parameters">PHP manual</a> for available options.'),
+      '#description' => $this->t('A user-defined date format. See the <a href="http://php.net/manual/function.date.php">PHP manual</a> for available options.'),
       '#required' => TRUE,
       '#attributes' => [
         'data-drupal-date-formatter' => 'source',
@@ -106,7 +109,7 @@ abstract class DateFormatFormBase extends EntityForm {
 
     $form['langcode'] = [
       '#type' => 'language_select',
-      '#title' => $this->t('Language'),
+      '#title' => t('Language'),
       '#languages' => LanguageInterface::STATE_ALL,
       '#default_value' => $this->entity->language()->getId(),
     ];

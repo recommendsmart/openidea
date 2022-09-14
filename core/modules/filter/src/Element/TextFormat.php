@@ -39,7 +39,7 @@ class TextFormat extends RenderElement {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#process' => [
         [$class, 'processFormat'],
@@ -84,7 +84,7 @@ class TextFormat extends RenderElement {
 
     // Ensure that children appear as subkeys of this element.
     $element['#tree'] = TRUE;
-    $keys_not_to_copy = [
+    $blacklist = [
       // Make \Drupal::formBuilder()->doBuildForm() regenerate child properties.
       '#parents',
       '#id',
@@ -108,7 +108,7 @@ class TextFormat extends RenderElement {
     // Move this element into sub-element 'value'.
     unset($element['value']);
     foreach (Element::properties($element) as $key) {
-      if (!in_array($key, $keys_not_to_copy)) {
+      if (!in_array($key, $blacklist)) {
         $element['value'][$key] = $element[$key];
       }
     }
@@ -124,9 +124,6 @@ class TextFormat extends RenderElement {
     // Setup child container for the text format widget.
     $element['format'] = [
       '#type' => 'container',
-      '#theme_wrappers' => [
-        'container__text_format_filter_wrapper',
-      ],
       '#attributes' => ['class' => ['js-filter-wrapper']],
     ];
 
@@ -165,18 +162,10 @@ class TextFormat extends RenderElement {
       }
     }
 
-    // If the value element has #states set, copy it to the format element.
-    if (isset($element['value']['#states'])) {
-      $element['format']['#states'] = $element['value']['#states'];
-    }
-
     // Prepare text format guidelines.
     $element['format']['guidelines'] = [
       '#type' => 'container',
       '#attributes' => ['class' => ['js-filter-guidelines']],
-      '#theme_wrappers' => [
-        'container__text_format_filter_guidelines',
-      ],
       '#weight' => 20,
     ];
     $options = [];
@@ -201,9 +190,6 @@ class TextFormat extends RenderElement {
 
     $element['format']['help'] = [
       '#type' => 'container',
-      '#theme_wrappers' => [
-        'container__text_format_filter_help',
-      ],
       'about' => [
         '#type' => 'link',
         '#title' => t('About text formats'),

@@ -17,7 +17,7 @@ class BlockFormInBlockTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['block', 'block_test', 'test_page_test'];
+  public static $modules = ['block', 'block_test', 'test_page_test'];
 
   /**
    * {@inheritdoc}
@@ -27,7 +27,7 @@ class BlockFormInBlockTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Enable our test block.
@@ -35,43 +35,43 @@ class BlockFormInBlockTest extends BrowserTestBase {
   }
 
   /**
-   * Tests to see if form in block's redirect isn't cached.
+   * Test to see if form in block's redirect isn't cached.
    */
   public function testCachePerPage() {
     $form_values = ['email' => 'test@example.com'];
 
     // Go to "test-page" and test if the block is enabled.
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('Your .com email address.');
+    $this->assertResponse(200);
+    $this->assertText('Your .com email address.', 'form found');
 
     // Make sure that we're currently still on /test-page after submitting the
     // form.
-    $this->submitForm($form_values, 'Submit');
-    $this->assertSession()->addressEquals('test-page');
-    $this->assertSession()->pageTextContains('Your email address is test@example.com');
+    $this->drupalPostForm(NULL, $form_values, t('Submit'));
+    $this->assertUrl('test-page');
+    $this->assertText(t('Your email address is @email', ['@email' => 'test@example.com']));
 
     // Go to a different page and see if the block is enabled there as well.
     $this->drupalGet('test-render-title');
-    $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('Your .com email address.');
+    $this->assertResponse(200);
+    $this->assertText('Your .com email address.', 'form found');
 
     // Make sure that submitting the form didn't redirect us to the first page
     // we submitted the form from after submitting the form from
     // /test-render-title.
-    $this->submitForm($form_values, 'Submit');
-    $this->assertSession()->addressEquals('test-render-title');
-    $this->assertSession()->pageTextContains('Your email address is test@example.com');
+    $this->drupalPostForm(NULL, $form_values, t('Submit'));
+    $this->assertUrl('test-render-title');
+    $this->assertText(t('Your email address is @email', ['@email' => 'test@example.com']));
   }
 
   /**
-   * Tests the actual placeholders.
+   * Test the actual placeholders
    */
   public function testPlaceholders() {
     $this->drupalGet('test-multiple-forms');
 
     $placeholder = 'form_action_' . Crypt::hashBase64('Drupal\Core\Form\FormBuilder::prepareForm');
-    $this->assertSession()->pageTextContains('Form action: ' . $placeholder);
+    $this->assertText('Form action: ' . $placeholder, 'placeholder found.');
   }
 
 }

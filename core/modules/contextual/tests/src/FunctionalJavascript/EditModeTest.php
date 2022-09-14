@@ -19,7 +19,7 @@ class EditModeTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'block',
     'user',
@@ -37,7 +37,7 @@ class EditModeTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalLogin($this->createUser([
@@ -51,7 +51,7 @@ class EditModeTest extends WebDriverTestBase {
   /**
    * Tests enabling and disabling edit mode.
    */
-  public function testEditModeEnableDisable() {
+  public function testEditModeEnableDisalbe() {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
     // Get the page twice to ensure edit mode remains enabled after a new page
@@ -100,10 +100,8 @@ class EditModeTest extends WebDriverTestBase {
 
   /**
    * Asserts that the correct message was announced when entering edit mode.
-   *
-   * @internal
    */
-  protected function assertAnnounceEditMode(): void {
+  protected function assertAnnounceEditMode() {
     $web_assert = $this->assertSession();
     // Wait for contextual trigger button.
     $web_assert->waitForElementVisible('css', '.contextual trigger');
@@ -113,10 +111,8 @@ class EditModeTest extends WebDriverTestBase {
 
   /**
    * Assert that the correct message was announced when leaving edit mode.
-   *
-   * @internal
    */
-  protected function assertAnnounceLeaveEditMode(): void {
+  protected function assertAnnounceLeaveEditMode() {
     $web_assert = $this->assertSession();
     $page = $this->getSession()->getPage();
     // Wait till all the contextual links are hidden.
@@ -135,7 +131,7 @@ class EditModeTest extends WebDriverTestBase {
    */
   protected function getTabbableElementsCount() {
     // Mark all tabbable elements.
-    $this->getSession()->executeScript("jQuery(window.tabbable.tabbable(document.body)).attr('data-marked', '');");
+    $this->getSession()->executeScript("jQuery(':tabbable').attr('data-marked', '');");
     // Count all marked elements.
     $count = count($this->getSession()->getPage()->findAll('css', "[data-marked]"));
     // Remove set attributes.

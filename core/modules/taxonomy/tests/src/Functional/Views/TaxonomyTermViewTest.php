@@ -21,7 +21,7 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
    *
    * @var array
    */
-  protected static $modules = ['taxonomy', 'views'];
+  public static $modules = ['taxonomy', 'views'];
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
   protected $defaultTheme = 'stark';
 
   /**
-   * A user with permissions to administer taxonomy.
+   * An user with permissions to administer taxonomy.
    *
    * @var \Drupal\user\UserInterface
    */
@@ -45,14 +45,11 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     // Create an administrative user.
-    $this->adminUser = $this->drupalCreateUser([
-      'administer taxonomy',
-      'bypass node access',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['administer taxonomy', 'bypass node access']);
     $this->drupalLogin($this->adminUser);
 
     // Create a vocabulary and add two term reference fields to article nodes.
@@ -93,13 +90,12 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
     $edit['title[0][value]'] = $original_title = $this->randomMachineName();
     $edit['body[0][value]'] = $this->randomMachineName();
     $edit["{$this->fieldName1}[]"] = $term->id();
-    $this->drupalGet('node/add/article');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('node/add/article', $edit, t('Save'));
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
 
     $this->drupalGet('taxonomy/term/' . $term->id());
-    $this->assertSession()->pageTextContains($term->label());
-    $this->assertSession()->pageTextContains($node->label());
+    $this->assertText($term->label());
+    $this->assertText($node->label());
 
     \Drupal::service('module_installer')->install(['language', 'content_translation']);
     ConfigurableLanguage::createFromLangcode('ur')->save();
@@ -114,18 +110,17 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
 
     $edit['title[0][value]'] = $translated_title = $this->randomMachineName();
 
-    $this->drupalGet('node/' . $node->id() . '/translations/add/en/ur');
-    $this->submitForm($edit, 'Save (this translation)');
+    $this->drupalPostForm('node/' . $node->id() . '/translations/add/en/ur', $edit, t('Save (this translation)'));
 
     $this->drupalGet('taxonomy/term/' . $term->id());
-    $this->assertSession()->pageTextContains($term->label());
-    $this->assertSession()->pageTextContains($original_title);
-    $this->assertSession()->pageTextNotContains($translated_title);
+    $this->assertText($term->label());
+    $this->assertText($original_title);
+    $this->assertNoText($translated_title);
 
     $this->drupalGet('ur/taxonomy/term/' . $term->id());
-    $this->assertSession()->pageTextContains($term->label());
-    $this->assertSession()->pageTextNotContains($original_title);
-    $this->assertSession()->pageTextContains($translated_title);
+    $this->assertText($term->label());
+    $this->assertNoText($original_title);
+    $this->assertText($translated_title);
 
     // Uninstall language module and ensure that the language is not part of the
     // query anymore.
@@ -148,12 +143,12 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
     $tables = $query->getTables();
 
     // Ensure that the join to node_field_data is not added by default.
-    $this->assertEquals(['node_field_data', 'taxonomy_index'], array_keys($tables));
+    $this->assertEqual(['node_field_data', 'taxonomy_index'], array_keys($tables));
     // Ensure that the filter to the language column is not there by default.
     $condition = $query->conditions();
     // We only want to check the no. of conditions in the query.
     unset($condition['#conjunction']);
-    $this->assertCount(1, $condition);
+    $this->assertEqual(1, count($condition));
 
     // Clear permissions for anonymous users to check access for default views.
     Role::load(RoleInterface::ANONYMOUS_ID)->revokePermission('access content')->save();
@@ -161,9 +156,9 @@ class TaxonomyTermViewTest extends TaxonomyTestBase {
     // Test the default views disclose no data by default.
     $this->drupalLogout();
     $this->drupalGet('taxonomy/term/' . $term->id());
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->drupalGet('taxonomy/term/' . $term->id() . '/feed');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
   }
 
 }

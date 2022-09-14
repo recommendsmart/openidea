@@ -21,6 +21,7 @@ class InstallerExistingConfigNoConfigTest extends InstallerExistingConfigTestBas
    */
   protected function setUpSite() {
     // There are errors therefore there is nothing to do here.
+    return;
   }
 
   /**
@@ -34,13 +35,13 @@ class InstallerExistingConfigNoConfigTest extends InstallerExistingConfigTestBas
    * Tests that profiles with an empty config/sync directory do not work.
    */
   public function testConfigSync() {
-    $this->assertSession()->titleEquals('Configuration validation | Drupal');
-    $this->assertSession()->pageTextContains('The configuration synchronization failed validation.');
-    $this->assertSession()->pageTextContains('This import is empty and if applied would delete all of your configuration, so has been rejected.');
+    $this->assertTitle('Configuration validation | Drupal');
+    $this->assertText('The configuration synchronization failed validation.');
+    $this->assertText('This import is empty and if applied would delete all of your configuration, so has been rejected.');
 
     // Ensure there is no continuation button.
-    $this->assertSession()->pageTextNotContains('Save and continue');
-    $this->assertSession()->buttonNotExists('edit-submit');
+    $this->assertNoText('Save and continue');
+    $this->assertNoFieldById('edit-submit');
   }
 
 }

@@ -3,7 +3,7 @@
  * Language admin behavior.
  */
 
-(function ($, Drupal) {
+(function($, Drupal) {
   /**
    * Makes language negotiation inherit user interface negotiation.
    *
@@ -28,13 +28,11 @@
       }
 
       // Bind hide/show and rearrange customization checkboxes.
-      $(once('negotiation-language-admin-bind', $configForm)).on(
-        'change',
-        inputSelector,
-        (event) => {
+      $configForm
+        .once('negotiation-language-admin-bind')
+        .on('change', inputSelector, event => {
           toggleTable(event.target);
-        },
-      );
+        });
       // Initially, hide language detection types that are not customized.
       $configForm
         .find(`${inputSelector}:not(:checked)`)

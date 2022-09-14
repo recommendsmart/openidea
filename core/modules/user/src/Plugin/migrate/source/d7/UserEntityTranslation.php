@@ -6,12 +6,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate_drupal\Plugin\migrate\source\d7\FieldableEntity;
 
 /**
- * Drupal 7 user entity translations source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * Provides Drupal 7 user entity translations source plugin.
  *
  * @MigrateSource(
  *   id = "d7_user_entity_translation",

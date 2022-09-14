@@ -7,6 +7,7 @@ use Drupal\Core\Database\ReplicaKillSwitch;
 use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\Menu\MenuLinkManagerInterface;
 use Drupal\Core\Routing\RoutingEvents;
+use Symfony\Component\EventDispatcher\Event;
 use Drupal\Core\Database\Connection;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -63,10 +64,10 @@ class MenuRouterRebuildSubscriber implements EventSubscriberInterface {
   /**
    * Rebuilds the menu links and deletes the local_task cache tag.
    *
-   * @param \Drupal\Component\EventDispatcher\Event $event
+   * @param \Symfony\Component\EventDispatcher\Event $event
    *   The event object.
    */
-  public function onRouterRebuild($event) {
+  public function onRouterRebuild(Event $event) {
     $this->menuLinksRebuild();
     Cache::invalidateTags(['local_task']);
   }

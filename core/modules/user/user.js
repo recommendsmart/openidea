@@ -5,175 +5,105 @@
 * @preserve
 **/
 
-(function ($, Drupal) {
-  Drupal.user = {
-    password: {
-      css: {
-        passwordParent: 'password-parent',
-        passwordsMatch: 'ok',
-        passwordsNotMatch: 'error',
-        passwordWeak: 'is-weak',
-        passwordFair: 'is-fair',
-        passwordGood: 'is-good',
-        passwordStrong: 'is-strong',
-        widgetInitial: '',
-        passwordEmpty: '',
-        passwordFilled: '',
-        confirmEmpty: '',
-        confirmFilled: ''
-      }
-    }
-  };
+(function ($, Drupal, drupalSettings) {
   Drupal.behaviors.password = {
     attach: function attach(context, settings) {
-      var cssClasses = Drupal.user.password.css;
-      once('password', 'input.js-password-field', context).forEach(function (value) {
-        var $mainInput = $(value);
-        var $mainInputParent = $mainInput.parent().addClass(cssClasses.passwordParent);
-        var $passwordWidget = $mainInput.closest('.js-form-type-password-confirm');
-        var $confirmInput = $passwordWidget.find('input.js-password-confirm');
-        var $passwordConfirmMessage = $(Drupal.theme('passwordConfirmMessage', settings.password));
-        var $passwordMatchStatus = $passwordConfirmMessage.find('[data-drupal-selector="password-match-status-text"]').first();
+      var $passwordInput = $(context).find('input.js-password-field').once('password');
 
-        if ($passwordMatchStatus.length === 0) {
-          $passwordMatchStatus = $passwordConfirmMessage.find('span').first();
-          Drupal.deprecationError({
-            message: 'Returning <span> without data-drupal-selector="password-match-status-text" attribute is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. See https://www.drupal.org/node/3152101'
-          });
-        }
+      if ($passwordInput.length) {
+        var translate = settings.password;
 
-        var $confirmInputParent = $confirmInput.parent().addClass('confirm-parent').append($passwordConfirmMessage);
-        var passwordStrengthBarClassesToRemove = [cssClasses.passwordWeak || '', cssClasses.passwordFair || '', cssClasses.passwordGood || '', cssClasses.passwordStrong || ''].join(' ').trim();
-        var confirmTextWrapperClassesToRemove = [cssClasses.passwordsMatch || '', cssClasses.passwordsNotMatch || ''].join(' ').trim();
-        var widgetClassesToRemove = [cssClasses.widgetInitial || '', cssClasses.passwordEmpty || '', cssClasses.passwordFilled || '', cssClasses.confirmEmpty || '', cssClasses.confirmFilled || ''].join(' ').trim();
-        var password = {};
+        var $passwordInputParent = $passwordInput.parent();
+        var $passwordInputParentWrapper = $passwordInputParent.parent();
+        var $passwordSuggestions = void 0;
+
+        $passwordInputParent.addClass('password-parent');
+
+        $passwordInputParentWrapper.find('input.js-password-confirm').parent().append(Drupal.theme('passwordConfirmMessage', translate)).addClass('confirm-parent');
+
+        var $confirmInput = $passwordInputParentWrapper.find('input.js-password-confirm');
+        var $confirmResult = $passwordInputParentWrapper.find('div.js-password-confirm-message');
+        var $confirmChild = $confirmResult.find('span');
 
         if (settings.password.showStrengthIndicator) {
-          var $passwordStrength = $(Drupal.theme('passwordStrength', settings.password));
-          password.$strengthBar = $passwordStrength.find('[data-drupal-selector="password-strength-indicator"]').first();
-
-          if (password.$strengthBar.length === 0) {
-            password.$strengthBar = $passwordStrength.find('.js-password-strength__indicator').first();
-            Drupal.deprecationError({
-              message: 'The js-password-strength__indicator class is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Replace js-password-strength__indicator with a data-drupal-selector="password-strength-indicator" attribute. See https://www.drupal.org/node/3152101'
-            });
-          }
-
-          password.$strengthTextWrapper = $passwordStrength.find('[data-drupal-selector="password-strength-text"]').first();
-
-          if (password.$strengthTextWrapper.length === 0) {
-            password.$strengthTextWrapper = $passwordStrength.find('.js-password-strength__text').first();
-            Drupal.deprecationError({
-              message: 'The js-password-strength__text class is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. Replace js-password-strength__text with a data-drupal-selector="password-strength-text" attribute. See https://www.drupal.org/node/3152101'
-            });
-          }
-
-          password.$suggestions = $(Drupal.theme('passwordSuggestions', settings.password, []));
-          password.$suggestions.hide();
-          $mainInputParent.append($passwordStrength);
-          $confirmInputParent.after(password.$suggestions);
+          var passwordMeter = '<div class="password-strength"><div class="password-strength__meter"><div class="password-strength__indicator js-password-strength__indicator"></div></div><div aria-live="polite" aria-atomic="true" class="password-strength__title">' + translate.strengthTitle + ' <span class="password-strength__text js-password-strength__text"></span></div></div>';
+          $confirmInput.parent().after('<div class="password-suggestions description"></div>');
+          $passwordInputParent.append(passwordMeter);
+          $passwordSuggestions = $passwordInputParentWrapper.find('div.password-suggestions').hide();
         }
 
-        var addWidgetClasses = function addWidgetClasses() {
-          $passwordWidget.addClass($mainInput.val() ? cssClasses.passwordFilled : cssClasses.passwordEmpty).addClass($confirmInput.val() ? cssClasses.confirmFilled : cssClasses.confirmEmpty);
-        };
-
         var passwordCheckMatch = function passwordCheckMatch(confirmInputVal) {
-          var passwordsAreMatching = $mainInput.val() === confirmInputVal;
-          var confirmClass = passwordsAreMatching ? cssClasses.passwordsMatch : cssClasses.passwordsNotMatch;
-          var confirmMessage = passwordsAreMatching ? settings.password.confirmSuccess : settings.password.confirmFailure;
+          var success = $passwordInput.val() === confirmInputVal;
+          var confirmClass = success ? 'ok' : 'error';
 
-          if (!$passwordMatchStatus.hasClass(confirmClass) || !$passwordMatchStatus.html() === confirmMessage) {
-            if (confirmTextWrapperClassesToRemove) {
-              $passwordMatchStatus.removeClass(confirmTextWrapperClassesToRemove);
-            }
-
-            $passwordMatchStatus.html(confirmMessage).addClass(confirmClass);
-          }
+          $confirmChild.html(translate['confirm' + (success ? 'Success' : 'Failure')]).removeClass('ok error').addClass(confirmClass);
         };
 
         var passwordCheck = function passwordCheck() {
           if (settings.password.showStrengthIndicator) {
-            var result = Drupal.evaluatePasswordStrength($mainInput.val(), settings.password);
-            var $currentPasswordSuggestions = $(Drupal.theme('passwordSuggestions', settings.password, result.messageTips));
+            var result = Drupal.evaluatePasswordStrength($passwordInput.val(), settings.password);
 
-            if (password.$suggestions.html() !== $currentPasswordSuggestions.html()) {
-              password.$suggestions.replaceWith($currentPasswordSuggestions);
-              password.$suggestions = $currentPasswordSuggestions.toggle(result.strength !== 100);
+            if ($passwordSuggestions.html() !== result.message) {
+              $passwordSuggestions.html(result.message);
             }
 
-            if (passwordStrengthBarClassesToRemove) {
-              password.$strengthBar.removeClass(passwordStrengthBarClassesToRemove);
-            }
+            $passwordSuggestions.toggle(result.strength !== 100);
 
-            password.$strengthBar.css('width', "".concat(result.strength, "%")).addClass(result.indicatorClass);
-            password.$strengthTextWrapper.html(result.indicatorText);
+            $passwordInputParent.find('.js-password-strength__indicator').css('width', result.strength + '%').removeClass('is-weak is-fair is-good is-strong').addClass(result.indicatorClass);
+
+            $passwordInputParent.find('.js-password-strength__text').html(result.indicatorText);
           }
 
           if ($confirmInput.val()) {
             passwordCheckMatch($confirmInput.val());
-            $passwordConfirmMessage.css({
-              visibility: 'visible'
-            });
+            $confirmResult.css({ visibility: 'visible' });
           } else {
-            $passwordConfirmMessage.css({
-              visibility: 'hidden'
-            });
-          }
-
-          if (widgetClassesToRemove) {
-            $passwordWidget.removeClass(widgetClassesToRemove);
-            addWidgetClasses();
+            $confirmResult.css({ visibility: 'hidden' });
           }
         };
 
-        if (widgetClassesToRemove) {
-          addWidgetClasses();
-        }
-
-        $mainInput.on('input', passwordCheck);
+        $passwordInput.on('input', passwordCheck);
         $confirmInput.on('input', passwordCheck);
-      });
+      }
     }
   };
 
-  Drupal.evaluatePasswordStrength = function (password, passwordSettings) {
+  Drupal.evaluatePasswordStrength = function (password, translate) {
     password = password.trim();
-    var indicatorText;
-    var indicatorClass;
+    var indicatorText = void 0;
+    var indicatorClass = void 0;
     var weaknesses = 0;
     var strength = 100;
     var msg = [];
+
     var hasLowercase = /[a-z]/.test(password);
     var hasUppercase = /[A-Z]/.test(password);
     var hasNumbers = /[0-9]/.test(password);
     var hasPunctuation = /[^a-zA-Z0-9]/.test(password);
+
     var $usernameBox = $('input.username');
-    var username = $usernameBox.length > 0 ? $usernameBox.val() : passwordSettings.username;
+    var username = $usernameBox.length > 0 ? $usernameBox.val() : translate.username;
 
     if (password.length < 12) {
-      msg.push(passwordSettings.tooShort);
+      msg.push(translate.tooShort);
       strength -= (12 - password.length) * 5 + 30;
     }
 
     if (!hasLowercase) {
-      msg.push(passwordSettings.addLowerCase);
-      weaknesses += 1;
+      msg.push(translate.addLowerCase);
+      weaknesses++;
     }
-
     if (!hasUppercase) {
-      msg.push(passwordSettings.addUpperCase);
-      weaknesses += 1;
+      msg.push(translate.addUpperCase);
+      weaknesses++;
     }
-
     if (!hasNumbers) {
-      msg.push(passwordSettings.addNumbers);
-      weaknesses += 1;
+      msg.push(translate.addNumbers);
+      weaknesses++;
     }
-
     if (!hasPunctuation) {
-      msg.push(passwordSettings.addPunctuation);
-      weaknesses += 1;
+      msg.push(translate.addPunctuation);
+      weaknesses++;
     }
 
     switch (weaknesses) {
@@ -186,44 +116,41 @@
         break;
 
       case 3:
+        strength -= 40;
+        break;
+
       case 4:
         strength -= 40;
         break;
     }
 
     if (password !== '' && password.toLowerCase() === username.toLowerCase()) {
-      msg.push(passwordSettings.sameAsUsername);
+      msg.push(translate.sameAsUsername);
+
       strength = 5;
     }
 
-    var cssClasses = Drupal.user.password.css;
-
     if (strength < 60) {
-      indicatorText = passwordSettings.weak;
-      indicatorClass = cssClasses.passwordWeak;
+      indicatorText = translate.weak;
+      indicatorClass = 'is-weak';
     } else if (strength < 70) {
-      indicatorText = passwordSettings.fair;
-      indicatorClass = cssClasses.passwordFair;
+      indicatorText = translate.fair;
+      indicatorClass = 'is-fair';
     } else if (strength < 80) {
-      indicatorText = passwordSettings.good;
-      indicatorClass = cssClasses.passwordGood;
+      indicatorText = translate.good;
+      indicatorClass = 'is-good';
     } else if (strength <= 100) {
-      indicatorText = passwordSettings.strong;
-      indicatorClass = cssClasses.passwordStrong;
+      indicatorText = translate.strong;
+      indicatorClass = 'is-strong';
     }
 
-    var messageTips = msg;
-    msg = "".concat(passwordSettings.hasWeaknesses, "<ul><li>").concat(msg.join('</li><li>'), "</li></ul>");
-    return Drupal.deprecatedProperty({
-      target: {
-        strength: strength,
-        message: msg,
-        indicatorText: indicatorText,
-        indicatorClass: indicatorClass,
-        messageTips: messageTips
-      },
-      deprecatedProperty: 'message',
-      message: 'The message property is deprecated in drupal:9.1.0 and is removed from drupal:10.0.0. The markup should be constructed using messageTips property and Drupal.theme.passwordSuggestions. See https://www.drupal.org/node/3130352'
-    });
+    msg = translate.hasWeaknesses + '<ul><li>' + msg.join('</li><li>') + '</li></ul>';
+
+    return {
+      strength: strength,
+      message: msg,
+      indicatorText: indicatorText,
+      indicatorClass: indicatorClass
+    };
   };
-})(jQuery, Drupal);
+})(jQuery, Drupal, drupalSettings);

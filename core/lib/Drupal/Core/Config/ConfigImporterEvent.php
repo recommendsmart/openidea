@@ -2,7 +2,7 @@
 
 namespace Drupal\Core\Config;
 
-use Drupal\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 class ConfigImporterEvent extends Event {
   /**

@@ -29,10 +29,9 @@ class EarlyRenderingTestController extends ControllerBase {
   protected $renderer;
 
   /**
-   * Constructs an EarlyRenderingTestController.
+   * Constructs a EarlyRenderingTestController.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
-   *   The renderer.
    */
   public function __construct(RendererInterface $renderer) {
     $this->renderer = $renderer;

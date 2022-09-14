@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\views\Kernel;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\views\Views;
 use Drupal\views\Plugin\views\PluginBase;
 
@@ -44,7 +45,9 @@ class PluginInstanceTest extends ViewsKernelTestBase {
    *
    * @var string[]
    */
-  protected $deprecatedPlugins = [];
+  protected $deprecatedPlugins = [
+    'Drupal\system\Plugin\views\field\BulkForm',
+  ];
 
   /**
    * An array of plugin definitions, keyed by plugin type.
@@ -53,7 +56,7 @@ class PluginInstanceTest extends ViewsKernelTestBase {
    */
   protected $definitions;
 
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp();
 
     $this->definitions = Views::getPluginDefinitions();
@@ -64,18 +67,31 @@ class PluginInstanceTest extends ViewsKernelTestBase {
    */
   public function testPluginData() {
     // Check that we have an array of data.
-    $this->assertIsArray($this->definitions);
+    $this->assertTrue(is_array($this->definitions), 'Plugin data is an array.');
 
     // Check all plugin types.
     foreach ($this->pluginTypes as $type) {
-      $this->assertArrayHasKey($type, $this->definitions);
-      $this->assertIsArray($this->definitions[$type]);
-      $this->assertNotEmpty($this->definitions[$type], "Plugin type '$type' should contain plugins.");
+      $this->assertTrue(array_key_exists($type, $this->definitions), new FormattableMarkup('Key for plugin type @type found.', ['@type' => $type]));
+      $this->assertTrue(is_array($this->definitions[$type]) && !empty($this->definitions[$type]), new FormattableMarkup('Plugin type @type has an array of plugins.', ['@type' => $type]));
     }
 
     // Tests that the plugin list has not missed any types.
     $diff = array_diff(array_keys($this->definitions), $this->pluginTypes);
-    $this->assertEmpty($diff, 'All plugins were found and matched.');
+    $this->assertTrue(empty($diff), 'All plugins were found and matched.');
+  }
+
+  /**
+   * Tests creating instances of deprecated views plugin.
+   *
+   * This will iterate through all plugins from _views_fetch_plugin_data() and
+   * test only deprecated plugins.
+   *
+   * @group legacy
+   *
+   * @expectedDeprecation Drupal\system\Plugin\views\field\BulkForm is deprecated in drupal:8.5.0, will be removed before drupal:9.0.0. Use \Drupal\views\Plugin\views\field\BulkForm instead. See https://www.drupal.org/node/2916716.
+   */
+  public function testDeprecatedPluginInstances() {
+    $this->assertPluginInstances(TRUE);
   }
 
   /**
@@ -93,10 +109,8 @@ class PluginInstanceTest extends ViewsKernelTestBase {
    *
    * @param bool $test_deprecated
    *   Indicates if deprecated plugins should be tested or skipped.
-   *
-   * @internal
    */
-  protected function assertPluginInstances(bool $test_deprecated): void {
+  protected function assertPluginInstances($test_deprecated) {
     foreach ($this->definitions as $type => $plugins) {
       // Get a plugin manager for this type.
       $manager = $this->container->get("plugin.manager.views.$type");

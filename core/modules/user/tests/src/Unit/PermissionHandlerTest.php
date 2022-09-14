@@ -57,7 +57,7 @@ class PermissionHandlerTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->stringTranslation = new TestTranslationManager();
@@ -125,6 +125,11 @@ EOF
 EOF
     );
     $modules = ['module_a', 'module_b', 'module_c'];
+    $extensions = [
+      'module_a' => $this->mockModuleExtension('module_a', 'Module a'),
+      'module_b' => $this->mockModuleExtension('module_b', 'Module b'),
+      'module_c' => $this->mockModuleExtension('module_c', 'Module c'),
+    ];
     $this->moduleHandler->expects($this->any())
       ->method('getImplementations')
       ->with('permission')
@@ -171,11 +176,11 @@ EOF
       ]);
     $this->moduleHandler->expects($this->exactly(3))
       ->method('getName')
-      ->willReturnMap([
+      ->will($this->returnValueMap([
         ['module_a', 'Module a'],
         ['module_b', 'Module b'],
         ['module_c', 'A Module'],
-      ]);
+      ]));
 
     $url = vfsStream::url('modules');
     mkdir($url . '/module_a');
@@ -247,6 +252,11 @@ EOF
     );
 
     $modules = ['module_a', 'module_b', 'module_c'];
+    $extensions = [
+      'module_a' => $this->mockModuleExtension('module_a', 'Module a'),
+      'module_b' => $this->mockModuleExtension('module_b', 'Module b'),
+      'module_c' => $this->mockModuleExtension('module_c', 'Module c'),
+    ];
 
     $this->moduleHandler->expects($this->any())
       ->method('getImplementations')
@@ -257,14 +267,22 @@ EOF
       ->method('getModuleList')
       ->willReturn(array_flip($modules));
 
-    $this->controllerResolver->expects($this->exactly(4))
+    $this->controllerResolver->expects($this->at(0))
       ->method('getControllerFromDefinition')
-      ->willReturnMap([
-        ['Drupal\\user\\Tests\\TestPermissionCallbacks::singleDescription', [new TestPermissionCallbacks(), 'singleDescription']],
-        ['Drupal\\user\\Tests\\TestPermissionCallbacks::titleDescription', [new TestPermissionCallbacks(), 'titleDescription']],
-        ['Drupal\\user\\Tests\\TestPermissionCallbacks::titleProvider', [new TestPermissionCallbacks(), 'titleProvider']],
-        ['Drupal\\user\\Tests\\TestPermissionCallbacks::titleDescriptionRestrictAccess', [new TestPermissionCallbacks(), 'titleDescriptionRestrictAccess']],
-      ]);
+      ->with('Drupal\\user\\Tests\\TestPermissionCallbacks::singleDescription')
+      ->willReturn([new TestPermissionCallbacks(), 'singleDescription']);
+    $this->controllerResolver->expects($this->at(1))
+      ->method('getControllerFromDefinition')
+      ->with('Drupal\\user\\Tests\\TestPermissionCallbacks::titleDescription')
+      ->willReturn([new TestPermissionCallbacks(), 'titleDescription']);
+    $this->controllerResolver->expects($this->at(2))
+      ->method('getControllerFromDefinition')
+      ->with('Drupal\\user\\Tests\\TestPermissionCallbacks::titleProvider')
+      ->willReturn([new TestPermissionCallbacks(), 'titleProvider']);
+    $this->controllerResolver->expects($this->at(3))
+      ->method('getControllerFromDefinition')
+      ->with('Drupal\\user\\Tests\\TestPermissionCallbacks::titleDescriptionRestrictAccess')
+      ->willReturn([new TestPermissionCallbacks(), 'titleDescriptionRestrictAccess']);
 
     $this->permissionHandler = new PermissionHandler($this->moduleHandler, $this->stringTranslation, $this->controllerResolver);
 
@@ -299,6 +317,9 @@ EOF
     );
 
     $modules = ['module_a'];
+    $extensions = [
+      'module_a' => $this->mockModuleExtension('module_a', 'Module a'),
+    ];
 
     $this->moduleHandler->expects($this->any())
       ->method('getImplementations')
@@ -319,12 +340,12 @@ EOF
     $actual_permissions = $this->permissionHandler->getPermissions();
 
     $this->assertCount(2, $actual_permissions);
-    $this->assertEquals('Access A', $actual_permissions['access module a']['title']);
-    $this->assertEquals('module_a', $actual_permissions['access module a']['provider']);
-    $this->assertEquals('bla bla', $actual_permissions['access module a']['description']);
-    $this->assertEquals('Access B', $actual_permissions['access module b']['title']);
-    $this->assertEquals('module_a', $actual_permissions['access module b']['provider']);
-    $this->assertEquals('bla bla', $actual_permissions['access module b']['description']);
+    $this->assertEquals($actual_permissions['access module a']['title'], 'Access A');
+    $this->assertEquals($actual_permissions['access module a']['provider'], 'module_a');
+    $this->assertEquals($actual_permissions['access module a']['description'], 'bla bla');
+    $this->assertEquals($actual_permissions['access module b']['title'], 'Access B');
+    $this->assertEquals($actual_permissions['access module b']['provider'], 'module_a');
+    $this->assertEquals($actual_permissions['access module b']['description'], 'bla bla');
   }
 
   /**
@@ -332,19 +353,17 @@ EOF
    *
    * @param array $actual_permissions
    *   The actual permissions
-   *
-   * @internal
    */
-  protected function assertPermissions(array $actual_permissions): void {
+  protected function assertPermissions(array $actual_permissions) {
     $this->assertCount(4, $actual_permissions);
-    $this->assertEquals('single_description', $actual_permissions['access_module_a']['title']);
-    $this->assertEquals('module_a', $actual_permissions['access_module_a']['provider']);
-    $this->assertEquals('Access B', $actual_permissions['access module b']['title']);
-    $this->assertEquals('module_b', $actual_permissions['access module b']['provider']);
-    $this->assertEquals('Access C', $actual_permissions['access_module_c']['title']);
-    $this->assertEquals('module_c', $actual_permissions['access_module_c']['provider']);
-    $this->assertTrue($actual_permissions['access_module_c']['restrict access']);
-    $this->assertEquals('module_a', $actual_permissions['access module a via module b']['provider']);
+    $this->assertEquals($actual_permissions['access_module_a']['title'], 'single_description');
+    $this->assertEquals($actual_permissions['access_module_a']['provider'], 'module_a');
+    $this->assertEquals($actual_permissions['access module b']['title'], 'Access B');
+    $this->assertEquals($actual_permissions['access module b']['provider'], 'module_b');
+    $this->assertEquals($actual_permissions['access_module_c']['title'], 'Access C');
+    $this->assertEquals($actual_permissions['access_module_c']['provider'], 'module_c');
+    $this->assertEquals($actual_permissions['access_module_c']['restrict access'], TRUE);
+    $this->assertEquals($actual_permissions['access module a via module b']['provider'], 'module_a');
   }
 
 }

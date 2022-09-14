@@ -44,7 +44,7 @@ class QueryTest extends ViewsKernelTestBase {
     $view->setDisplay();
 
     $view->initQuery();
-    $this->assertInstanceOf(QueryTestPlugin::class, $view->query);
+    $this->assertInstanceOf(QueryTestPlugin::class, $view->query, 'Make sure the right query plugin got instantiated.');
   }
 
   public function _testQueryExecute() {
@@ -59,7 +59,7 @@ class QueryTest extends ViewsKernelTestBase {
   }
 
   /**
-   * Tests methods provided by the QueryPluginBase.
+   * Test methods provided by the QueryPluginBase.
    *
    * @see \Drupal\views\Plugin\views\query\QueryPluginBase
    */
@@ -71,7 +71,7 @@ class QueryTest extends ViewsKernelTestBase {
     $this->assertNull($view->query->getLimit(), 'Default to an empty limit.');
     $rand_number = rand(5, 10);
     $view->query->setLimit($rand_number);
-    $this->assertEquals($rand_number, $view->query->getLimit(), 'set_limit adapts the amount of items.');
+    $this->assertEqual($view->query->getLimit(), $rand_number, 'set_limit adapts the amount of items.');
   }
 
 }

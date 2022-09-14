@@ -71,7 +71,7 @@ class SearchPageForm extends FormBase {
     $form['help_link'] = [
       '#type' => 'link',
       '#url' => new Url('search.help_' . $this->entity->id()),
-      '#title' => $this->t('About searching'),
+      '#title' => $this->t('Search help'),
       '#options' => ['attributes' => ['class' => 'search-help-link']],
     ];
 

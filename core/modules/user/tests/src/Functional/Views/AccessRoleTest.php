@@ -46,26 +46,26 @@ class AccessRoleTest extends AccessTestBase {
       'config' => ['user.role.' . $this->normalRole],
       'module' => ['user', 'views_test_data'],
     ];
-    $this->assertSame($expected, $view->calculateDependencies()->getDependencies());
+    $this->assertIdentical($expected, $view->calculateDependencies()->getDependencies());
 
     $executable = Views::executableFactory()->get($view);
     $executable->setDisplay('page_1');
 
     $access_plugin = $executable->display_handler->getPlugin('access');
-    $this->assertInstanceOf(Role::class, $access_plugin);
+    $this->assertTrue($access_plugin instanceof Role, 'Make sure the right class got instantiated.');
 
     // Test the access() method on the access plugin.
-    $this->assertFalse($executable->display_handler->access($this->webUser));
-    $this->assertTrue($executable->display_handler->access($this->normalUser));
+    $this->assertSame(FALSE, $executable->display_handler->access($this->webUser));
+    $this->assertSame(TRUE, $executable->display_handler->access($this->normalUser));
 
     $this->drupalLogin($this->webUser);
     $this->drupalGet('test-role');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->assertCacheContext('user.roles');
 
     $this->drupalLogin($this->normalUser);
     $this->drupalGet('test-role');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $this->assertCacheContext('user.roles');
 
     // Test allowing multiple roles.
@@ -86,18 +86,18 @@ class AccessRoleTest extends AccessTestBase {
       'config' => $roles,
       'module' => ['user', 'views_test_data'],
     ];
-    $this->assertSame($expected, $view->calculateDependencies()->getDependencies());
+    $this->assertIdentical($expected, $view->calculateDependencies()->getDependencies());
     $this->drupalLogin($this->webUser);
     $this->drupalGet('test-role');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->assertCacheContext('user.roles');
     $this->drupalLogout();
     $this->drupalGet('test-role');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $this->assertCacheContext('user.roles');
     $this->drupalLogin($this->normalUser);
     $this->drupalGet('test-role');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
     $this->assertCacheContext('user.roles');
   }
 
@@ -124,10 +124,10 @@ class AccessRoleTest extends AccessTestBase {
     $build = DisplayPluginBase::buildBasicRenderable('test_access_role', 'default');
     $account_switcher->switchTo($this->normalUser);
     $result = $renderer->renderPlain($build);
-    $this->assertContains('user.roles', $build['#cache']['contexts']);
-    $this->assertEquals(['config:views.view.test_access_role'], $build['#cache']['tags']);
-    $this->assertEquals(Cache::PERMANENT, $build['#cache']['max-age']);
-    $this->assertNotSame('', $result);
+    $this->assertTrue(in_array('user.roles', $build['#cache']['contexts']));
+    $this->assertEqual(['config:views.view.test_access_role'], $build['#cache']['tags']);
+    $this->assertEqual(Cache::PERMANENT, $build['#cache']['max-age']);
+    $this->assertNotEqual($result, '');
 
     // Then without access.
     $build = DisplayPluginBase::buildBasicRenderable('test_access_role', 'default');
@@ -136,10 +136,10 @@ class AccessRoleTest extends AccessTestBase {
     // @todo Fix this in https://www.drupal.org/node/2551037,
     // DisplayPluginBase::applyDisplayCacheabilityMetadata() is not invoked when
     // using buildBasicRenderable() and a Views access plugin returns FALSE.
-    // $this->assertContains('user.roles', $build['#cache']['contexts']);
-    // $this->assertEquals([], $build['#cache']['tags']);
-    $this->assertEquals(Cache::PERMANENT, $build['#cache']['max-age']);
-    $this->assertEquals('', $result);
+    // $this->assertTrue(in_array('user.roles', $build['#cache']['contexts']));
+    // $this->assertEqual([], $build['#cache']['tags']);
+    $this->assertEqual(Cache::PERMANENT, $build['#cache']['max-age']);
+    $this->assertEqual($result, '');
   }
 
 }

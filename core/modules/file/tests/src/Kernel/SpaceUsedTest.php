@@ -3,7 +3,6 @@
 namespace Drupal\Tests\file\Kernel;
 
 use Drupal\file\Entity\File;
-use Drupal\file\FileInterface;
 
 /**
  * Tests the spaceUsed() function.
@@ -12,7 +11,7 @@ use Drupal\file\FileInterface;
  */
 class SpaceUsedTest extends FileManagedUnitTestBase {
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create records for a couple of users with different sizes.
@@ -41,7 +40,7 @@ class SpaceUsedTest extends FileManagedUnitTestBase {
    * @return \Drupal\Core\Entity\EntityInterface
    *   The file entity.
    */
-  protected function createFileWithSize($uri, $size, $uid, $status = FileInterface::STATUS_PERMANENT) {
+  protected function createFileWithSize($uri, $size, $uid, $status = FILE_STATUS_PERMANENT) {
     file_put_contents($uri, $this->randomMachineName($size));
     $file = File::create([
       'uri' => $uri,
@@ -53,26 +52,26 @@ class SpaceUsedTest extends FileManagedUnitTestBase {
   }
 
   /**
-   * Tests different users with the default status.
+   * Test different users with the default status.
    */
   public function testFileSpaceUsed() {
     $file = $this->container->get('entity_type.manager')->getStorage('file');
     // Test different users with default status.
-    $this->assertEquals(70, $file->spaceUsed(2));
-    $this->assertEquals(300, $file->spaceUsed(3));
-    $this->assertEquals(370, $file->spaceUsed());
+    $this->assertEqual($file->spaceUsed(2), 70);
+    $this->assertEqual($file->spaceUsed(3), 300);
+    $this->assertEqual($file->spaceUsed(), 370);
 
     // Test the status fields
-    $this->assertEquals(4, $file->spaceUsed(NULL, 0));
-    $this->assertEquals(370, $file->spaceUsed());
+    $this->assertEqual($file->spaceUsed(NULL, 0), 4);
+    $this->assertEqual($file->spaceUsed(NULL, FILE_STATUS_PERMANENT), 370);
 
     // Test both the user and status.
-    $this->assertEquals(0, $file->spaceUsed(1, 0));
-    $this->assertEquals(0, $file->spaceUsed(1));
-    $this->assertEquals(1, $file->spaceUsed(2, 0));
-    $this->assertEquals(70, $file->spaceUsed(2));
-    $this->assertEquals(3, $file->spaceUsed(3, 0));
-    $this->assertEquals(300, $file->spaceUsed(3));
+    $this->assertEqual($file->spaceUsed(1, 0), 0);
+    $this->assertEqual($file->spaceUsed(1, FILE_STATUS_PERMANENT), 0);
+    $this->assertEqual($file->spaceUsed(2, 0), 1);
+    $this->assertEqual($file->spaceUsed(2, FILE_STATUS_PERMANENT), 70);
+    $this->assertEqual($file->spaceUsed(3, 0), 3);
+    $this->assertEqual($file->spaceUsed(3, FILE_STATUS_PERMANENT), 300);
   }
 
 }

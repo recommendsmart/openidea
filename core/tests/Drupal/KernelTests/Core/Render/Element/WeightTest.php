@@ -22,13 +22,13 @@ class WeightTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['system']);
   }
 
   /**
-   * Tests existing #default_value value in #options list.
+   * Test existing #default_value value in #options list.
    *
    * @covers ::processWeight
    */
@@ -52,7 +52,7 @@ class WeightTest extends KernelTestBase {
   }
 
   /**
-   * Tests transformation from "select" to "number" for MAX_DELTA + 1.
+   * Test transformation from "select" to "number" for MAX_DELTA + 1.
    *
    * @throws \Exception
    *

@@ -14,7 +14,7 @@ use Drupal\language\Exception\DeleteDefaultLanguageException;
 class LanguageDependencyInjectionTest extends LanguageTestBase {
 
   /**
-   * Tests dependency injected languages against a new Language object.
+   * Test dependency injected languages against a new Language object.
    *
    * @see \Drupal\Core\Language\LanguageInterface
    */
@@ -25,7 +25,8 @@ class LanguageDependencyInjectionTest extends LanguageTestBase {
   }
 
   /**
-   * Tests dependency injected Language object.
+   * Test dependency injected Language object against a new default language
+   * object.
    *
    * @see \Drupal\Core\Language\Language
    */
@@ -39,7 +40,7 @@ class LanguageDependencyInjectionTest extends LanguageTestBase {
     // The language system creates a Language object which contains the
     // same properties as the new default language object.
     $result = \Drupal::languageManager()->getCurrentLanguage();
-    $this->assertSame('fr', $result->getId());
+    $this->assertIdentical($result->getId(), 'fr');
 
     // Delete the language to check that we fallback to the default.
     try {
@@ -47,7 +48,7 @@ class LanguageDependencyInjectionTest extends LanguageTestBase {
       $this->fail('Expected DeleteDefaultLanguageException thrown.');
     }
     catch (DeleteDefaultLanguageException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('Expected DeleteDefaultLanguageException thrown.');
     }
 
     // Re-save the previous default language and the delete should work.
@@ -55,7 +56,7 @@ class LanguageDependencyInjectionTest extends LanguageTestBase {
 
     $fr->delete();
     $result = \Drupal::languageManager()->getCurrentLanguage();
-    $this->assertSame($default_language->getId(), $result->getId());
+    $this->assertIdentical($result->getId(), $default_language->getId());
   }
 
 }

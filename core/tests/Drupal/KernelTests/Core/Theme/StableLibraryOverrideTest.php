@@ -2,7 +2,6 @@
 
 namespace Drupal\KernelTests\Core\Theme;
 
-use Drupal\Core\Extension\ExtensionLifecycle;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -50,12 +49,12 @@ class StableLibraryOverrideTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system', 'user', 'path_alias'];
+  public static $modules = ['system', 'user', 'path_alias'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->container->get('theme_installer')->install(['stable']);
@@ -65,7 +64,7 @@ class StableLibraryOverrideTest extends KernelTestBase {
     $all_modules = array_filter($all_modules, function ($module) {
       // Filter contrib, hidden, experimental, already enabled modules, and
       // modules in the Testing package.
-      if ($module->origin !== 'core' || !empty($module->info['hidden']) || $module->status == TRUE || $module->info['package'] == 'Testing' || $module->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER] === ExtensionLifecycle::EXPERIMENTAL) {
+      if ($module->origin !== 'core' || !empty($module->info['hidden']) || $module->status == TRUE || $module->info['package'] == 'Testing' || $module->info['package'] == 'Core (Experimental)') {
         return FALSE;
       }
       return TRUE;
@@ -74,10 +73,6 @@ class StableLibraryOverrideTest extends KernelTestBase {
     $this->allModules[] = 'system';
     $this->allModules[] = 'user';
     $this->allModules[] = 'path_alias';
-    $database_module = \Drupal::database()->getProvider();
-    if ($database_module !== 'core') {
-      $this->allModules[] = $database_module;
-    }
     sort($this->allModules);
     $this->container->get('module_installer')->install($this->allModules);
 
@@ -125,7 +120,7 @@ class StableLibraryOverrideTest extends KernelTestBase {
           $expected_path = str_replace("core/modules/$extension/css/", "core/themes/stable/css/$extension/", $expected_path);
           $assert_path = str_replace("core/modules/$extension/", '', $clean_path);
 
-          $this->assertEquals($expected_path, $stable_path, "$assert_path from the $extension/$library_name library is overridden in Stable.");
+          $this->assertEqual($expected_path, $stable_path, "$assert_path from the $extension/$library_name library is overridden in Stable.");
         }
       }
     }
@@ -175,7 +170,7 @@ class StableLibraryOverrideTest extends KernelTestBase {
     $modules = \Drupal::moduleHandler()->getModuleList();
     $module_list = array_keys($modules);
     sort($module_list);
-    $this->assertEquals($this->allModules, $module_list, 'All core modules are installed.');
+    $this->assertEqual($this->allModules, $module_list, 'All core modules are installed.');
 
     $libraries['core'] = $this->libraryDiscovery->getLibrariesByExtension('core');
 

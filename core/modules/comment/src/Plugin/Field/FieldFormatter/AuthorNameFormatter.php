@@ -27,7 +27,7 @@ class AuthorNameFormatter extends FormatterBase {
     $elements = [];
 
     foreach ($items as $delta => $item) {
-      /** @var \Drupal\comment\CommentInterface $comment */
+      /** @var $comment \Drupal\comment\CommentInterface */
       $comment = $item->getEntity();
       $account = $comment->getOwner();
       $elements[$delta] = [

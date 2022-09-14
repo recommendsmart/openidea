@@ -4,7 +4,6 @@ namespace Drupal\Core\StackMiddleware;
 
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
@@ -48,7 +47,7 @@ class Session implements HttpKernelInterface {
   /**
    * {@inheritdoc}
    */
-  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE): Response {
+  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE) {
     if ($type === self::MASTER_REQUEST && PHP_SAPI !== 'cli') {
       $session = $this->container->get($this->sessionServiceName);
       $session->start();

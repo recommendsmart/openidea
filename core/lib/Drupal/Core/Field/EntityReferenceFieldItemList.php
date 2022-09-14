@@ -6,7 +6,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Defines an item list class for entity reference fields.
+ * Defines a item list class for entity reference fields.
  */
 class EntityReferenceFieldItemList extends FieldItemList implements EntityReferenceFieldItemListInterface {
 
@@ -73,7 +73,6 @@ class EntityReferenceFieldItemList extends FieldItemList implements EntityRefere
       if ($uuids) {
         $target_type = $definition->getSetting('target_type');
         $entity_ids = \Drupal::entityQuery($target_type)
-          ->accessCheck(TRUE)
           ->condition('uuid', $uuids, 'IN')
           ->execute();
         $entities = \Drupal::entityTypeManager()

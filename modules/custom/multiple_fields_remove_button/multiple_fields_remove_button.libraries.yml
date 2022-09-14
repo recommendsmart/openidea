@@ -1,4 +1,0 @@
-multiple_fields_remove_button.widget:
-  css:
-    theme:
-      css/multiple-fields-remove-button.widget.css: {}

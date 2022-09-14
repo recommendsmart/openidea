@@ -21,7 +21,7 @@ trait TestRequirementsTrait {
    * @return string
    */
   protected static function getDrupalRoot() {
-    return dirname(substr(__DIR__, 0, -strlen(__NAMESPACE__)), 2);
+    return dirname(dirname(substr(__DIR__, 0, -strlen(__NAMESPACE__))));
   }
 
   /**
@@ -40,7 +40,7 @@ trait TestRequirementsTrait {
     }
 
     $missingRequirements = Test::getMissingRequirements(
-      static::class,
+      get_class($this),
       $this->getName(FALSE)
     );
 
@@ -51,10 +51,7 @@ trait TestRequirementsTrait {
     $root = static::getDrupalRoot();
 
     // Check if required dependencies exist.
-    $annotations = Test::parseTestMethodAnnotations(
-      static::class,
-      $this->getName()
-    );
+    $annotations = $this->getAnnotations();
     if (!empty($annotations['class']['requires'])) {
       $this->checkModuleRequirements($root, $annotations['class']['requires']);
     }
@@ -80,6 +77,9 @@ trait TestRequirementsTrait {
    *   skipped. Callers should not catch this exception.
    */
   private function checkModuleRequirements($root, array $annotations) {
+    // drupal_valid_ua() might not be loaded.
+    require_once $root . '/core/includes/bootstrap.inc';
+
     // Make a list of required modules.
     $required_modules = [];
     foreach ($annotations as $requirement) {

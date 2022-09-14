@@ -30,9 +30,9 @@ class PoHeaderTest extends TestCase {
   public function testPluralsFormula($plural, $expected) {
     $p = new PoHeader();
     $parsed = $p->parsePluralForms($plural);
-    [$nplurals, $new_plural] = $parsed;
+    list($nplurals, $new_plural) = $parsed;
     foreach ($expected as $number => $plural_form) {
-      $result = $new_plural[$number] ?? $new_plural['default'];
+      $result = isset($new_plural[$number]) ? $new_plural[$number] : $new_plural['default'];
       $this->assertEquals($result, $plural_form, 'Difference found at ' . $number . ': ' . $plural_form . ' versus ' . $result);
     }
   }

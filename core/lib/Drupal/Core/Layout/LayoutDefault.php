@@ -4,8 +4,6 @@ namespace Drupal\Core\Layout;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
-use Drupal\Core\Plugin\ContextAwarePluginTrait;
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\Core\Plugin\PluginFormInterface;
 
@@ -13,9 +11,6 @@ use Drupal\Core\Plugin\PluginFormInterface;
  * Provides a default class for Layout plugins.
  */
 class LayoutDefault extends PluginBase implements LayoutInterface, PluginFormInterface {
-
-  use ContextAwarePluginAssignmentTrait;
-  use ContextAwarePluginTrait;
 
   /**
    * The layout definition.
@@ -100,8 +95,6 @@ class LayoutDefault extends PluginBase implements LayoutInterface, PluginFormInt
       '#title' => $this->t('Administrative label'),
       '#default_value' => $this->configuration['label'],
     ];
-    $contexts = $form_state->getTemporaryValue('gathered_contexts') ?: [];
-    $form['context_mapping'] = $this->addContextAssignmentElement($this, $contexts);
     return $form;
   }
 

@@ -10,7 +10,7 @@ class AccessResultNeutral extends AccessResult implements AccessResultReasonInte
   /**
    * The reason why access is neutral. For use in messages.
    *
-   * @var string
+   * @var string|null
    */
   protected $reason;
 
@@ -35,7 +35,7 @@ class AccessResultNeutral extends AccessResult implements AccessResultReasonInte
    * {@inheritdoc}
    */
   public function getReason() {
-    return (string) $this->reason;
+    return $this->reason;
   }
 
   /**

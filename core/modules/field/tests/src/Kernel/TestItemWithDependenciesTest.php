@@ -17,7 +17,7 @@ class TestItemWithDependenciesTest extends FieldKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['field_test'];
+  public static $modules = ['field_test'];
 
   /**
    * The name of the field to use in this test.
@@ -45,7 +45,7 @@ class TestItemWithDependenciesTest extends FieldKernelTestBase {
 
     // Validate that the field configuration entity has the expected
     // dependencies.
-    $this->assertEquals([
+    $this->assertEqual([
       'content' => ['node:article:uuid'],
       'config' => ['field.storage.entity_test.field_test'],
       'module' => ['entity_test', 'field_test', 'test_module'],

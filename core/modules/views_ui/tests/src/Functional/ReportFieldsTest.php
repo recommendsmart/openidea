@@ -25,15 +25,15 @@ class ReportFieldsTest extends UITestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['entity_test'];
+  public static $modules = ['entity_test'];
 
   /**
    * Tests the Views fields report page.
    */
   public function testReportFields() {
     $this->drupalGet('admin/reports/fields/views-fields');
-    $this->assertSession()->pageTextContains('Used in views');
-    $this->assertSession()->pageTextContains('No fields have been used in views yet.');
+    $this->assertRaw('Used in views', 'Title appears correctly');
+    $this->assertRaw('No fields have been used in views yet.', 'No results message appears correctly.');
 
     // Set up the field_test field.
     $field_storage = FieldStorageConfig::create([
@@ -50,11 +50,11 @@ class ReportFieldsTest extends UITestBase {
     ]);
     $field->save();
 
-    // Assert that the newly created field appears in the overview.
     $this->drupalGet('admin/reports/fields/views-fields');
-    $this->assertSession()->responseContains('<td>field_test</td>');
-    $this->assertSession()->responseContains('>test_field_field_test</a>');
-    $this->assertSession()->pageTextContains('Used in views');
+    // Assert that the newly created field appears in the overview.
+    $this->assertRaw('<td>field_test</td>', 'Field name appears correctly');
+    $this->assertRaw('>test_field_field_test</a>', 'View name appears correctly');
+    $this->assertRaw('Used in views', 'Title appears correctly');
   }
 
 }

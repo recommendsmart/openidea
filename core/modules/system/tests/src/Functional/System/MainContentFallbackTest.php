@@ -16,7 +16,7 @@ class MainContentFallbackTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['block', 'system_test'];
+  public static $modules = ['block', 'system_test'];
 
   /**
    * {@inheritdoc}
@@ -26,7 +26,7 @@ class MainContentFallbackTest extends BrowserTestBase {
   protected $adminUser;
   protected $webUser;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create and log in admin user.
@@ -42,16 +42,15 @@ class MainContentFallbackTest extends BrowserTestBase {
   }
 
   /**
-   * Tests availability of main content: Drupal falls back to SimplePageVariant.
+   * Test availability of main content: Drupal falls back to SimplePageVariant.
    */
   public function testMainContentFallback() {
     $edit = [];
     // Uninstall the block module.
     $edit['uninstall[block]'] = 'block';
-    $this->drupalGet('admin/modules/uninstall');
-    $this->submitForm($edit, 'Uninstall');
-    $this->submitForm([], 'Uninstall');
-    $this->assertSession()->pageTextContains('The selected modules have been uninstalled.');
+    $this->drupalPostForm('admin/modules/uninstall', $edit, t('Uninstall'));
+    $this->drupalPostForm(NULL, NULL, t('Uninstall'));
+    $this->assertText(t('The selected modules have been uninstalled.'), 'Modules status has been updated.');
     $this->rebuildContainer();
     $this->assertFalse(\Drupal::moduleHandler()->moduleExists('block'), 'Block module uninstall.');
 
@@ -59,21 +58,20 @@ class MainContentFallbackTest extends BrowserTestBase {
     // Drupal should fall back to SimplePageVariant. Both for the admin and the
     // front-end theme.
     $this->drupalGet('admin/config/system/site-information');
-    $this->assertSession()->fieldExists('site_name');
+    $this->assertField('site_name', 'Fallback to SimplePageVariant works for admin theme.');
     $this->drupalGet('system-test/main-content-fallback');
-    $this->assertSession()->pageTextContains('Content to test main content fallback');
+    $this->assertText(t('Content to test main content fallback'), 'Fallback to SimplePageVariant works for front-end theme.');
     // Request a user* page and see if it is displayed.
     $this->drupalLogin($this->webUser);
     $this->drupalGet('user/' . $this->webUser->id() . '/edit');
-    $this->assertSession()->fieldExists('mail');
+    $this->assertField('mail', 'User interface still available.');
 
     // Enable the block module again.
     $this->drupalLogin($this->adminUser);
     $edit = [];
     $edit['modules[block][enable]'] = 'block';
-    $this->drupalGet('admin/modules');
-    $this->submitForm($edit, 'Install');
-    $this->assertSession()->pageTextContains('Module Block has been enabled.');
+    $this->drupalPostForm('admin/modules', $edit, t('Install'));
+    $this->assertText(t('Module Block has been enabled.'), 'Modules status has been updated.');
     $this->rebuildContainer();
     $this->assertTrue(\Drupal::moduleHandler()->moduleExists('block'), 'Block module re-enabled.');
   }

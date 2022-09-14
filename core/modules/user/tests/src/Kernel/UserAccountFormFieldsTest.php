@@ -18,7 +18,7 @@ class UserAccountFormFieldsTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['system', 'user', 'field'];
+  public static $modules = ['system', 'user', 'field'];
 
   /**
    * Tests the root user account form section in the "Configure site" form.
@@ -73,6 +73,9 @@ class UserAccountFormFieldsTest extends KernelTestBase {
     // Install default configuration; required for AccountFormController.
     $this->installConfig(['user']);
 
+    // Install the router table and then rebuild.
+    \Drupal::service('router.builder')->rebuild();
+
     $form = $this->buildAccountForm('default');
 
     // Verify name and pass field order.
@@ -80,7 +83,7 @@ class UserAccountFormFieldsTest extends KernelTestBase {
 
     // Verify that autocomplete is off on all account fields.
     foreach (['mail', 'name', 'pass'] as $key) {
-      $this->assertSame('off', $form['account'][$key]['#attributes']['autocomplete'], "'{$key}' field: 'autocomplete' attribute is 'off'.");
+      $this->assertIdentical($form['account'][$key]['#attributes']['autocomplete'], 'off', "'$key' field: 'autocomplete' attribute is 'off'.");
     }
   }
 
@@ -89,10 +92,8 @@ class UserAccountFormFieldsTest extends KernelTestBase {
    *
    * @param array $elements
    *   A form array section that contains the user account form elements.
-   *
-   * @internal
    */
-  protected function assertFieldOrder(array $elements): void {
+  protected function assertFieldOrder(array $elements) {
     $name_index = 0;
     $name_weight = 0;
     $pass_index = 0;
@@ -111,8 +112,8 @@ class UserAccountFormFieldsTest extends KernelTestBase {
       }
       $index++;
     }
-    $this->assertEquals($pass_index - 1, $name_index, "'name' field ({$name_index}) appears before 'pass' field ({$pass_index}).");
-    $this->assertLessThan($pass_weight, $name_weight, "'name' field weight ($name_weight) should be smaller than 'pass' field weight ($pass_weight).");
+    $this->assertEqual($name_index, $pass_index - 1, "'name' field ($name_index) appears before 'pass' field ($pass_index).");
+    $this->assertTrue($name_weight < $pass_weight, "'name' field weight ($name_weight) is smaller than 'pass' field weight ($pass_weight).");
   }
 
   /**
@@ -134,6 +135,9 @@ class UserAccountFormFieldsTest extends KernelTestBase {
     $entity = $this->container->get('entity_type.manager')
       ->getStorage($entity_type)
       ->create($fields);
+    $this->container->get('entity_type.manager')
+      ->getFormObject($entity_type, $operation)
+      ->setEntity($entity);
 
     // @see EntityFormBuilder::getForm()
     return $this->container->get('entity.form_builder')->getForm($entity, $operation);

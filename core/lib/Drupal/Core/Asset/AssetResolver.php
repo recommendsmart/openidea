@@ -130,7 +130,7 @@ class AssetResolver implements AssetResolverInterface {
     ];
 
     foreach ($libraries_to_load as $library) {
-      [$extension, $name] = explode('/', $library, 2);
+      list($extension, $name) = explode('/', $library, 2);
       $definition = $this->libraryDiscovery->getLibraryByName($extension, $name);
       if (isset($definition['css'])) {
         foreach ($definition['css'] as $options) {
@@ -188,7 +188,6 @@ class AssetResolver implements AssetResolverInterface {
    *
    * @param \Drupal\Core\Asset\AttachedAssetsInterface $assets
    *   The assets attached to the current response.
-   *
    * @return array
    *   A (possibly optimized) collection of JavaScript assets.
    */
@@ -196,7 +195,7 @@ class AssetResolver implements AssetResolverInterface {
     $settings = [];
 
     foreach ($this->getLibrariesToLoad($assets) as $library) {
-      [$extension, $name] = explode('/', $library, 2);
+      list($extension, $name) = explode('/', $library, 2);
       $definition = $this->libraryDiscovery->getLibraryByName($extension, $name);
       if (isset($definition['drupalSettings'])) {
         $settings = NestedArray::mergeDeepArray([$settings, $definition['drupalSettings']], TRUE);
@@ -218,7 +217,7 @@ class AssetResolver implements AssetResolverInterface {
     $cid = 'js:' . $theme_info->getName() . ':' . $this->languageManager->getCurrentLanguage()->getId() . ':' . Crypt::hashBase64(serialize($libraries_to_load)) . (int) (count($assets->getSettings()) > 0) . (int) $optimize;
 
     if ($cached = $this->cache->get($cid)) {
-      [$js_assets_header, $js_assets_footer, $settings, $settings_in_header] = $cached->data;
+      list($js_assets_header, $js_assets_footer, $settings, $settings_in_header) = $cached->data;
     }
     else {
       $javascript = [];
@@ -236,7 +235,7 @@ class AssetResolver implements AssetResolverInterface {
       // Collect all libraries that contain JS assets and are in the header.
       $header_js_libraries = [];
       foreach ($libraries_to_load as $library) {
-        [$extension, $name] = explode('/', $library, 2);
+        list($extension, $name) = explode('/', $library, 2);
         $definition = $this->libraryDiscovery->getLibraryByName($extension, $name);
         if (isset($definition['js']) && !empty($definition['header'])) {
           $header_js_libraries[] = $library;
@@ -248,7 +247,7 @@ class AssetResolver implements AssetResolverInterface {
       $header_js_libraries = $this->libraryDependencyResolver->getLibrariesWithDependencies($header_js_libraries);
 
       foreach ($libraries_to_load as $library) {
-        [$extension, $name] = explode('/', $library, 2);
+        list($extension, $name) = explode('/', $library, 2);
         $definition = $this->libraryDiscovery->getLibraryByName($extension, $name);
         if (isset($definition['js'])) {
           foreach ($definition['js'] as $options) {

@@ -59,7 +59,7 @@ class InternalEntitiesTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
     $this->testUser = $this->drupalCreateUser([
       'view test entity',
@@ -83,7 +83,7 @@ class InternalEntitiesTest extends BrowserTestBase {
       'field_internal' => $this->internalEntity->id(),
     ]);
     $this->referencingEntity->save();
-    \Drupal::service('router.builder')->rebuild();
+    drupal_flush_all_caches();
   }
 
   /**

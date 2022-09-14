@@ -16,7 +16,16 @@ class FormattableMarkupKernelTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->container->get('router.builder')->rebuild();
+  }
 
   /**
    * Gets arguments for FormattableMarkup based on Url::fromUri() parameters.

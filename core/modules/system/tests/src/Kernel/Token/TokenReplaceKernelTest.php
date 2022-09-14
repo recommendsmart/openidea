@@ -19,14 +19,14 @@ class TokenReplaceKernelTest extends TokenReplaceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // Set the site name to something other than an empty string.
     $this->config('system.site')->set('name', 'Drupal')->save();
   }
 
   /**
-   * Tests whether token-replacement works in various contexts.
+   * Test whether token-replacement works in various contexts.
    */
   public function testSystemTokenRecognition() {
     // Generate prefixes and suffixes for the token context.
@@ -48,11 +48,11 @@ class TokenReplaceKernelTest extends TokenReplaceKernelTestBase {
       $input = $test['prefix'] . '[site:name]' . $test['suffix'];
       $expected = $test['prefix'] . 'Drupal' . $test['suffix'];
       $output = $this->tokenService->replace($input, [], ['langcode' => $this->interfaceLanguage->getId()]);
-      $this->assertSame($expected, $output, new FormattableMarkup('Token recognized in string %string', ['%string' => $input]));
+      $this->assertTrue($output == $expected, new FormattableMarkup('Token recognized in string %string', ['%string' => $input]));
     }
 
     // Test token replacement when the string contains no tokens.
-    $this->assertEquals('No tokens here.', $this->tokenService->replace('No tokens here.'));
+    $this->assertEqual($this->tokenService->replace('No tokens here.'), 'No tokens here.');
   }
 
   /**
@@ -69,12 +69,12 @@ class TokenReplaceKernelTest extends TokenReplaceKernelTestBase {
     // Replace with the clear parameter, only the valid token should remain.
     $target = Html::escape($this->config('system.site')->get('name'));
     $result = $this->tokenService->replace($source, [], ['langcode' => $this->interfaceLanguage->getId(), 'clear' => TRUE]);
-    $this->assertEquals($target, $result, 'Valid tokens replaced while invalid tokens ignored.');
+    $this->assertEqual($target, $result, 'Valid tokens replaced while invalid tokens ignored.');
 
     $target .= '[user:name]';
     $target .= '[bogus:token]';
     $result = $this->tokenService->replace($source, [], ['langcode' => $this->interfaceLanguage->getId()]);
-    $this->assertEquals($target, $result, 'Valid tokens replaced while invalid tokens ignored.');
+    $this->assertEqual($target, $result, 'Valid tokens replaced while invalid tokens ignored.');
   }
 
   /**
@@ -118,13 +118,13 @@ class TokenReplaceKernelTest extends TokenReplaceKernelTestBase {
     $metadata_tests['[site:login-url]'] = $bubbleable_metadata;
 
     // Test to make sure that we generated something for each token.
-    $this->assertNotContains(0, array_map('strlen', $tests), 'No empty tokens generated.');
+    $this->assertFalse(in_array(0, array_map('strlen', $tests)), 'No empty tokens generated.');
 
     foreach ($tests as $input => $expected) {
       $bubbleable_metadata = new BubbleableMetadata();
       $output = $this->tokenService->replace($input, [], ['langcode' => $this->interfaceLanguage->getId()], $bubbleable_metadata);
-      $this->assertEquals($expected, $output, new FormattableMarkup('System site information token %token replaced.', ['%token' => $input]));
-      $this->assertEquals($metadata_tests[$input], $bubbleable_metadata);
+      $this->assertEqual($output, $expected, new FormattableMarkup('System site information token %token replaced.', ['%token' => $input]));
+      $this->assertEqual($bubbleable_metadata, $metadata_tests[$input]);
     }
   }
 
@@ -146,11 +146,11 @@ class TokenReplaceKernelTest extends TokenReplaceKernelTestBase {
     $tests['[date:raw]'] = Xss::filter($date);
 
     // Test to make sure that we generated something for each token.
-    $this->assertNotContains(0, array_map('strlen', $tests), 'No empty tokens generated.');
+    $this->assertFalse(in_array(0, array_map('strlen', $tests)), 'No empty tokens generated.');
 
     foreach ($tests as $input => $expected) {
       $output = $this->tokenService->replace($input, ['date' => $date], ['langcode' => $this->interfaceLanguage->getId()]);
-      $this->assertEquals($expected, $output, new FormattableMarkup('Date token %token replaced.', ['%token' => $input]));
+      $this->assertEqual($output, $expected, new FormattableMarkup('Date token %token replaced.', ['%token' => $input]));
     }
   }
 

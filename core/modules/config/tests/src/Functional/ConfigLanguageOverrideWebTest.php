@@ -18,7 +18,7 @@ class ConfigLanguageOverrideWebTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'language',
     'system',
@@ -32,7 +32,7 @@ class ConfigLanguageOverrideWebTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
   }
 
@@ -40,10 +40,7 @@ class ConfigLanguageOverrideWebTest extends BrowserTestBase {
    * Tests translating the site name.
    */
   public function testSiteNameTranslation() {
-    $adminUser = $this->drupalCreateUser([
-      'administer site configuration',
-      'administer languages',
-    ]);
+    $adminUser = $this->drupalCreateUser(['administer site configuration', 'administer languages']);
     $this->drupalLogin($adminUser);
 
     // Add a custom language.
@@ -55,8 +52,7 @@ class ConfigLanguageOverrideWebTest extends BrowserTestBase {
       'label' => $name,
       'direction' => LanguageInterface::DIRECTION_LTR,
     ];
-    $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm($edit, 'Add custom language');
+    $this->drupalPostForm('admin/config/regional/language/add', $edit, t('Add custom language'));
     \Drupal::languageManager()
       ->getLanguageConfigOverride($langcode, 'system.site')
       ->set('name', 'XX site name')
@@ -69,17 +65,17 @@ class ConfigLanguageOverrideWebTest extends BrowserTestBase {
 
     // The home page in English should not have the override.
     $this->drupalGet('');
-    $this->assertSession()->pageTextNotContains('XX site name');
+    $this->assertNoText('XX site name');
 
     // During path resolution the system.site configuration object is used to
     // determine the front page. This occurs before language negotiation causing
     // the configuration factory to cache an object without the correct
     // overrides. We are testing that the configuration factory is
-    // re-initialized after language negotiation. Ensure that it applies when
+    // re-initialised after language negotiation. Ensure that it applies when
     // we access the XX front page.
     // @see \Drupal\Core\PathProcessor::processInbound()
     $this->drupalGet('xx');
-    $this->assertSession()->pageTextContains('XX site name');
+    $this->assertText('XX site name');
 
     // Set the xx language to be the default language and delete the English
     // language so the site is no longer multilingual and confirm configuration
@@ -92,7 +88,7 @@ class ConfigLanguageOverrideWebTest extends BrowserTestBase {
     $this->assertFalse($language_manager->isMultilingual(), 'The test site is monolingual.');
 
     $this->drupalGet('xx');
-    $this->assertSession()->pageTextContains('XX site name');
+    $this->assertText('XX site name');
 
   }
 

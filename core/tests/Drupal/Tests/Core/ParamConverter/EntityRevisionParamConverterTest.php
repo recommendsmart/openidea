@@ -27,7 +27,7 @@ class EntityRevisionParamConverterTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->converter = new EntityRevisionParamConverter(
@@ -84,7 +84,7 @@ class EntityRevisionParamConverterTest extends UnitTestCase {
   }
 
   /**
-   * Provides test data for testConvert.
+   * Provides test data for testConvert
    */
   public function providerTestConvert() {
     $data = [];

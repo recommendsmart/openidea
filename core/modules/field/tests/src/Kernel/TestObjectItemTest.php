@@ -18,12 +18,12 @@ class TestObjectItemTest extends FieldKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['field_test'];
+  public static $modules = ['field_test'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a 'test_field' field and storage for validation.
@@ -52,7 +52,7 @@ class TestObjectItemTest extends FieldKernelTestBase {
     // Verify that the entity has been created properly.
     $id = $entity->id();
     $entity = EntityTest::load($id);
-    $this->assertInstanceOf(\stdClass::class, $entity->field_test->value);
+    $this->assertTrue($entity->field_test->value instanceof \stdClass);
     $this->assertEquals($object, $entity->field_test->value);
   }
 

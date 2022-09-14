@@ -72,7 +72,7 @@ class FileUriTest extends MigrateTestCase {
     $row = new Row();
 
     return (new FileUri([], 'file_uri', []))
-      ->transform($value, $executable, $row, 'foo');
+      ->transform($value, $executable, $row, 'foobaz');
   }
 
 }

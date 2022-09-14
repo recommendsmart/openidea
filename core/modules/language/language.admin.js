@@ -13,13 +13,15 @@
 
       function toggleTable(checkbox) {
         var $checkbox = $(checkbox);
+
         $checkbox.closest('.table-language-group').find('table, .tabledrag-toggle-weight').toggle($checkbox.prop('checked'));
       }
 
-      $(once('negotiation-language-admin-bind', $configForm)).on('change', inputSelector, function (event) {
+      $configForm.once('negotiation-language-admin-bind').on('change', inputSelector, function (event) {
         toggleTable(event.target);
       });
-      $configForm.find("".concat(inputSelector, ":not(:checked)")).each(function (index, element) {
+
+      $configForm.find(inputSelector + ':not(:checked)').each(function (index, element) {
         toggleTable(element);
       });
     }

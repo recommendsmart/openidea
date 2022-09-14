@@ -4,7 +4,6 @@ namespace Drupal\Tests\views\Kernel\Plugin;
 
 use Drupal\views\Plugin\views\join\FieldOrLanguageJoin;
 use Drupal\views\Views;
-use Drupal\views\ViewExecutable;
 
 /**
  * Tests the "field OR language" join plugin.
@@ -34,7 +33,7 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp();
 
     // Add a join plugin manager which can be used in all of the tests.
@@ -64,7 +63,7 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       'adjusted' => TRUE,
     ];
     $join = $this->manager->createInstance($this->pluginId, $configuration);
-    $this->assertInstanceOf(FieldOrLanguageJoin::class, $join);
+    $this->assertTrue($join instanceof FieldOrLanguageJoin);
     $this->assertNull($join->extra);
     $this->assertTrue($join->adjusted);
 
@@ -98,9 +97,9 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       ],
     ];
     $join_info = $this->buildJoin($view, $configuration, 'users3');
-    $this->assertStringContainsString('views_test_data.uid = users3.uid', $join_info['condition']);
-    $this->assertStringContainsString('users3.name = :views_join_condition_0', $join_info['condition']);
-    $this->assertStringContainsString('users3.name <> :views_join_condition_1', $join_info['condition']);
+    $this->assertContains('views_test_data.uid = users3.uid', $join_info['condition']);
+    $this->assertContains('users3.name = :views_join_condition_0', $join_info['condition']);
+    $this->assertContains('users3.name <> :views_join_condition_1', $join_info['condition']);
     $this->assertSame(array_values($join_info['arguments']), [$random_name_1, $random_name_2]);
 
     // Test that 'IN' conditions are properly built.
@@ -119,9 +118,9 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       ],
     ];
     $join_info = $this->buildJoin($view, $configuration, 'users4');
-    $this->assertStringContainsString('views_test_data.uid = users4.uid', $join_info['condition']);
-    $this->assertStringContainsString('users4.name = :views_join_condition_0', $join_info['condition']);
-    $this->assertStringContainsString('users4.name IN ( :views_join_condition_1[] )', $join_info['condition']);
+    $this->assertContains('views_test_data.uid = users4.uid', $join_info['condition']);
+    $this->assertContains('users4.name = :views_join_condition_0', $join_info['condition']);
+    $this->assertContains('users4.name IN ( :views_join_condition_1[] )', $join_info['condition']);
     $this->assertSame($join_info['arguments'][':views_join_condition_1[]'], [$random_name_2, $random_name_3, $random_name_4]);
   }
 
@@ -149,7 +148,7 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       ],
     ];
     $join_info = $this->buildJoin($view, $configuration, 'node__field_tags');
-    $this->assertStringContainsString('AND (node__field_tags.langcode = views_test_data.langcode)', $join_info['condition']);
+    $this->assertContains('AND (node__field_tags.langcode = views_test_data.langcode)', $join_info['condition']);
 
     array_unshift($configuration['extra'], [
       'field' => 'deleted',
@@ -157,7 +156,7 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       'numeric' => TRUE,
     ]);
     $join_info = $this->buildJoin($view, $configuration, 'node__field_tags');
-    $this->assertStringContainsString('AND (node__field_tags.langcode = views_test_data.langcode)', $join_info['condition']);
+    $this->assertContains('AND (node__field_tags.langcode = views_test_data.langcode)', $join_info['condition']);
 
     // Replace the language condition with a bundle condition.
     $configuration['extra'][1] = [
@@ -165,7 +164,7 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       'value' => ['page'],
     ];
     $join_info = $this->buildJoin($view, $configuration, 'node__field_tags');
-    $this->assertStringContainsString('AND (node__field_tags.bundle = :views_join_condition_1)', $join_info['condition']);
+    $this->assertContains('AND (node__field_tags.bundle = :views_join_condition_1)', $join_info['condition']);
 
     // Now re-add a language condition to make sure the bundle and language
     // conditions are combined with an OR.
@@ -174,7 +173,7 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
       'field' => 'langcode',
     ];
     $join_info = $this->buildJoin($view, $configuration, 'node__field_tags');
-    $this->assertStringContainsString('AND (node__field_tags.bundle = :views_join_condition_1 OR node__field_tags.langcode = views_test_data.langcode)', $join_info['condition']);
+    $this->assertContains('AND (node__field_tags.bundle = :views_join_condition_1 OR node__field_tags.langcode = views_test_data.langcode)', $join_info['condition']);
   }
 
   /**
@@ -192,12 +191,12 @@ class FieldOrLanguageJoinTest extends RelationshipJoinTestBase {
    *   \Drupal\Core\Database\Query\Select::$tables for more information on the
    *   structure of the array.
    */
-  protected function buildJoin(ViewExecutable $view, $configuration, $table_alias) {
+  protected function buildJoin($view, $configuration, $table_alias) {
     // Build the actual join values and read them back from the query object.
     $query = \Drupal::database()->select('node');
 
     $join = $this->manager->createInstance('field_or_language_join', $configuration);
-    $this->assertInstanceOf(FieldOrLanguageJoin::class, $join);
+    $this->assertInstanceOf(FieldOrLanguageJoin::class, $join, 'The correct join class got loaded.');
 
     $table = ['alias' => $table_alias];
     $join->buildJoin($query, $table, $view->query);

@@ -16,7 +16,7 @@ class FieldUIIndentationTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'field_ui', 'field_ui_test'];
+  public static $modules = ['node', 'field_ui', 'field_ui_test'];
 
   /**
    * {@inheritdoc}
@@ -26,15 +26,11 @@ class FieldUIIndentationTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a test user.
-    $admin_user = $this->drupalCreateUser([
-      'access content',
-      'administer content types',
-      'administer node display',
-    ]);
+    $admin_user = $this->drupalCreateUser(['access content', 'administer content types', 'administer node display']);
     $this->drupalLogin($admin_user);
 
     // Create Basic page node type.
@@ -44,7 +40,7 @@ class FieldUIIndentationTest extends BrowserTestBase {
 
   public function testIndentation() {
     $this->drupalGet('admin/structure/types/manage/page/display');
-    $this->assertSession()->responseContains('js-indentation indentation');
+    $this->assertRaw('js-indentation indentation');
   }
 
 }

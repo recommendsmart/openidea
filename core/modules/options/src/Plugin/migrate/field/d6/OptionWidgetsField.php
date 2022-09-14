@@ -4,8 +4,6 @@ namespace Drupal\options\Plugin\migrate\field\d6;
 
 use Drupal\migrate_drupal\Plugin\migrate\field\FieldPluginBase;
 
-// cspell:ignore optionwidgets
-
 /**
  * @MigrateField(
  *   id = "optionwidgets",

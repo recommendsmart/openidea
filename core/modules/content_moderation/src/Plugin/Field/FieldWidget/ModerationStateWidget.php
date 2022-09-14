@@ -8,6 +8,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\Plugin\Field\FieldWidget\OptionsSelectWidget;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\content_moderation\ModerationInformation;
 use Drupal\content_moderation\StateTransitionValidationInterface;
@@ -24,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class ModerationStateWidget extends OptionsSelectWidget {
+class ModerationStateWidget extends OptionsSelectWidget implements ContainerFactoryPluginInterface {
 
   /**
    * Current user service.
@@ -175,7 +176,7 @@ class ModerationStateWidget extends OptionsSelectWidget {
         ],
       ],
     ];
-    $element['#element_validate'][] = [static::class, 'validateElement'];
+    $element['#element_validate'][] = [get_class($this), 'validateElement'];
 
     return $element;
   }

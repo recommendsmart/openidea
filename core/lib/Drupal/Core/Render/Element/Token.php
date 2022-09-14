@@ -20,7 +20,7 @@ class Token extends Hidden {
    * {@inheritdoc}
    */
   public function getInfo() {
-    $class = static::class;
+    $class = get_class($this);
     return [
       '#input' => TRUE,
       '#pre_render' => [

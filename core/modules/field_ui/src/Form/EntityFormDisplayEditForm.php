@@ -62,7 +62,7 @@ class EntityFormDisplayEditForm extends EntityDisplayFormBase {
    * {@inheritdoc}
    */
   protected function getDefaultPlugin($field_type) {
-    return $this->fieldTypes[$field_type]['default_widget'] ?? NULL;
+    return isset($this->fieldTypes[$field_type]['default_widget']) ? $this->fieldTypes[$field_type]['default_widget'] : NULL;
   }
 
   /**
@@ -85,7 +85,7 @@ class EntityFormDisplayEditForm extends EntityDisplayFormBase {
   protected function getDisplayModesLink() {
     return [
       '#type' => 'link',
-      '#title' => $this->t('Manage form modes'),
+      '#title' => t('Manage form modes'),
       '#url' => Url::fromRoute('entity.entity_form_mode.collection'),
     ];
   }

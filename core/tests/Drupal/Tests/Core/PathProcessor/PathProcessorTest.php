@@ -35,7 +35,7 @@ class PathProcessorTest extends UnitTestCase {
    */
   protected $languageManager;
 
-  protected function setUp(): void {
+  protected function setUp() {
 
     // Set up some languages to be used by the language-based path processor.
     $languages = [];
@@ -53,6 +53,17 @@ class PathProcessorTest extends UnitTestCase {
       ],
     ];
 
+    // Create a URL-based language negotiation method definition.
+    $method_definitions = [
+      LanguageNegotiationUrl::METHOD_ID => [
+        'class' => '\Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl',
+        'weight' => 9,
+      ],
+    ];
+
+    // Create a URL-based language negotiation method.
+    $method_instance = new LanguageNegotiationUrl($config);
+
     // Create a language manager stub.
     $language_manager = $this->getMockBuilder('Drupal\language\ConfigurableLanguageManagerInterface')
       ->getMock();
@@ -66,6 +77,7 @@ class PathProcessorTest extends UnitTestCase {
       ->method('getLanguageTypes')
       ->will($this->returnValue([LanguageInterface::TYPE_INTERFACE]));
 
+    $method_instance->setLanguageManager($language_manager);
     $this->languageManager = $language_manager;
   }
 
@@ -90,7 +102,7 @@ class PathProcessorTest extends UnitTestCase {
 
     $alias_manager->expects($this->any())
       ->method('getPathByAlias')
-      ->willReturnMap($system_path_map);
+      ->will($this->returnValueMap($system_path_map));
 
     // Create a stub config factory with all config settings that will be checked
     // during this test.

@@ -19,7 +19,7 @@ class DisplayTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'contextual',
     'node',
@@ -31,14 +31,14 @@ class DisplayTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   public static $testViews = ['test_content_ajax', 'test_display'];
 
   /**
    * {@inheritdoc}
    */
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
 
     ViewTestData::createTestViews(self::class, ['views_test_config']);
@@ -76,28 +76,6 @@ class DisplayTest extends WebDriverTestBase {
   }
 
   /**
-   * Tests setting the administrative title.
-   */
-  public function testRenameDisplayAdminName() {
-    $titles = ['New admin title', '</title><script>alert("alert!")</script>'];
-    foreach ($titles as $new_title) {
-      $this->drupalGet('admin/structure/views/view/test_content_ajax');
-      $page = $this->getSession()->getPage();
-
-      $page->findLink('Edit view name/description')->click();
-      $this->getSession()->executeScript("document.title = 'Initial title | " . \Drupal::config('system.site')->get('name') . "'");
-
-      $admin_name_field = $this->assertSession()
-        ->waitForField('Administrative name');
-      $dialog_buttons = $page->find('css', '.ui-dialog-buttonset');
-      $admin_name_field->setValue($new_title);
-
-      $dialog_buttons->pressButton('Apply');
-      $this->assertJsCondition("document.title === '" . $new_title . " (Content) | " . \Drupal::config('system.site')->get('name') . "'");
-    }
-  }
-
-  /**
    * Tests contextual links on Views page displays.
    */
   public function testPageContextualLinks() {
@@ -116,7 +94,7 @@ class DisplayTest extends WebDriverTestBase {
     $page = $this->getSession()->getPage();
     $this->assertSession()->assertWaitOnAjaxRequest();
 
-    $selector = '.views-element-container';
+    $selector = '.view-test-display';
     $this->toggleContextualTriggerVisibility($selector);
 
     $element = $this->getSession()->getPage()->find('css', $selector);

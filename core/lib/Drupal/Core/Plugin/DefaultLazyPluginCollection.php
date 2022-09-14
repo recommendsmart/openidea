@@ -64,9 +64,9 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
 
     if (!empty($configurations)) {
       $instance_ids = array_keys($configurations);
-      $this->instanceIds = array_combine($instance_ids, $instance_ids);
+      $this->instanceIDs = array_combine($instance_ids, $instance_ids);
       // Store the original order of the instance IDs for export.
-      $this->originalOrder = $this->instanceIds;
+      $this->originalOrder = $this->instanceIDs;
     }
   }
 
@@ -74,7 +74,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
    * {@inheritdoc}
    */
   protected function initializePlugin($instance_id) {
-    $configuration = $this->configurations[$instance_id] ?? [];
+    $configuration = isset($this->configurations[$instance_id]) ? $this->configurations[$instance_id] : [];
     if (!isset($configuration[$this->pluginKey])) {
       throw new PluginNotFoundException($instance_id);
     }
@@ -87,7 +87,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
    * @return $this
    */
   public function sort() {
-    uasort($this->instanceIds, [$this, 'sortHelper']);
+    uasort($this->instanceIDs, [$this, 'sortHelper']);
     return $this;
   }
 
@@ -106,10 +106,10 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
   public function getConfiguration() {
     $instances = [];
     // Store the current order of the instances.
-    $current_order = $this->instanceIds;
+    $current_order = $this->instanceIDs;
     // Reorder the instances to match the original order, adding new instances
     // to the end.
-    $this->instanceIds = $this->originalOrder + $current_order;
+    $this->instanceIDs = $this->originalOrder + $current_order;
 
     foreach ($this as $instance_id => $instance) {
       if (PluginHelper::isConfigurable($instance)) {
@@ -120,7 +120,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
       }
     }
     // Restore the current order.
-    $this->instanceIds = $current_order;
+    $this->instanceIDs = $current_order;
     return $instances;
   }
 

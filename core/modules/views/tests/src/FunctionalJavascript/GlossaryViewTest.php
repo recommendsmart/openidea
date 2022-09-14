@@ -22,12 +22,7 @@ class GlossaryViewTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
-    'language',
-    'node',
-    'views',
-    'views_test_config',
-  ];
+  public static $modules = ['language', 'node', 'views', 'views_test_config'];
 
   /**
    * {@inheritdoc}
@@ -43,10 +38,10 @@ class GlossaryViewTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
-    ViewTestData::createTestViews(static::class, ['views_test_config']);
+    ViewTestData::createTestViews(get_class($this), ['views_test_config']);
 
     // Create a Content type and some test nodes with titles that start with
     // different letters.
@@ -100,7 +95,7 @@ class GlossaryViewTest extends WebDriverTestBase {
   }
 
   /**
-   * Tests that the glossary also works on a language prefixed URL.
+   * Test that the glossary also works on a language prefixed URL.
    */
   public function testGlossaryLanguagePrefix() {
     ConfigurableLanguage::createFromLangcode('nl')->save();

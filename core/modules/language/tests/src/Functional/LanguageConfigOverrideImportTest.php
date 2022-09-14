@@ -17,7 +17,7 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'config',
     'locale',
@@ -34,7 +34,7 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
    */
   public function testConfigOverrideImport() {
     ConfigurableLanguage::createFromLangcode('fr')->save();
-    /** @var \Drupal\Core\Config\StorageInterface $sync */
+    /* @var \Drupal\Core\Config\StorageInterface $sync */
     $sync = \Drupal::service('config.storage.sync');
     $this->copyConfig(\Drupal::service('config.storage'), $sync);
 
@@ -46,7 +46,7 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
     // ConfigFactory.
     $this->rebuildContainer();
 
-    /** @var \Drupal\Core\Config\StorageInterface $override_sync */
+    /* @var \Drupal\Core\Config\StorageInterface $override_sync */
     $override_sync = $sync->createCollection('language.fr');
     // Create some overrides in sync.
     $override_sync->write('system.site', ['name' => 'FR default site name']);
@@ -54,15 +54,16 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
 
     $this->configImporter()->import();
     $this->rebuildContainer();
+    \Drupal::service('router.builder')->rebuild();
 
     $override = \Drupal::languageManager()->getLanguageConfigOverride('fr', 'system.site');
-    $this->assertEquals('FR default site name', $override->get('name'));
+    $this->assertEqual('FR default site name', $override->get('name'));
     $this->drupalGet('fr');
-    $this->assertSession()->pageTextContains('FR default site name');
+    $this->assertText('FR default site name');
 
     $this->drupalLogin($this->rootUser);
     $this->drupalGet('admin/config/development/maintenance/translate/fr/edit');
-    $this->assertSession()->pageTextContains('FR message: @site is currently under maintenance. We should be back shortly. Thank you for your patience');
+    $this->assertText('FR message: @site is currently under maintenance. We should be back shortly. Thank you for your patience');
   }
 
   /**
@@ -75,11 +76,11 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
 
     ConfigurableLanguage::createFromLangcode('fr')->save();
 
-    /** @var \Drupal\Core\Config\StorageInterface $sync */
+    /* @var \Drupal\Core\Config\StorageInterface $sync */
     $sync = \Drupal::service('config.storage.sync');
     $this->copyConfig(\Drupal::service('config.storage'), $sync);
 
-    /** @var \Drupal\Core\Config\StorageInterface $override_sync */
+    /* @var \Drupal\Core\Config\StorageInterface $override_sync */
     $override_sync = $sync->createCollection('language.fr');
     // Create some overrides in sync.
     $override_sync->write('system.site', ['name' => 'FR default site name']);
@@ -87,6 +88,7 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
 
     $this->configImporter()->import();
     $this->rebuildContainer();
+    \Drupal::service('router.builder')->rebuild();
 
     // Test that no config save event has been fired during the import because
     // language configuration overrides do not fire events.
@@ -94,7 +96,7 @@ class LanguageConfigOverrideImportTest extends BrowserTestBase {
     $this->assertFalse($event_recorder);
 
     $this->drupalGet('fr');
-    $this->assertSession()->pageTextContains('FR default site name');
+    $this->assertText('FR default site name');
   }
 
 }

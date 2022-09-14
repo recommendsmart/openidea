@@ -19,7 +19,7 @@ class ModerationStateAccessTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'content_moderation',
     'node',
   ];
@@ -32,7 +32,7 @@ class ModerationStateAccessTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $node_type = NodeType::create([
@@ -49,7 +49,7 @@ class ModerationStateAccessTest extends BrowserTestBase {
   }
 
   /**
-   * Tests the view operation access handler with the view permission.
+   * Test the view operation access handler with the view permission.
    */
   public function testViewShowsCorrectStates() {
     $permissions = [

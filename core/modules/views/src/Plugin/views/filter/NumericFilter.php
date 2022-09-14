@@ -5,7 +5,7 @@ namespace Drupal\views\Plugin\views\filter;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Simple filter to handle greater than/less than filters.
+ * Simple filter to handle greater than/less than filters
  *
  * @ingroup views_filter_handlers
  *
@@ -169,7 +169,7 @@ class NumericFilter extends FilterPluginBase {
   }
 
   /**
-   * Provide a list of all the numeric operators.
+   * Provide a list of all the numeric operators
    */
   public function operatorOptions($which = 'title') {
     $options = [];
@@ -192,7 +192,7 @@ class NumericFilter extends FilterPluginBase {
   }
 
   /**
-   * Provide a simple textfield for equality.
+   * Provide a simple textfield for equality
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
     $form['value']['#tree'] = TRUE;
@@ -277,16 +277,17 @@ class NumericFilter extends FilterPluginBase {
     if ($two_value_operators_available) {
       $form['value']['min'] = [
         '#type' => 'textfield',
-        '#title' => $this->t('Min'),
+        '#title' => !$exposed ? $this->t('Min') : $this->exposedInfo()['label'],
         '#size' => 30,
         '#default_value' => $this->value['min'],
+        '#description' => !$exposed ? '' : $this->exposedInfo()['description'],
       ];
       if (!empty($this->options['expose']['min_placeholder'])) {
         $form['value']['min']['#attributes']['placeholder'] = $this->options['expose']['min_placeholder'];
       }
       $form['value']['max'] = [
         '#type' => 'textfield',
-        '#title' => $this->t('Max'),
+        '#title' => !$exposed ? $this->t('And max') : $this->t('And'),
         '#size' => 30,
         '#default_value' => $this->value['max'],
       ];
@@ -397,7 +398,7 @@ class NumericFilter extends FilterPluginBase {
   }
 
   /**
-   * Do some minor translation of the exposed input.
+   * Do some minor translation of the exposed input
    */
   public function acceptExposedInput($input) {
     if (empty($this->options['exposed'])) {
@@ -427,7 +428,6 @@ class NumericFilter extends FilterPluginBase {
               return FALSE;
             }
             break;
-
           case 2:
             if ($value['min'] === '' && $value['max'] === '') {
               return FALSE;

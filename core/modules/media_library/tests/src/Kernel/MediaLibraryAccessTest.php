@@ -11,7 +11,6 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\media_library\MediaLibraryState;
-use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\views\Views;
 
@@ -23,7 +22,6 @@ use Drupal\views\Views;
 class MediaLibraryAccessTest extends KernelTestBase {
 
   use UserCreationTrait;
-  use MediaTypeCreationTrait;
 
   /**
    * {@inheritdoc}
@@ -45,13 +43,13 @@ class MediaLibraryAccessTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->installEntitySchema('user');
     $this->installEntitySchema('file');
     $this->installSchema('file', 'file_usage');
-    $this->installSchema('system', ['sequences']);
+    $this->installSchema('system', ['sequences', 'key_value_expire']);
     $this->installEntitySchema('entity_test');
     $this->installEntitySchema('filter_format');
     $this->installEntitySchema('media');
@@ -371,34 +369,6 @@ class MediaLibraryAccessTest extends KernelTestBase {
   }
 
   /**
-   * Tests that the media library respects arbitrary access to the add form.
-   */
-  public function testAddFormAccess(): void {
-    // Access is denied if the media library is trying to create media whose
-    // type name is 'deny_access'. Also create a second media type that we *can*
-    // add, so we can be certain that the add form is otherwise visible.
-    // @see media_library_test_media_create_access()
-    $media_types = [
-      $this->createMediaType('image', ['id' => 'deny_access'])->id(),
-      $this->createMediaType('image')->id(),
-    ];
-
-    $account = $this->createUser(['create media']);
-    $this->setCurrentUser($account);
-
-    /** @var \Drupal\media_library\MediaLibraryUiBuilder $ui_builder */
-    $ui_builder = $this->container->get('media_library.ui_builder');
-
-    $state = MediaLibraryState::create('test', $media_types, $media_types[0], 1);
-    $build = $ui_builder->buildUi($state);
-    $this->assertEmpty($build['content']['form']);
-
-    $state = MediaLibraryState::create('test', $media_types, $media_types[1], 1);
-    $build = $ui_builder->buildUi($state);
-    $this->assertNotEmpty($build['content']['form']);
-  }
-
-  /**
    * Asserts various aspects of an access result.
    *
    * @param \Drupal\Core\Access\AccessResult $access_result
@@ -412,13 +382,13 @@ class MediaLibraryAccessTest extends KernelTestBase {
    * @param string[] $expected_cache_contexts
    *   (optional) The expected cache contexts attached to the access result.
    */
-  private function assertAccess(AccessResult $access_result, bool $is_allowed, string $expected_reason = NULL, array $expected_cache_tags = [], array $expected_cache_contexts = []): void {
+  private function assertAccess(AccessResult $access_result, $is_allowed, $expected_reason = NULL, array $expected_cache_tags = [], array $expected_cache_contexts = []) {
     $this->assertSame($is_allowed, $access_result->isAllowed());
     if ($access_result instanceof AccessResultReasonInterface && isset($expected_reason)) {
       $this->assertSame($expected_reason, $access_result->getReason());
     }
-    $this->assertEqualsCanonicalizing($expected_cache_tags, $access_result->getCacheTags());
-    $this->assertEqualsCanonicalizing($expected_cache_contexts, $access_result->getCacheContexts());
+    $this->assertSame($expected_cache_tags, $access_result->getCacheTags());
+    $this->assertSame($expected_cache_contexts, $access_result->getCacheContexts());
   }
 
 }

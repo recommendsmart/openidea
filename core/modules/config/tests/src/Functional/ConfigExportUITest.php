@@ -19,7 +19,7 @@ class ConfigExportUITest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['config', 'config_test'];
+  public static $modules = ['config', 'config_test'];
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ class ConfigExportUITest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Set up an override.
@@ -48,18 +48,19 @@ class ConfigExportUITest extends BrowserTestBase {
   public function testExport() {
     // Verify the export page with export submit button is available.
     $this->drupalGet('admin/config/development/configuration/full/export');
-    $this->assertSession()->buttonExists('Export');
+    $this->assertFieldById('edit-submit', t('Export'));
 
     // Submit the export form and verify response. This will create a file in
     // temporary directory with the default name config.tar.gz.
-    $this->drupalGet('admin/config/development/configuration/full/export');
-    $this->submitForm([], 'Export');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->drupalPostForm('admin/config/development/configuration/full/export', [], t('Export'));
+    $this->assertResponse(200, 'User can access the download callback.');
 
     // Test if header contains file name with hostname and timestamp.
     $request = \Drupal::request();
     $hostname = str_replace('.', '-', $request->getHttpHost());
-    $this->assertSession()->responseHeaderMatches('content-disposition', '/attachment; filename="config-' . preg_quote($hostname) . '-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}\.tar\.gz"/');
+    $header_content_disposition = $this->drupalGetHeader('content-disposition');
+    $header_match = (boolean) preg_match('/attachment; filename="config-' . preg_quote($hostname) . '-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}\.tar\.gz"/', $header_content_disposition);
+    $this->assertTrue($header_match, "Header with filename matches the expected format.");
 
     // Extract the archive and verify it's not empty.
     $file_system = \Drupal::service('file_system');
@@ -68,7 +69,7 @@ class ConfigExportUITest extends BrowserTestBase {
     $file_path = $temp_directory . '/config.tar.gz';
     $archiver = new Tar($file_path);
     $archive_contents = $archiver->listContents();
-    $this->assertNotEmpty($archive_contents, 'Downloaded archive file is not empty.');
+    $this->assert(!empty($archive_contents), 'Downloaded archive file is not empty.');
 
     // Prepare the list of config files from active storage, see
     // \Drupal\config\Controller\ConfigController::downloadExport().
@@ -79,24 +80,24 @@ class ConfigExportUITest extends BrowserTestBase {
     }
     // Assert that the downloaded archive file contents are the same as the test
     // site active store.
-    $this->assertSame($config_files, $archive_contents);
+    $this->assertIdentical($archive_contents, $config_files);
 
     // Ensure the test configuration override is in effect but was not exported.
-    $this->assertSame('Foo', \Drupal::config('system.maintenance')->get('message'));
+    $this->assertIdentical(\Drupal::config('system.maintenance')->get('message'), 'Foo');
     $archiver->extract($temp_directory, ['system.maintenance.yml']);
     $file_contents = file_get_contents($temp_directory . '/' . 'system.maintenance.yml');
     $exported = Yaml::decode($file_contents);
-    $this->assertNotSame('Foo', $exported['message']);
+    $this->assertNotIdentical($exported['message'], 'Foo');
 
     // Check the single export form doesn't have "form-required" elements.
     $this->drupalGet('admin/config/development/configuration/single/export');
-    $this->assertSession()->responseNotContains('js-form-required form-required');
+    $this->assertNoRaw('js-form-required form-required', 'No form required fields are found.');
 
     // Ensure the temporary file is not available to users without the
     // permission.
     $this->drupalLogout();
     $this->drupalGet('system/temporary', ['query' => ['file' => 'config.tar.gz']]);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
   }
 
 }

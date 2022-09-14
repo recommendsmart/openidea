@@ -14,7 +14,7 @@ class BaseThemeRequiredTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
 
   /**
    * The theme installer.
@@ -33,7 +33,7 @@ class BaseThemeRequiredTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->themeInstaller = $this->container->get('theme_installer');
@@ -49,7 +49,7 @@ class BaseThemeRequiredTest extends KernelTestBase {
     $theme = $this->themeManager->getActiveTheme();
     /** @var \Drupal\Core\Theme\ActiveTheme $base_theme */
     $base_themes = $theme->getBaseThemeExtensions();
-    $this->assertEmpty($base_themes, 'No base theme is set when a theme has opted out of using Stable.');
+    $this->assertTrue(empty($base_themes), 'No base theme is set when a theme has opted out of using Stable.');
   }
 
 }

@@ -9,7 +9,7 @@ use Drupal\Core\Routing\AccessAwareRouterInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
@@ -143,7 +143,7 @@ class PathValidator implements PathValidatorInterface {
    *   valid.
    *
    * @return array|bool
-   *   An array of request attributes or FALSE if an exception was thrown.
+   *   An array of request attributes of FALSE if an exception was thrown.
    */
   protected function getPathAttributes($path, Request $request, $access_check) {
     if (!$access_check || $this->account->hasPermission('link to any page')) {
@@ -157,7 +157,9 @@ class PathValidator implements PathValidatorInterface {
     $path = $this->pathProcessor->processInbound('/' . $path, $request);
 
     try {
-      $router->setContext((new RequestContext())->fromRequest($request));
+      $request_context = new RequestContext();
+      $request_context->fromRequest($request);
+      $router->setContext($request_context);
       $result = $router->match($path);
     }
     catch (ResourceNotFoundException $e) {

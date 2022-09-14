@@ -7,18 +7,19 @@ use Drupal\comment\Entity\CommentType;
 use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\Core\Cache\Cache;
 use Drupal\entity_test\Entity\EntityTest;
+use Drupal\Tests\rest\Functional\BcTimestampNormalizerUnixTestTrait;
 use Drupal\Tests\rest\Functional\EntityResource\EntityResourceTestBase;
 use Drupal\user\Entity\User;
 use GuzzleHttp\RequestOptions;
 
 abstract class CommentResourceTestBase extends EntityResourceTestBase {
 
-  use CommentTestTrait;
+  use CommentTestTrait, BcTimestampNormalizerUnixTestTrait;
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'entity_test'];
+  public static $modules = ['comment', 'entity_test'];
 
   /**
    * {@inheritdoc}
@@ -55,11 +56,9 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
       case 'GET':
         $this->grantPermissionsToTestedRole(['access comments', 'view test entity']);
         break;
-
       case 'POST':
         $this->grantPermissionsToTestedRole(['post comments']);
         break;
-
       case 'PATCH':
         // Anonymous users are not ever allowed to edit their own comments. To
         // be able to test PATCHing comments as the anonymous user, the more
@@ -72,7 +71,6 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
           $this->grantPermissionsToTestedRole(['administer comments']);
         }
         break;
-
       case 'DELETE':
         $this->grantPermissionsToTestedRole(['administer comments']);
         break;
@@ -152,16 +150,10 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
         ],
       ],
       'created' => [
-        [
-          'value' => (new \DateTime())->setTimestamp(123456789)->setTimezone(new \DateTimeZone('UTC'))->format(\DateTime::RFC3339),
-          'format' => \DateTime::RFC3339,
-        ],
+        $this->formatExpectedTimestampItemValues(123456789),
       ],
       'changed' => [
-        [
-          'value' => (new \DateTime())->setTimestamp((int) $this->entity->getChangedTime())->setTimezone(new \DateTimeZone('UTC'))->format(\DateTime::RFC3339),
-          'format' => \DateTime::RFC3339,
-        ],
+        $this->formatExpectedTimestampItemValues($this->entity->getChangedTime()),
       ],
       'default_langcode' => [
         [
@@ -316,16 +308,17 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
    * {@inheritdoc}
    */
   protected function getExpectedUnauthorizedAccessMessage($method) {
+    if ($this->config('rest.settings')->get('bc_entity_resource_permissions')) {
+      return parent::getExpectedUnauthorizedAccessMessage($method);
+    }
+
     switch ($method) {
       case 'GET';
         return "The 'access comments' permission is required and the comment must be published.";
-
       case 'POST';
         return "The 'post comments' permission is required.";
-
       case 'PATCH';
         return "The 'edit own comments' permission is required, the user must be the comment author, and the comment must be published.";
-
       case 'DELETE':
         // \Drupal\comment\CommentAccessControlHandler::checkAccess() does not
         // specify a reason for not allowing a comment to be deleted.
@@ -334,7 +327,7 @@ abstract class CommentResourceTestBase extends EntityResourceTestBase {
   }
 
   /**
-   * Tests POSTing a comment with and without 'skip comment approval'.
+   * Tests POSTing a comment with and without 'skip comment approval'
    */
   public function testPostSkipCommentApproval() {
     $this->initAuthentication();

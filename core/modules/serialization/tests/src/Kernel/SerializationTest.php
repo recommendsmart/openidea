@@ -17,7 +17,7 @@ class SerializationTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['serialization', 'serialization_test'];
+  public static $modules = ['serialization', 'serialization_test'];
 
   /**
    * The serializer service to test.
@@ -26,7 +26,7 @@ class SerializationTest extends KernelTestBase {
    */
   protected $serializer;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->serializer = $this->container->get('serializer');
   }
@@ -40,7 +40,7 @@ class SerializationTest extends KernelTestBase {
     $expected = 'Normalized by SerializationTestNormalizer, Encoded by SerializationTestEncoder';
 
     // Ensure the serialization invokes the expected normalizer and encoder.
-    $this->assertSame($expected, $this->serializer->serialize($object, $format));
+    $this->assertIdentical($this->serializer->serialize($object, $format), $expected);
 
     // Ensure the serialization fails for an unsupported format.
     try {
@@ -48,7 +48,7 @@ class SerializationTest extends KernelTestBase {
       $this->fail('The serializer was expected to throw an exception for an unsupported format, but did not.');
     }
     catch (UnexpectedValueException $e) {
-      // Expected exception; just continue testing.
+      $this->pass('The serializer threw an exception for an unsupported format.');
     }
   }
 

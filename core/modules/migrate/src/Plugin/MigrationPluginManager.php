@@ -63,13 +63,20 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    * Gets the plugin discovery.
    *
    * This method overrides DefaultPluginManager::getDiscovery() in order to
-   * search for migration configurations in the MODULENAME/migrations
-   * directory.
+   * search for migration configurations in the MODULENAME/migrations and
+   * MODULENAME/migration_templates directories. Throws a deprecation notice if
+   * the MODULENAME/migration_templates directory exists.
    */
   protected function getDiscovery() {
     if (!isset($this->discovery)) {
       $directories = array_map(function ($directory) {
-        return [$directory . '/migrations'];
+        // Check for use of the @deprecated /migration_templates directory.
+        // @todo Remove use of /migration_templates in Drupal 9.0.0.
+        if (is_dir($directory . '/migration_templates')) {
+          @trigger_error('Use of the /migration_templates directory to store migration configuration files is deprecated in Drupal 8.1.0 and will be removed before Drupal 9.0.0. See https://www.drupal.org/node/2920988.', E_USER_DEPRECATED);
+        }
+        // But still accept configurations found in /migration_templates.
+        return [$directory . '/migration_templates', $directory . '/migrations'];
       }, $this->moduleHandler->getModuleDirectories());
 
       $yaml_discovery = new YamlDirectoryDiscovery($directories, 'migrate');
@@ -108,7 +115,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
 
     $instances = [];
     foreach ($plugin_ids as $plugin_id) {
-      $instances[$plugin_id] = $factory->createInstance($plugin_id, $configuration[$plugin_id] ?? []);
+      $instances[$plugin_id] = $factory->createInstance($plugin_id, isset($configuration[$plugin_id]) ? $configuration[$plugin_id] : []);
     }
 
     foreach ($instances as $migration) {
@@ -126,7 +133,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
     $migrations = array_filter($this->getDefinitions(), function ($migration) use ($tag) {
       return !empty($migration['migration_tags']) && in_array($tag, $migration['migration_tags']);
     });
-    return $migrations ? $this->createInstances(array_keys($migrations)) : [];
+    return $this->createInstances(array_keys($migrations));
   }
 
   /**
@@ -226,7 +233,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    *   The dynamic ID mapping.
    */
   protected function addDependency(array &$graph, $id, $dependency, $dynamic_ids) {
-    $dependencies = $dynamic_ids[$dependency] ?? [$dependency];
+    $dependencies = isset($dynamic_ids[$dependency]) ? $dynamic_ids[$dependency] : [$dependency];
     if (!isset($graph[$id]['edges'])) {
       $graph[$id]['edges'] = [];
     }
@@ -237,7 +244,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    * {@inheritdoc}
    */
   public function createStubMigration(array $definition) {
-    $id = $definition['id'] ?? uniqid();
+    $id = isset($definition['id']) ? $definition['id'] : uniqid();
     return Migration::create(\Drupal::getContainer(), [], $id, $definition);
   }
 

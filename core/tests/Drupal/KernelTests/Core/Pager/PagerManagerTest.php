@@ -13,6 +13,29 @@ use Symfony\Component\HttpFoundation\Request;
 class PagerManagerTest extends KernelTestBase {
 
   /**
+   * @covers ::createPager
+   */
+  public function testDefaultInitializeGlobals() {
+    $pager_globals = [
+      'pager_page_array',
+      'pager_total_items',
+      'pager_total',
+      'pager_limits',
+    ];
+    foreach ($pager_globals as $pager_global) {
+      $this->assertFalse(isset($GLOBALS[$pager_global]));
+    }
+    /* @var $pager_manager \Drupal\Core\Pager\PagerManagerInterface */
+    $pager_manager = $this->container->get('pager.manager');
+
+    $pager_manager->createPager(5, 1);
+
+    foreach ($pager_globals as $pager_global) {
+      $this->assertTrue(isset($GLOBALS[$pager_global]));
+    }
+  }
+
+  /**
    * @covers ::getUpdatedParameters
    */
   public function testGetUpdatedParameters() {
@@ -23,11 +46,11 @@ class PagerManagerTest extends KernelTestBase {
     ];
     $request = Request::create('http://example.com', 'GET', $test_parameters);
 
-    /** @var \Symfony\Component\HttpFoundation\RequestStack $request_stack */
+    /* @var $request_stack \Symfony\Component\HttpFoundation\RequestStack */
     $request_stack = $this->container->get('request_stack');
     $request_stack->push($request);
 
-    /** @var \Drupal\Core\Pager\PagerManagerInterface $pager_manager */
+    /* @var $pager_manager \Drupal\Core\Pager\PagerManagerInterface */
     $pager_manager = $this->container->get('pager.manager');
 
     $pager_manager->createPager(30, 10, $element);
@@ -39,50 +62,41 @@ class PagerManagerTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::findPage
+   * @group legacy
+   * @expectedDeprecation Global variable $pager_page_array is deprecated in drupal:8.8.0 and is removed in drupal:9.0.0. Use \Drupal\Core\Pager\PagerManagerInterface instead. See https://www.drupal.org/node/2779457
+   * @expectedDeprecation Global variable $pager_total_items is deprecated in drupal:8.8.0 and is removed in drupal:9.0.0. Use \Drupal\Core\Pager\PagerManagerInterface instead. See https://www.drupal.org/node/2779457
+   * @expectedDeprecation Global variable $pager_total is deprecated in drupal:8.8.0 and is removed in drupal:9.0.0. Use \Drupal\Core\Pager\PagerManagerInterface instead. See https://www.drupal.org/node/2779457
+   * @expectedDeprecation Global variable $pager_limits is deprecated in drupal:8.8.0 and is removed in drupal:9.0.0. Use \Drupal\Core\Pager\PagerManagerInterface instead. See https://www.drupal.org/node/2779457
    */
-  public function testFindPage() {
-    $request = Request::create('http://example.com', 'GET', ['page' => '0,10']);
+  public function testGlobalsSafety() {
 
-    /** @var \Symfony\Component\HttpFoundation\RequestStack $request_stack */
-    $request_stack = $this->container->get('request_stack');
-    $request_stack->push($request);
-
+    /* @var $pager_manager \Drupal\Core\Pager\PagerManagerInterface */
     $pager_manager = $this->container->get('pager.manager');
 
-    $this->assertEquals(10, $pager_manager->findPage(1));
-  }
+    $pager_manager->createPager(30, 10);
 
-  /**
-   * @covers ::getMaxPagerElementId
-   *
-   * @dataProvider providerTestGetMaxPagerElementId
-   */
-  public function testGetMaxPagerElementId(array $elements, int $expected_max_element_id): void {
-    /** @var \Drupal\Core\Pager\PagerManagerInterface $pager_manager */
-    $pager_manager = $this->container->get('pager.manager');
-
-    foreach ($elements as $element) {
-      $pager_manager->createPager(30, 10, $element);
+    $pager_globals = [
+      'pager_page_array',
+      'pager_total_items',
+      'pager_total',
+      'pager_limits',
+    ];
+    // Check globals were set.
+    foreach ($pager_globals as $pager_global) {
+      $this->assertTrue(isset($GLOBALS[$pager_global]));
     }
 
-    $this->assertEquals($expected_max_element_id, $pager_manager->getMaxPagerElementId());
-  }
+    $this->assertEquals(0, $GLOBALS['pager_page_array'][0]);
+    $this->assertEquals(30, $GLOBALS['pager_total_items'][0]);
+    $this->assertEquals(3, $GLOBALS['pager_total'][0]);
+    $this->assertEquals(10, $GLOBALS['pager_limits'][0]);
 
-  /**
-   * Provides test cases for PagerManagerTest::testGetMaxPagerElementId().
-   *
-   * @return array
-   *   An array of test cases, each which the following values:
-   *   - Array of elements to pass to PagerManager::createPager().
-   *   - The expected value returned by PagerManager::getMaxPagerElementId().
-   */
-  public function providerTestGetMaxPagerElementId(): array {
-    return [
-      'no_pager' => [[], -1],
-      'single_pager' => [[0], 0],
-      'multiple_pagers' => [[30, 10, 20], 30],
-    ];
+    // Assert array is iterable.
+    foreach ($GLOBALS['pager_total_items'] as $pager_id => $total_items) {
+      // We only have one pager.
+      $this->assertEquals(0, $pager_id);
+      $this->assertEquals(30, $total_items);
+    }
   }
 
 }

@@ -18,7 +18,7 @@ class ExternalFormUrlTest extends KernelTestBase implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user', 'system'];
+  public static $modules = ['user', 'system'];
 
   /**
    * {@inheritdoc}
@@ -51,9 +51,9 @@ class ExternalFormUrlTest extends KernelTestBase implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-    $this->installSchema('system', ['sequences']);
+    $this->installSchema('system', ['key_value_expire', 'sequences']);
     $this->installEntitySchema('user');
 
     $test_user = User::create([
@@ -65,7 +65,7 @@ class ExternalFormUrlTest extends KernelTestBase implements FormInterface {
   }
 
   /**
-   * Tests form behavior.
+   * Tests form behaviour.
    */
   public function testActionUrlBehavior() {
     // Create a new request which has a request uri with multiple leading
@@ -85,7 +85,7 @@ class ExternalFormUrlTest extends KernelTestBase implements FormInterface {
     $this->setRawContent($markup);
     $elements = $this->xpath('//form/@action');
     $action = (string) $elements[0];
-    $this->assertEquals($original_request->getSchemeAndHttpHost() . '//example.org', $action);
+    $this->assertEqual($original_request->getSchemeAndHttpHost() . '//example.org', $action);
 
     // Create a new request which has a request uri with a single leading slash
     // and make it the master request.
@@ -100,7 +100,7 @@ class ExternalFormUrlTest extends KernelTestBase implements FormInterface {
     $this->setRawContent($markup);
     $elements = $this->xpath('//form/@action');
     $action = (string) $elements[0];
-    $this->assertEquals('/example.org', $action);
+    $this->assertEqual('/example.org', $action);
   }
 
 }

@@ -1,7 +1,0 @@
-rules_transaction_execution:
-  label: 'Transaction has been executed'
-  category: 'Transaction'
-  context:
-    transaction:
-      type: 'entity:transaction'
-      label: 'The executed transaction'

@@ -16,7 +16,7 @@ class BlockAdminThemeTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['block', 'contextual'];
+  public static $modules = ['block', 'contextual'];
 
   /**
    * {@inheritdoc}
@@ -28,24 +28,20 @@ class BlockAdminThemeTest extends BrowserTestBase {
    */
   public function testAdminTheme() {
     // Create administrative user.
-    $admin_user = $this->drupalCreateUser([
-      'administer blocks',
-      'administer themes',
-    ]);
+    $admin_user = $this->drupalCreateUser(['administer blocks', 'administer themes']);
     $this->drupalLogin($admin_user);
 
     // Ensure that access to block admin page is denied when theme is not
     // installed.
     $this->drupalGet('admin/structure/block/list/bartik');
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     // Install admin theme and confirm that tab is accessible.
     \Drupal::service('theme_installer')->install(['bartik']);
     $edit['admin_theme'] = 'bartik';
-    $this->drupalGet('admin/appearance');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/appearance', $edit, t('Save configuration'));
     $this->drupalGet('admin/structure/block/list/bartik');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
   }
 
   /**
@@ -64,8 +60,7 @@ class BlockAdminThemeTest extends BrowserTestBase {
     // Install admin theme and confirm that tab is accessible.
     \Drupal::service('theme_installer')->install(['seven']);
     $edit['admin_theme'] = 'seven';
-    $this->drupalGet('admin/appearance');
-    $this->submitForm($edit, 'Save configuration');
+    $this->drupalPostForm('admin/appearance', $edit, t('Save configuration'));
 
     // Define our block settings.
     $settings = [
@@ -80,8 +75,8 @@ class BlockAdminThemeTest extends BrowserTestBase {
     $this->drupalGet('admin');
 
     // Check if contextual link classes are unavailable.
-    $this->assertSession()->responseNotContains('<div data-contextual-id="block:block=' . $block->id() . ':langcode=en"></div>');
-    $this->assertSession()->responseNotContains('contextual-region');
+    $this->assertNoRaw('<div data-contextual-id="block:block=' . $block->id() . ':langcode=en"></div>');
+    $this->assertNoRaw('contextual-region');
   }
 
 }

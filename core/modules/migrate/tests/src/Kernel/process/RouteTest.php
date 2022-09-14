@@ -9,8 +9,6 @@ use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 
-// cspell:ignore nzdt
-
 /**
  * Tests the route process plugin.
  *
@@ -25,7 +23,7 @@ class RouteTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['user', 'system'];
+  public static $modules = ['user', 'system'];
 
   /**
    * Tests Route plugin based on providerTestRoute() values.
@@ -261,13 +259,15 @@ class RouteTest extends KernelTestBase {
    *   The route information based on the source link_path.
    */
   protected function doTransform($value) {
+    // Rebuild the routes.
+    $this->container->get('router.builder')->rebuild();
     $pathValidator = $this->container->get('path.validator');
     $row = new Row();
     $migration = $this->prophesize(MigrationInterface::class)->reveal();
     $executable = $this->prophesize(MigrateExecutableInterface::class)->reveal();
 
     $plugin = new Route([], 'route', [], $migration, $pathValidator);
-    $actual = $plugin->transform($value, $executable, $row, 'destination_property');
+    $actual = $plugin->transform($value, $executable, $row, 'destinationproperty');
     return $actual;
   }
 

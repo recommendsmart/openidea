@@ -22,7 +22,7 @@ class ApcuBackendTest extends GenericCacheBackendUnitTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown(): void {
+  protected function tearDown() {
     foreach ($this->cachebackends as $bin => $cachebackend) {
       $this->cachebackends[$bin]->removeBin();
     }
@@ -41,7 +41,7 @@ class ApcuBackendTest extends GenericCacheBackendUnitTestBase {
 
     $iterator = new \APCUIterator('/^' . $key . '/');
     foreach ($iterator as $item) {
-      $this->assertEquals(0, $item['ttl']);
+      $this->assertEqual(0, $item['ttl']);
       $found = TRUE;
     }
     $this->assertTrue($found);

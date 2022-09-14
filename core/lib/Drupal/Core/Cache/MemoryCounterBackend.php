@@ -73,10 +73,10 @@ class MemoryCounterBackend extends MemoryBackend {
    */
   public function getCounter($method = NULL, $cid = NULL) {
     if ($method && $cid) {
-      return $this->counter[$method][$cid] ?? 0;
+      return isset($this->counter[$method][$cid]) ? $this->counter[$method][$cid] : 0;
     }
     elseif ($method) {
-      return $this->counter[$method] ?? [];
+      return isset($this->counter[$method]) ? $this->counter[$method] : [];
     }
     else {
       return $this->counter;

@@ -58,12 +58,19 @@ class FrameworkTest extends BrowserTestBase {
     $build['#attached']['library'][] = 'ajax_test/order-header-js-command';
     $build['#attached']['library'][] = 'ajax_test/order-footer-js-command';
     $assets = AttachedAssets::createFromRenderArray($build);
-    [$js_assets_header, $js_assets_footer] = $asset_resolver->getJsAssets($assets, FALSE);
+    list($js_assets_header, $js_assets_footer) = $asset_resolver->getJsAssets($assets, FALSE);
     $js_header_render_array = $js_collection_renderer->render($js_assets_header);
     $js_footer_render_array = $js_collection_renderer->render($js_assets_footer);
     $expected_commands[2] = new PrependCommand('head', $js_header_render_array);
     $expected_commands[3] = new AppendCommand('body', $js_footer_render_array);
     $expected_commands[4] = new HtmlCommand('body', 'Hello, world!');
+
+    // Load any page with at least one CSS file, at least one JavaScript file
+    // and at least one #ajax-powered element. The latter is an assumption of
+    // drupalPostAjaxForm(), the two former are assumptions of the Ajax
+    // renderer.
+    // @todo refactor AJAX Framework + tests to make less assumptions.
+    $this->drupalGet('ajax_forms_test_lazy_load_form');
 
     // Verify AJAX command order — this should always be the order:
     // 1. CSS files
@@ -107,14 +114,12 @@ class FrameworkTest extends BrowserTestBase {
    * the actual command contains additional settings that aren't part of
    * $needle.
    *
-   * @param array $haystack
+   * @param $haystack
    *   An array of rendered Ajax commands returned by the server.
-   * @param array $needle
+   * @param $needle
    *   Array of info we're expecting in one of those commands.
-   *
-   * @internal
    */
-  protected function assertCommand(array $haystack, array $needle): void {
+  protected function assertCommand($haystack, $needle) {
     $found = FALSE;
     foreach ($haystack as $command) {
       // If the command has additional settings that we're not testing for, do

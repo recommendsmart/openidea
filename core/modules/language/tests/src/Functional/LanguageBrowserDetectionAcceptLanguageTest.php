@@ -17,7 +17,7 @@ class LanguageBrowserDetectionAcceptLanguageTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'locale',
     'content_translation',
@@ -32,7 +32,7 @@ class LanguageBrowserDetectionAcceptLanguageTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     // User to manage languages.
     $admin = $this->drupalCreateUser([], NULL, TRUE);
@@ -41,32 +41,29 @@ class LanguageBrowserDetectionAcceptLanguageTest extends BrowserTestBase {
     // Create FR.
     ConfigurableLanguage::createFromLangcode('fr')->save();
     // Set language detection to url and browser detection.
-    $this->drupalGet('/admin/config/regional/language/detection');
-    $this->submitForm([
+    $this->drupalPostForm('/admin/config/regional/language/detection', [
       'language_interface[enabled][language-url]' => TRUE,
       'language_interface[enabled][language-browser]' => TRUE,
       'language_interface[enabled][language-selected]' => TRUE,
     ], 'Save settings');
 
     // Set prefixes to en and fr.
-    $this->drupalGet('/admin/config/regional/language/detection/url');
-    $this->submitForm([
+    $this->drupalPostForm('/admin/config/regional/language/detection/url', [
       'prefix[en]' => 'en',
       'prefix[fr]' => 'fr',
     ], 'Save configuration');
     // Add language codes to browser detection.
-    $this->drupalGet('/admin/config/regional/language/detection/browser');
-    $this->submitForm([
+    $this->drupalPostForm('/admin/config/regional/language/detection/browser', [
       'new_mapping[browser_langcode]' => 'fr',
       'new_mapping[drupal_langcode]' => 'fr',
     ], 'Save configuration');
-    $this->drupalGet('/admin/config/regional/language/detection/browser');
-    $this->submitForm([
+    $this->drupalPostForm('/admin/config/regional/language/detection/browser', [
       'new_mapping[browser_langcode]' => 'en',
       'new_mapping[drupal_langcode]' => 'en',
     ], 'Save configuration');
-    $this->drupalGet('/admin/config/regional/language/detection/selected');
-    $this->submitForm(['edit-selected-langcode' => 'en'], 'Save configuration');
+    $this->drupalPostForm('/admin/config/regional/language/detection/selected', [
+      'edit-selected-langcode' => 'en',
+    ], 'Save configuration');
 
     $this->drupalLogout();
   }
@@ -87,32 +84,32 @@ class LanguageBrowserDetectionAcceptLanguageTest extends BrowserTestBase {
 
     $this->drupalGet('/system-test/echo/language test', [], ['Accept-Language' => 'en']);
     $this->assertSession()->responseHeaderEquals('Content-Language', 'en');
-    $this->assertSession()->responseHeaderDoesNotExist('X-Drupal-Cache');
+    $this->assertNull($this->drupalGetHeader('X-Drupal-Cache'));
 
     // Check with UK browser.
     $this->drupalGet('/system-test/echo/language test', [], ['Accept-Language' => 'en-UK,en']);
     $this->assertSession()->responseHeaderEquals('Content-Language', 'en');
-    $this->assertSession()->responseHeaderDoesNotExist('X-Drupal-Cache');
+    $this->assertNull($this->drupalGetHeader('X-Drupal-Cache'));
 
     // Check with french browser.
     $this->drupalGet('/system-test/echo/language test', [], ['Accept-Language' => 'fr-FR,fr']);
     $this->assertSession()->responseHeaderEquals('Content-Language', 'fr');
-    $this->assertSession()->responseHeaderDoesNotExist('X-Drupal-Cache');
+    $this->assertNull($this->drupalGetHeader('X-Drupal-Cache'));
 
     // Check with browser without language settings - should return fallback language.
     $this->drupalGet('/system-test/echo/language test', [], ['Accept-Language' => NULL]);
     $this->assertSession()->responseHeaderEquals('Content-Language', 'en');
-    $this->assertSession()->responseHeaderDoesNotExist('X-Drupal-Cache');
+    $this->assertNull($this->drupalGetHeader('X-Drupal-Cache'));
 
     // Check with french browser again.
     $this->drupalGet('/system-test/echo/language test', [], ['Accept-Language' => 'fr-FR,fr']);
     $this->assertSession()->responseHeaderEquals('Content-Language', 'fr');
-    $this->assertSession()->responseHeaderDoesNotExist('X-Drupal-Cache');
+    $this->assertNull($this->drupalGetHeader('X-Drupal-Cache'));
 
     // Check with UK browser.
     $this->drupalGet('/system-test/echo/language test', [], ['Accept-Language' => 'en-UK,en']);
     $this->assertSession()->responseHeaderEquals('Content-Language', 'en');
-    $this->assertSession()->responseHeaderDoesNotExist('X-Drupal-Cache');
+    $this->assertNull($this->drupalGetHeader('X-Drupal-Cache'));
 
     // Check if prefixed URLs are still cached.
     $this->drupalGet('/en/system-test/echo/language test', [], ['Accept-Language' => 'en']);

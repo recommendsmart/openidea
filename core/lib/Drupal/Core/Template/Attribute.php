@@ -32,16 +32,13 @@ use Drupal\Component\Utility\NestedArray;
  * template, use the "without" filter to prevent attributes that have already
  * been printed from being printed again. For example:
  * @code
- * <cat class="{{ attributes.class }} my-custom-class"{{ attributes|without('class') }}>
- * @endcode
- * Produces:
- * @code
- * <cat class="cat black-cat white-cat black-white-cat my-custom-class" id="socks">
+ *  <cat class="{{ attributes.class }} my-custom-class"{{ attributes|without('class') }}>
+ *  {# Produces <cat class="cat black-cat white-cat black-white-cat my-custom-class" id="socks"> #}
  * @endcode
  *
  * The attribute keys and values are automatically escaped for output with
  * Html::escape(). No protocol filtering is applied, so when using user-entered
- * input as a value for an attribute that expects a URI (href, src, ...),
+ * input as a value for an attribute that expects an URI (href, src, ...),
  * UrlHelper::stripDangerousProtocols() should be used to ensure dangerous
  * protocols (such as 'javascript:') are removed. For example:
  * @code
@@ -90,7 +87,6 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function offsetGet($name) {
     if (isset($this->storage[$name])) {
       return $this->storage[$name];
@@ -100,7 +96,6 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function offsetSet($name, $value) {
     $this->storage[$name] = $this->createAttributeValue($name, $value);
   }
@@ -154,7 +149,6 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function offsetUnset($name) {
     unset($this->storage[$name]);
   }
@@ -162,7 +156,6 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function offsetExists($name) {
     return isset($this->storage[$name]);
   }
@@ -356,7 +349,6 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
   /**
    * {@inheritdoc}
    */
-  #[\ReturnTypeWillChange]
   public function getIterator() {
     return new \ArrayIterator($this->storage);
   }
@@ -374,7 +366,6 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    * @return string
    *   The safe string content.
    */
-  #[\ReturnTypeWillChange]
   public function jsonSerialize() {
     return (string) $this;
   }

@@ -22,7 +22,7 @@ class FilterEntityBundleTest extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * Tests the generic bundle filter.
@@ -88,7 +88,7 @@ class FilterEntityBundleTest extends ViewsKernelTestBase {
       $view->display_handler->setOption('filters', $filters);
       $this->executeView($view);
 
-      $this->assertSameSize($entities[$key], $view->result);
+      $this->assertCount(count($entities[$key]), $view->result);
 
       $view->destroy();
     }

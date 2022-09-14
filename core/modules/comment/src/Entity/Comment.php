@@ -102,7 +102,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
           // by retrieving the maximum thread level.
           $max = $storage->getMaxThread($this);
           // Strip the "/" from the end of the thread.
-          $max = rtrim((string) $max, '/');
+          $max = rtrim($max, '/');
           // We need to get the value at the correct depth.
           $parts = explode('.', $max);
           $n = Number::alphadecimalToInt($parts[0]);
@@ -192,14 +192,6 @@ class Comment extends ContentEntityBase implements CommentInterface {
     $comment_storage = \Drupal::entityTypeManager()->getStorage('comment');
     $comments = $comment_storage->loadMultiple($child_cids);
     $comment_storage->delete($comments);
-
-    // Always invalidate the cache tag for the commented entity.
-    /** @var \Drupal\comment\CommentInterface $entity */
-    foreach ($entities as $entity) {
-      if ($commented_entity = $entity->getCommentedEntity()) {
-        Cache::invalidateTags($commented_entity->getCacheTagsToInvalidate());
-      }
-    }
 
     foreach ($entities as $id => $entity) {
       \Drupal::service('comment.statistics')->update($entity);
@@ -361,25 +353,21 @@ class Comment extends ContentEntityBase implements CommentInterface {
    * {@inheritdoc}
    */
   public function getCommentedEntity() {
-    if ($this->getCommentedEntityTypeId() && $this->entityTypeManager()->hasDefinition($this->getCommentedEntityTypeId()) && $entity_id = $this->getCommentedEntityId()) {
-      return $this->entityTypeManager()
-        ->getStorage($this->getCommentedEntityTypeId())
-        ->load($entity_id);
-    }
+    return $this->get('entity_id')->entity;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCommentedEntityId() {
-    return $this->getFieldValue('entity_id', 'target_id');
+    return $this->get('entity_id')->target_id;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCommentedEntityTypeId() {
-    return $this->getFieldValue('entity_type', 'value');
+    return $this->get('entity_type')->value;
   }
 
   /**
@@ -394,14 +382,14 @@ class Comment extends ContentEntityBase implements CommentInterface {
    * {@inheritdoc}
    */
   public function getFieldName() {
-    return $this->getFieldValue('field_name', 'value');
+    return $this->get('field_name')->value;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getSubject() {
-    return $this->get('subject')->value ?? '';
+    return $this->get('subject')->value;
   }
 
   /**
@@ -416,8 +404,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
    * {@inheritdoc}
    */
   public function getAuthorName() {
-    // If their is a valid user id and the user entity exists return the label.
-    if ($this->get('uid')->target_id && $this->get('uid')->entity) {
+    if ($this->get('uid')->target_id) {
       return $this->get('uid')->entity->label();
     }
     return $this->get('name')->value ?: \Drupal::config('user.settings')->get('anonymous');
@@ -495,6 +482,14 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
+  public function getStatus() {
+    @trigger_error(__NAMESPACE__ . '\Comment::getStatus() is deprecated in drupal:8.3.0 and is removed from drupal:9.0.0. Use \Drupal\Core\Entity\EntityPublishedInterface::isPublished() instead. See https://www.drupal.org/node/2830201', E_USER_DEPRECATED);
+    return $this->get('status')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getThread() {
     $thread = $this->get('thread');
     if (!empty($thread->value)) {
@@ -515,8 +510,8 @@ class Comment extends ContentEntityBase implements CommentInterface {
    */
   public static function preCreate(EntityStorageInterface $storage, array &$values) {
     if (empty($values['comment_type']) && !empty($values['field_name']) && !empty($values['entity_type'])) {
-      $fields = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($values['entity_type']);
-      $values['comment_type'] = $fields[$values['field_name']]->getSetting('comment_type');
+      $field_storage = FieldStorageConfig::loadByName($values['entity_type'], $values['field_name']);
+      $values['comment_type'] = $field_storage->getSetting('comment_type');
     }
   }
 

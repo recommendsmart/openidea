@@ -17,7 +17,7 @@ class MigrateTextConfigsTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('text_settings');
   }
@@ -27,7 +27,7 @@ class MigrateTextConfigsTest extends MigrateDrupal6TestBase {
    */
   public function testTextSettings() {
     $config = $this->config('text.settings');
-    $this->assertSame(456, $config->get('default_summary_length'));
+    $this->assertIdentical(456, $config->get('default_summary_length'));
     $this->assertConfigSchema(\Drupal::service('config.typed'), 'text.settings', $config->get());
   }
 

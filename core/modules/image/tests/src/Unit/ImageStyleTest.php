@@ -40,8 +40,6 @@ class ImageStyleTest extends UnitTestCase {
    *   The image effect ID.
    * @param \Drupal\image\ImageEffectInterface|\PHPUnit\Framework\MockObject\MockObject $image_effect
    *   The image effect used for testing.
-   * @param array $stubs
-   *   An array of additional method names to mock.
    *
    * @return \Drupal\image\ImageStyleInterface
    *   The mocked image style.
@@ -54,13 +52,18 @@ class ImageStyleTest extends UnitTestCase {
       ->method('createInstance')
       ->with($image_effect_id)
       ->will($this->returnValue($image_effect));
-    $default_stubs = ['getImageEffectPluginManager', 'fileDefaultScheme'];
+    $default_stubs = [
+      'getImageEffectPluginManager',
+      'fileUriScheme',
+      'fileUriTarget',
+      'fileDefaultScheme',
+    ];
     $image_style = $this->getMockBuilder('\Drupal\image\Entity\ImageStyle')
       ->setConstructorArgs([
         ['effects' => [$image_effect_id => ['id' => $image_effect_id]]],
         $this->entityTypeId,
       ])
-      ->onlyMethods(array_merge($default_stubs, $stubs))
+      ->setMethods(array_merge($default_stubs, $stubs))
       ->getMock();
 
     $image_style->expects($this->any())
@@ -68,7 +71,7 @@ class ImageStyleTest extends UnitTestCase {
       ->will($this->returnValue($effectManager));
     $image_style->expects($this->any())
       ->method('fileDefaultScheme')
-      ->willReturnCallback([$this, 'fileDefaultScheme']);
+      ->will($this->returnCallback([$this, 'fileDefaultScheme']));
 
     return $image_style;
   }
@@ -76,7 +79,7 @@ class ImageStyleTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityTypeId = $this->randomMachineName();
     $this->provider = $this->randomMachineName();
     $this->entityType = $this->createMock('\Drupal\Core\Entity\EntityTypeInterface');
@@ -108,7 +111,7 @@ class ImageStyleTest extends UnitTestCase {
     $extensions = ['jpeg', 'gif', 'png'];
     foreach ($extensions as $extension) {
       $extensionReturned = $image_style->getDerivativeExtension($extension);
-      $this->assertEquals('png', $extensionReturned);
+      $this->assertEquals($extensionReturned, 'png');
     }
   }
 

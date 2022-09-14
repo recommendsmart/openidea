@@ -14,7 +14,7 @@ class ReportTest extends UITestBase {
    *
    * @var array
    */
-  protected static $modules = ['views', 'views_ui'];
+  public static $modules = ['views', 'views_ui'];
 
   /**
    * {@inheritdoc}
@@ -36,7 +36,7 @@ class ReportTest extends UITestBase {
 
     // Test the report page.
     $this->drupalGet('admin/reports/views-plugins');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200, "Views report page exists");
   }
 
 }

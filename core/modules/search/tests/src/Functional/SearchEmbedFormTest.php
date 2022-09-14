@@ -35,17 +35,13 @@ class SearchEmbedFormTest extends BrowserTestBase {
    */
   protected $submitCount = 0;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
 
     // Create a user and a node, and update the search index.
-    $test_user = $this->drupalCreateUser([
-      'access content',
-      'search content',
-      'administer nodes',
-    ]);
+    $test_user = $this->drupalCreateUser(['access content', 'search content', 'administer nodes']);
     $this->drupalLogin($test_user);
 
     $this->node = $this->drupalCreateNode();
@@ -62,29 +58,33 @@ class SearchEmbedFormTest extends BrowserTestBase {
    */
   public function testEmbeddedForm() {
     // First verify we can submit the form from the module's page.
-    $this->drupalGet('search_embedded_form');
-    $this->submitForm(['name' => 'John'], 'Send away');
-    $this->assertSession()->pageTextContains('Test form was submitted');
+    $this->drupalPostForm('search_embedded_form',
+      ['name' => 'John'],
+      t('Send away'));
+    $this->assertText(t('Test form was submitted'), 'Form message appears');
     $count = \Drupal::state()->get('search_embedded_form.submit_count');
-    $this->assertEquals($this->submitCount + 1, $count, 'Form submission count is correct');
+    $this->assertEqual($this->submitCount + 1, $count, 'Form submission count is correct');
     $this->submitCount = $count;
 
     // Now verify that we can see and submit the form from the search results.
     $this->drupalGet('search/node', ['query' => ['keys' => $this->node->label()]]);
-    $this->assertSession()->pageTextContains('Your name');
-    $this->submitForm(['name' => 'John'], 'Send away');
-    $this->assertSession()->pageTextContains('Test form was submitted');
+    $this->assertText(t('Your name'), 'Form is visible');
+    $this->drupalPostForm(NULL,
+      ['name' => 'John'],
+      t('Send away'));
+    $this->assertText(t('Test form was submitted'), 'Form message appears');
     $count = \Drupal::state()->get('search_embedded_form.submit_count');
-    $this->assertEquals($this->submitCount + 1, $count, 'Form submission count is correct');
+    $this->assertEqual($this->submitCount + 1, $count, 'Form submission count is correct');
     $this->submitCount = $count;
 
     // Now verify that if we submit the search form, it doesn't count as
     // our form being submitted.
-    $this->drupalGet('search');
-    $this->submitForm(['keys' => 'foo'], 'Search');
-    $this->assertSession()->pageTextNotContains('Test form was submitted');
+    $this->drupalPostForm('search',
+      ['keys' => 'foo'],
+      t('Search'));
+    $this->assertNoText(t('Test form was submitted'), 'Form message does not appear');
     $count = \Drupal::state()->get('search_embedded_form.submit_count');
-    $this->assertEquals($this->submitCount, $count, 'Form submission count is correct');
+    $this->assertEqual($this->submitCount, $count, 'Form submission count is correct');
     $this->submitCount = $count;
   }
 

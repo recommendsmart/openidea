@@ -37,9 +37,9 @@ class MediaRevisionTest extends MediaFunctionalTestBase {
     ]);
     $media->save();
 
-    // You can access the revision page when there is only 1 revision.
+    // You can't access the revision page when there is only 1 revision.
     $this->drupalGet('media/' . $media->id() . '/revisions/' . $media->getRevisionId() . '/view');
-    $assert->statusCodeEquals(200);
+    $assert->statusCodeEquals(403);
 
     // Create some revisions.
     $media_revisions = [];
@@ -106,7 +106,7 @@ class MediaRevisionTest extends MediaFunctionalTestBase {
     $this->drupalGet('/media/1/edit');
     $assert->checkboxChecked('Create new revision');
     $page = $this->getSession()->getPage();
-    $page->fillField('Name', 'Foo');
+    $page->fillField('Name', 'Foobaz');
     $page->pressButton('Save');
     $this->assertRevisionCount($media, 2);
 
@@ -115,11 +115,11 @@ class MediaRevisionTest extends MediaFunctionalTestBase {
       ->getStorage('media')
       ->loadUnchanged(1);
     $this->drupalGet("media/" . $media->id() . "/revisions/" . $media->getRevisionId() . "/view");
-    $assert->pageTextContains('Foo');
+    $assert->pageTextContains('Foobaz');
   }
 
   /**
-   * Tests creating revisions of an Image media item.
+   * Tests creating revisions of a Image media item.
    */
   public function testImageMediaRevision() {
     $assert = $this->assertSession();
@@ -155,7 +155,7 @@ class MediaRevisionTest extends MediaFunctionalTestBase {
     $this->drupalGet('/media/1/edit');
     $assert->checkboxChecked('Create new revision');
     $page = $this->getSession()->getPage();
-    $page->fillField('Name', 'Foo');
+    $page->fillField('Name', 'Foobaz');
     $page->pressButton('Save');
     $this->assertRevisionCount($media, 2);
 
@@ -164,7 +164,7 @@ class MediaRevisionTest extends MediaFunctionalTestBase {
       ->getStorage('media')
       ->loadUnchanged(1);
     $this->drupalGet("media/" . $media->id() . "/revisions/" . $media->getRevisionId() . "/view");
-    $assert->pageTextContains('Foo');
+    $assert->pageTextContains('Foobaz');
   }
 
   /**
@@ -190,17 +190,14 @@ class MediaRevisionTest extends MediaFunctionalTestBase {
    *   The entity in question.
    * @param int $expected_revisions
    *   The expected number of revisions.
-   *
-   * @internal
    */
-  protected function assertRevisionCount(EntityInterface $entity, int $expected_revisions): void {
+  protected function assertRevisionCount(EntityInterface $entity, $expected_revisions) {
     $entity_type = $entity->getEntityType();
 
     $count = $this->container
       ->get('entity_type.manager')
       ->getStorage($entity_type->id())
       ->getQuery()
-      ->accessCheck(FALSE)
       ->count()
       ->allRevisions()
       ->condition($entity_type->getKey('id'), $entity->id())

@@ -14,13 +14,14 @@
    */
   Drupal.behaviors.responsiveDetails = {
     attach(context) {
-      const details = once('responsive-details', 'details', context);
+      const $details = $(context)
+        .find('details')
+        .once('responsive-details');
 
-      if (!details.length) {
+      if (!$details.length) {
         return;
       }
 
-      const $details = $(details);
       const $summaries = $details.find('> summary');
 
       function detailsToggle(matches) {

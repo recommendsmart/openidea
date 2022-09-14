@@ -3,6 +3,7 @@
 namespace Drupal\Tests\layout_builder\Kernel;
 
 use Drupal\Core\Config\Schema\SchemaIncompleteException;
+use Drupal\entity_test\Entity\EntityTest;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 
 /**
@@ -10,12 +11,12 @@ use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
  *
  * @group layout_builder
  */
-class LayoutBuilderEntityViewDisplayTest extends SectionListTestBase {
+class LayoutBuilderEntityViewDisplayTest extends SectionStorageTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected function getSectionList(array $section_data) {
+  protected function getSectionStorage(array $section_data) {
     $display = LayoutBuilderEntityViewDisplay::create([
       'targetEntityType' => 'entity_test',
       'bundle' => 'entity_test',
@@ -37,8 +38,27 @@ class LayoutBuilderEntityViewDisplayTest extends SectionListTestBase {
    */
   public function testInvalidConfiguration() {
     $this->expectException(SchemaIncompleteException::class);
-    $this->sectionList->getSection(0)->getComponent('first-uuid')->setConfiguration(['id' => 'foo', 'bar' => 'baz']);
-    $this->sectionList->save();
+    $this->sectionStorage->getSection(0)->getComponent('first-uuid')->setConfiguration(['id' => 'foo', 'bar' => 'baz']);
+    $this->sectionStorage->save();
+  }
+
+  /**
+   * @covers ::getRuntimeSections
+   * @group legacy
+   * @expectedDeprecation \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::getRuntimeSections() is deprecated in Drupal 8.7.0 and will be removed before Drupal 9.0.0. \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface::findByContext() should be used instead. See https://www.drupal.org/node/3022574.
+   */
+  public function testGetRuntimeSections() {
+    $this->container->get('current_user')->setAccount($this->createUser());
+
+    $entity = EntityTest::create();
+    $entity->save();
+
+    $reflection = new \ReflectionMethod($this->sectionStorage, 'getRuntimeSections');
+    $reflection->setAccessible(TRUE);
+
+    $result = $reflection->invoke($this->sectionStorage, $entity);
+
+    $this->assertEquals($this->sectionStorage->getSections(), $result);
   }
 
   /**
@@ -75,19 +95,19 @@ class LayoutBuilderEntityViewDisplayTest extends SectionListTestBase {
   }
 
   /**
-   * Tests that setting overridable enables Layout Builder only when TRUE.
+   * Tests that setting overridable enables Layout Builder only when set to TRUE.
    */
   public function testSetOverridable() {
     // Disable Layout Builder.
-    $this->sectionList->disableLayoutBuilder();
+    $this->sectionStorage->disableLayoutBuilder();
 
     // Set Overridable to TRUE and ensure Layout Builder is enabled.
-    $this->sectionList->setOverridable();
-    $this->assertTrue($this->sectionList->isLayoutBuilderEnabled());
+    $this->sectionStorage->setOverridable();
+    $this->assertEquals($this->sectionStorage->isLayoutBuilderEnabled(), TRUE);
 
     // Ensure Layout Builder is still enabled after setting Overridable to FALSE.
-    $this->sectionList->setOverridable(FALSE);
-    $this->assertTrue($this->sectionList->isLayoutBuilderEnabled());
+    $this->sectionStorage->setOverridable(FALSE);
+    $this->assertEquals($this->sectionStorage->isLayoutBuilderEnabled(), TRUE);
   }
 
 }

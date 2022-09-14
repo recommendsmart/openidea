@@ -34,8 +34,7 @@ class ReplaceTitleCommand implements CommandInterface {
   public function render() {
     return [
       'command' => 'viewsReplaceTitle',
-      'title' => $this->title,
-      'siteName' => \Drupal::config('system.site')->get('name'),
+      'selector' => $this->title,
     ];
   }
 

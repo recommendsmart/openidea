@@ -10,7 +10,6 @@ namespace Drupal\Tests\migrate\Unit\destination;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Plugin\migrate\destination\EntityRevision as RealEntityRevision;
 use Drupal\migrate\Row;
@@ -44,14 +43,7 @@ class EntityRevisionTest extends UnitTestCase {
    */
   protected $fieldTypeManager;
 
-  /**
-   * A mock account switcher.
-   *
-   * @var \Prophecy\Prophecy\ObjectProphecy|\Drupal\Core\Session\AccountSwitcherInterface
-   */
-  protected $accountSwitcher;
-
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Setup mocks to be used when creating a revision destination.
@@ -65,11 +57,10 @@ class EntityRevisionTest extends UnitTestCase {
 
     $this->entityFieldManager = $this->prophesize('\Drupal\Core\Entity\EntityFieldManagerInterface');
     $this->fieldTypeManager = $this->prophesize('\Drupal\Core\Field\FieldTypePluginManagerInterface');
-    $this->accountSwitcher = $this->prophesize(AccountSwitcherInterface::class);
   }
 
   /**
-   * Tests that passed old destination values are used by default.
+   * Test that passed old destination values are used by default.
    *
    * @covers ::getEntity
    */
@@ -87,7 +78,7 @@ class EntityRevisionTest extends UnitTestCase {
   }
 
   /**
-   * Tests that revision updates update.
+   * Test that revision updates update.
    *
    * @covers ::getEntity
    */
@@ -114,7 +105,7 @@ class EntityRevisionTest extends UnitTestCase {
   }
 
   /**
-   * Tests that new revisions are flagged to be written as new.
+   * Test that new revisions are flagged to be written as new.
    *
    * @covers ::getEntity
    */
@@ -144,7 +135,7 @@ class EntityRevisionTest extends UnitTestCase {
   }
 
   /**
-   * Tests entity load failure.
+   * Test entity load failure.
    *
    * @covers ::getEntity
    */
@@ -167,7 +158,7 @@ class EntityRevisionTest extends UnitTestCase {
   }
 
   /**
-   * Tests entity revision save.
+   * Test entity revision save.
    *
    * @covers ::save
    */
@@ -203,8 +194,7 @@ class EntityRevisionTest extends UnitTestCase {
       $this->storage->reveal(),
       [],
       $this->entityFieldManager->reveal(),
-      $this->fieldTypeManager->reveal(),
-      $this->accountSwitcher->reveal()
+      $this->fieldTypeManager->reveal()
     );
   }
 

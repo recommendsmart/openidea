@@ -31,7 +31,7 @@ class CommentPermalinkFormatter extends StringFormatter {
    * {@inheritdoc}
    */
   protected function getEntityUrl(EntityInterface $comment) {
-    /** @var \Drupal\comment\CommentInterface $comment */
+    /* @var $comment \Drupal\comment\CommentInterface */
     $comment_permalink = $comment->permalink();
     if ($comment->hasField('comment_body') && ($body = $comment->get('comment_body')->value)) {
       $attributes = $comment_permalink->getOption('attributes') ?: [];

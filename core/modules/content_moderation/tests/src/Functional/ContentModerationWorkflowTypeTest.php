@@ -16,7 +16,7 @@ class ContentModerationWorkflowTypeTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'content_moderation',
     'node',
     'entity_test',
@@ -30,7 +30,7 @@ class ContentModerationWorkflowTypeTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $admin = $this->drupalCreateUser([
       'administer workflows',
@@ -39,7 +39,7 @@ class ContentModerationWorkflowTypeTest extends BrowserTestBase {
   }
 
   /**
-   * Tests creating a new workflow using the content moderation plugin.
+   * Test creating a new workflow using the content moderation plugin.
    */
   public function testNewWorkflow() {
     $types[] = $this->createContentType();
@@ -48,8 +48,7 @@ class ContentModerationWorkflowTypeTest extends BrowserTestBase {
 
     $entity_bundle_info = \Drupal::service('entity_type.bundle.info');
 
-    $this->drupalGet('admin/config/workflow/workflows/add');
-    $this->submitForm([
+    $this->drupalPostForm('admin/config/workflow/workflows/add', [
       'label' => 'Test',
       'id' => 'test',
       'workflow_type' => 'content_moderation',

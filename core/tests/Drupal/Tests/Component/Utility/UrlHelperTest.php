@@ -68,7 +68,6 @@ class UrlHelperTest extends TestCase {
       'john%20doe:secret:foo@example.org/',
       'example.org/~,$\'*;',
       'caf%C3%A9.example.org',
-      // cspell:ignore FEDC
       '[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]:80/index.html',
     ];
 
@@ -513,7 +512,7 @@ class UrlHelperTest extends TestCase {
   }
 
   /**
-   * Enhances test urls with schemes.
+   * Enhances test urls with schemes
    *
    * @param array $urls
    *   The list of urls.
@@ -553,7 +552,7 @@ class UrlHelperTest extends TestCase {
   }
 
   /**
-   * Tests detecting external urls that point to local resources.
+   * Test detecting external urls that point to local resources.
    *
    * @param string $url
    *   The external url to test.
@@ -600,7 +599,7 @@ class UrlHelperTest extends TestCase {
       ['http://example.com/foo', 'http://example.com/bar', FALSE],
       ['http://example.com', 'http://example.com/bar', FALSE],
       ['http://example.com/bar', 'http://example.com/bar/', FALSE],
-      // Ensure \ is normalized to / since some browsers do that.
+      // Ensure \ is normalised to / since some browsers do that.
       ['http://www.example.ca\@example.com', 'http://example.com', FALSE],
       // Some browsers ignore or strip leading control characters.
       ["\x00//www.example.ca", 'http://example.com', FALSE],
@@ -608,7 +607,7 @@ class UrlHelperTest extends TestCase {
   }
 
   /**
-   * Tests invalid url arguments.
+   * Test invalid url arguments.
    *
    * @param string $url
    *   The url to test.

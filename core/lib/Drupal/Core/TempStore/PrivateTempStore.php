@@ -2,7 +2,6 @@
 
 namespace Drupal\Core\TempStore;
 
-use Drupal\Component\Utility\Crypt;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Lock\LockBackendInterface;
@@ -120,16 +119,17 @@ class PrivateTempStore {
    *   Thrown when a lock for the backend storage could not be acquired.
    */
   public function set($key, $value) {
+    // Ensure that an anonymous user has a session created for them, as
+    // otherwise subsequent page loads will not be able to retrieve their
+    // tempstore data.
     if ($this->currentUser->isAnonymous()) {
-      // Ensure that an anonymous user has a session created for them, as
-      // otherwise subsequent page loads will not be able to retrieve their
-      // tempstore data. Note this has to be done before the key is created as
-      // the owner is used in key creation.
+      // @todo when https://www.drupal.org/node/2865991 is resolved, use force
+      //   start session API rather than setting an arbitrary value directly.
       $this->startSession();
-      $session = $this->requestStack->getCurrentRequest()->getSession();
-      if (!$session->has('core.tempstore.private.owner')) {
-        $session->set('core.tempstore.private.owner', Crypt::randomBytesBase64());
-      }
+      $this->requestStack
+        ->getCurrentRequest()
+        ->getSession()
+        ->set('core.tempstore.private', TRUE);
     }
 
     $key = $this->createkey($key);
@@ -143,7 +143,7 @@ class PrivateTempStore {
     $value = (object) [
       'owner' => $this->getOwner(),
       'data' => $value,
-      'updated' => (int) $this->requestStack->getMainRequest()->server->get('REQUEST_TIME'),
+      'updated' => (int) $this->requestStack->getMasterRequest()->server->get('REQUEST_TIME'),
     ];
     $this->storage->setWithExpire($key, $value, $this->expire);
     $this->lockBackend->release($key);
@@ -224,10 +224,8 @@ class PrivateTempStore {
   protected function getOwner() {
     $owner = $this->currentUser->id();
     if ($this->currentUser->isAnonymous()) {
-      // Check to see if an owner key exists in the session.
       $this->startSession();
-      $session = $this->requestStack->getCurrentRequest()->getSession();
-      $owner = $session->get('core.tempstore.private.owner');
+      $owner = $this->requestStack->getCurrentRequest()->getSession()->getId();
     }
     return $owner;
   }

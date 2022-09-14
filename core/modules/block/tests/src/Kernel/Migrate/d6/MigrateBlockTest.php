@@ -15,7 +15,7 @@ class MigrateBlockTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'views',
     'comment',
@@ -33,7 +33,7 @@ class MigrateBlockTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Install the themes used for this test.
@@ -69,18 +69,16 @@ class MigrateBlockTest extends MigrateDrupal6TestBase {
    *   The display region.
    * @param string $theme
    *   The theme.
-   * @param int $weight
+   * @param string $weight
    *   The block weight.
    * @param array $settings
    *   (optional) The block settings.
    * @param bool $status
    *   Whether the block is expected to be enabled or disabled.
-   *
-   * @internal
    */
-  public function assertEntity(string $id, array $visibility, string $region, string $theme, int $weight, array $settings = NULL, bool $status = TRUE): void {
+  public function assertEntity($id, $visibility, $region, $theme, $weight, array $settings = NULL, $status = TRUE) {
     $block = Block::load($id);
-    $this->assertInstanceOf(Block::class, $block);
+    $this->assertTrue($block instanceof Block);
     $this->assertSame($visibility, $block->getVisibility());
     $this->assertSame($region, $block->getRegion());
     $this->assertSame($theme, $block->getTheme());
@@ -131,13 +129,13 @@ class MigrateBlockTest extends MigrateDrupal6TestBase {
     $visibility = [
       'user_role' => [
         'id' => 'user_role',
-        'negate' => FALSE,
-        'context_mapping' => [
-          'user' => '@user.current_user_context:current_user',
-        ],
         'roles' => [
           'authenticated' => 'authenticated',
         ],
+        'context_mapping' => [
+          'user' => '@user.current_user_context:current_user',
+        ],
+        'negate' => FALSE,
       ],
     ];
     $settings = [
@@ -152,13 +150,13 @@ class MigrateBlockTest extends MigrateDrupal6TestBase {
     $visibility = [
       'user_role' => [
         'id' => 'user_role',
-        'negate' => FALSE,
-        'context_mapping' => [
-          'user' => '@user.current_user_context:current_user',
-        ],
         'roles' => [
           'migrate_test_role_1' => 'migrate_test_role_1',
         ],
+        'context_mapping' => [
+          'user' => '@user.current_user_context:current_user',
+        ],
+        'negate' => FALSE,
       ],
     ];
     $settings = [
@@ -305,7 +303,7 @@ class MigrateBlockTest extends MigrateDrupal6TestBase {
 
     // Custom block with php code is not migrated.
     $block = Block::load('block_3');
-    $this->assertNotInstanceOf(Block::class, $block);
+    $this->assertFalse($block instanceof Block);
   }
 
 }

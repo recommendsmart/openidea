@@ -21,7 +21,7 @@ class CommentRssTest extends CommentTestBase {
    *
    * @var array
    */
-  protected static $modules = ['views'];
+  public static $modules = ['views'];
 
   /**
    * {@inheritdoc}
@@ -31,7 +31,7 @@ class CommentRssTest extends CommentTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Setup the rss view display.
@@ -72,13 +72,13 @@ class CommentRssTest extends CommentTestBase {
     ]));
 
     $raw = '<comments>' . $this->node->toUrl('canonical', ['fragment' => 'comments', 'absolute' => TRUE])->toString() . '</comments>';
-    $this->assertSession()->responseContains($raw);
+    $this->assertRaw($raw, 'Comments as part of RSS feed.');
 
     // Hide comments from RSS feed and check presence.
     $this->node->set('comment', CommentItemInterface::HIDDEN);
     $this->node->save();
     $this->drupalGet('rss.xml');
-    $this->assertSession()->responseNotContains($raw);
+    $this->assertNoRaw($raw, 'Hidden comments is not a part of RSS feed.');
   }
 
 }

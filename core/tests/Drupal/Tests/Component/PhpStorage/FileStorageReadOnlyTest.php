@@ -31,7 +31,7 @@ class FileStorageReadOnlyTest extends PhpStorageTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->standardSettings = [
@@ -63,14 +63,14 @@ class FileStorageReadOnlyTest extends PhpStorageTestBase {
     // Write out a PHP file and ensure it's successfully loaded.
     $code = "<?php\n\$GLOBALS[$random] = TRUE;";
     $success = $php->save($name, $code);
-    $this->assertTrue($success);
+    $this->assertSame(TRUE, $success);
     $php_read = new FileReadOnlyStorage($this->readonlyStorage);
     $php_read->load($name);
     $this->assertTrue($GLOBALS[$random]);
 
     // If the file was successfully loaded, it must also exist, but ensure the
     // exists() method returns that correctly.
-    $this->assertTrue($php_read->exists($name));
+    $this->assertSame(TRUE, $php_read->exists($name));
     // Saving and deleting should always fail.
     $this->assertFalse($php_read->save($name, $code));
     $this->assertFalse($php_read->delete($name));
@@ -108,7 +108,7 @@ class FileStorageReadOnlyTest extends PhpStorageTestBase {
     $this->assertFalse($php_read->deleteAll());
 
     // Make sure directory exists prior to removal.
-    $this->assertDirectoryExists($this->directory . '/test');
+    $this->assertTrue(file_exists($this->directory . '/test'), 'File storage directory does not exist.');
   }
 
 }

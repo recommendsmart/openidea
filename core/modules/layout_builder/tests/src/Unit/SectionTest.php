@@ -2,10 +2,6 @@
 
 namespace Drupal\Tests\layout_builder\Unit;
 
-use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\Layout\LayoutInterface;
-use Drupal\Core\Layout\LayoutPluginManagerInterface;
-use Drupal\Core\Plugin\Context\ContextHandlerInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\Tests\UnitTestCase;
@@ -26,7 +22,7 @@ class SectionTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->section = new Section(
@@ -188,10 +184,8 @@ class SectionTest extends UnitTestCase {
    *   The expected sections.
    * @param \Drupal\layout_builder\Section $section
    *   The section storage to check.
-   *
-   * @internal
    */
-  protected function assertComponents(array $expected, Section $section): void {
+  protected function assertComponents(array $expected, Section $section) {
     $result = $section->getComponents();
     $this->assertEquals($expected, $result);
     $this->assertSame(array_keys($expected), array_keys($result));
@@ -320,42 +314,42 @@ class SectionTest extends UnitTestCase {
    * @covers ::unsetThirdPartySetting
    * @dataProvider providerTestUnsetThirdPartySetting
    */
-  public function testUnsetThirdPartySetting($provider, $key, $expected) {
-    $this->section->unsetThirdPartySetting($provider, $key);
-    $this->assertSame($expected, $this->section->getThirdPartySettings($provider));
+  public function testUnsetThirdPartySetting() {
+    $this->section->unsetThirdPartySetting('bad_judgement', 'blink_speed');
+    $this->assertSame(['spin_direction' => 'clockwise'], $this->section->getThirdPartySettings('bad_judgement'));
+    $this->section->unsetThirdPartySetting('hunt_and_peck', 'delay');
+    $this->assertSame([], $this->section->getThirdPartySettings('hunt_and_peck'));
+    $this->section->unsetThirdPartySetting('bad_judgement', 'non_existing_key');
+    $this->section->unsetThirdPartySetting('non_existing_provider', 'non_existing_key');
   }
 
   /**
-   * Provides test data for ::testUnsetThirdPartySetting().
+   * Provides test data for ::testUnsetThirdPartySettings().
    */
   public function providerTestUnsetThirdPartySetting() {
     $data = [];
-    $data['Key with values'] = [
+    $data[] = [
       'bad_judgement',
       'blink_speed',
       [
         'spin_direction' => 'clockwise',
       ],
     ];
-    $data['Key without values'] = [
+    $data[] = [
       'hunt_and_peck',
       'delay',
       [],
     ];
-    $data['Non-existing key'] = [
+    $data[] = [
       'bad_judgement',
       'non_existing_key',
-      [
-        'blink_speed' => 'fast',
-        'spin_direction' => 'clockwise',
-      ],
+      [],
     ];
-    $data['Non-existing provider'] = [
+    $data[] = [
       'non_existing_provider',
       'non_existing_key',
       [],
     ];
-
     return $data;
   }
 
@@ -366,42 +360,6 @@ class SectionTest extends UnitTestCase {
     $this->assertSame(['bad_judgement', 'hunt_and_peck'], $this->section->getThirdPartyProviders());
     $this->section->unsetThirdPartySetting('hunt_and_peck', 'delay');
     $this->assertSame(['bad_judgement'], $this->section->getThirdPartyProviders());
-  }
-
-  /**
-   * @covers ::getLayout
-   * @dataProvider providerTestGetLayout
-   */
-  public function testGetLayout(array $contexts, bool $should_context_apply) {
-    $layout = $this->prophesize(LayoutInterface::class);
-    $layout_plugin_manager = $this->prophesize(LayoutPluginManagerInterface::class);
-    $layout_plugin_manager->createInstance('layout_onecol', [])->willReturn($layout->reveal());
-
-    $context_handler = $this->prophesize(ContextHandlerInterface::class);
-    if ($should_context_apply) {
-      $context_handler->applyContextMapping($layout->reveal(), $contexts)->shouldBeCalled();
-    }
-    else {
-      $context_handler->applyContextMapping($layout->reveal(), $contexts)->shouldNotBeCalled();
-    }
-
-    $container = new ContainerBuilder();
-    $container->set('plugin.manager.core.layout', $layout_plugin_manager->reveal());
-    $container->set('context.handler', $context_handler->reveal());
-    \Drupal::setContainer($container);
-
-    $output = $this->section->getLayout($contexts);
-    $this->assertSame($layout->reveal(), $output);
-  }
-
-  /**
-   * Provides test data for ::testGetLayout().
-   */
-  public function providerTestGetLayout() {
-    $data = [];
-    $data['contexts'] = [['foo' => 'bar'], TRUE];
-    $data['no contexts'] = [[], FALSE];
-    return $data;
   }
 
 }

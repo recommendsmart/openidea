@@ -130,7 +130,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $this->executable = $this->getMockBuilder('Drupal\views\ViewExecutable')
@@ -210,7 +210,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   }
 
   /**
-   * Tests rendering as a link without a path.
+   * Test rendering as a link without a path.
    *
    * @covers ::renderAsLink
    */
@@ -230,7 +230,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   }
 
   /**
-   * Tests rendering with a more link.
+   * Test rendering with a more link.
    *
    * @param string $path
    *   An internal or external path.
@@ -313,7 +313,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   }
 
   /**
-   * Tests rendering of a link with a path and options.
+   * Test rendering of a link with a path and options.
    *
    * @dataProvider providerTestRenderAsLinkWithPathAndOptions
    * @covers ::renderAsLink
@@ -324,7 +324,7 @@ class FieldPluginBaseTest extends UnitTestCase {
       'path' => $path,
     ];
 
-    $final_html = $final_html ?? $link_html;
+    $final_html = isset($final_html) ? $final_html : $link_html;
 
     $this->setUpUrlIntegrationServices();
     $this->setupDisplayWithEmptyArgumentsAndFields();
@@ -398,7 +398,7 @@ class FieldPluginBaseTest extends UnitTestCase {
       'url' => $url,
     ];
 
-    $final_html = $final_html ?? $link_html;
+    $final_html = isset($final_html) ? $final_html : $link_html;
 
     $this->setUpUrlIntegrationServices();
     $this->setupDisplayWithEmptyArgumentsAndFields();
@@ -529,7 +529,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   }
 
   /**
-   * Tests rendering of a link with a path and options.
+   * Test rendering of a link with a path and options.
    *
    * @dataProvider providerTestRenderAsLinkWithPathAndTokens
    * @covers ::renderAsLink
@@ -589,7 +589,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   }
 
   /**
-   * Tests rendering of a link with a path and options.
+   * Test rendering of a link with a path and options.
    *
    * @dataProvider providerTestRenderAsExternalLinkWithPathAndTokens
    * @covers ::renderAsLink
@@ -653,7 +653,7 @@ class FieldPluginBaseTest extends UnitTestCase {
   protected function setupTestField(array $options = []) {
     /** @var \Drupal\Tests\views\Unit\Plugin\field\FieldPluginBaseTestField $field */
     $field = $this->getMockBuilder('Drupal\Tests\views\Unit\Plugin\field\FieldPluginBaseTestField')
-      ->addMethods(['l'])
+      ->setMethods(['l'])
       ->setConstructorArgs([$this->configuration, $this->pluginId, $this->pluginDefinition])
       ->getMock();
     $field->init($this->executable, $this->display, $options);

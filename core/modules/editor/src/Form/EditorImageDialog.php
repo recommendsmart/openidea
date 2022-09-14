@@ -57,10 +57,6 @@ class EditorImageDialog extends FormBase {
   /**
    * {@inheritdoc}
    *
-   * @param array $form
-   *   An associative array containing the structure of the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
    * @param \Drupal\editor\Entity\Editor $editor
    *   The text editor to which this dialog corresponds.
    */
@@ -96,7 +92,7 @@ class EditorImageDialog extends FormBase {
     else {
       $max_dimensions = 0;
     }
-    $max_filesize = min(Bytes::toNumber($image_upload['max_size']), Environment::getUploadMaxSize());
+    $max_filesize = min(Bytes::toInt($image_upload['max_size']), Environment::getUploadMaxSize());
     $existing_file = isset($image_element['data-entity-uuid']) ? \Drupal::service('entity.repository')->loadEntityByUuid('file', $image_element['data-entity-uuid']) : NULL;
     $fid = $existing_file ? $existing_file->id() : NULL;
 
@@ -116,7 +112,7 @@ class EditorImageDialog extends FormBase {
     $form['attributes']['src'] = [
       '#title' => $this->t('URL'),
       '#type' => 'textfield',
-      '#default_value' => $image_element['src'] ?? '',
+      '#default_value' => isset($image_element['src']) ? $image_element['src'] : '',
       '#maxlength' => 2048,
       '#required' => TRUE,
     ];
@@ -139,7 +135,7 @@ class EditorImageDialog extends FormBase {
     // an existing image (which means the src attribute is set) and its alt
     // attribute is empty, then we show that as two double quotes in the dialog.
     // @see https://www.drupal.org/node/2307647
-    $alt = $image_element['alt'] ?? '';
+    $alt = isset($image_element['alt']) ? $image_element['alt'] : '';
     if ($alt === '' && !empty($image_element['src'])) {
       $alt = '""';
     }

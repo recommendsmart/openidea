@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\Entity\ConfigEntityStorage;
+use Drupal\Core\DependencyInjection\DeprecatedServicePropertyTrait;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -20,6 +21,12 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
  * Storage handler for "field storage" configuration entities.
  */
 class FieldStorageConfigStorage extends ConfigEntityStorage {
+  use DeprecatedServicePropertyTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $deprecatedProperties = ['entityManager' => 'entity.manager'];
 
   /**
    * The module handler.
@@ -101,7 +108,7 @@ class FieldStorageConfigStorage extends ConfigEntityStorage {
    */
   public function loadByProperties(array $conditions = []) {
     // Include deleted fields if specified in the $conditions parameters.
-    $include_deleted = $conditions['include_deleted'] ?? FALSE;
+    $include_deleted = isset($conditions['include_deleted']) ? $conditions['include_deleted'] : FALSE;
     unset($conditions['include_deleted']);
 
     /** @var \Drupal\field\FieldStorageConfigInterface[] $storages */
@@ -113,7 +120,7 @@ class FieldStorageConfigStorage extends ConfigEntityStorage {
     if (empty($conditions['deleted'])) {
       if (isset($conditions['entity_type']) && isset($conditions['field_name'])) {
         // Optimize for the most frequent case where we do have a specific ID.
-        $id = $conditions['entity_type'] . '.' . $conditions['field_name'];
+        $id = $conditions['entity_type'] . $conditions['field_name'];
         $storages = $this->loadMultiple([$id]);
       }
       else {

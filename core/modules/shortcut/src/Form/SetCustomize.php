@@ -33,7 +33,7 @@ class SetCustomize extends EntityForm {
 
     $form['shortcuts']['links'] = [
       '#type' => 'table',
-      '#header' => [$this->t('Name'), $this->t('Weight'), $this->t('Operations')],
+      '#header' => [t('Name'), t('Weight'), t('Operations')],
       '#empty' => $this->t('No shortcuts available. <a href=":link">Add a shortcut</a>', [':link' => Url::fromRoute('shortcut.link_add', ['shortcut_set' => $this->entity->id()])->toString()]),
       '#attributes' => ['id' => 'shortcuts'],
       '#tabledrag' => [
@@ -60,18 +60,18 @@ class SetCustomize extends EntityForm {
       $form['shortcuts']['links'][$id]['#weight'] = $shortcut->getWeight();
       $form['shortcuts']['links'][$id]['weight'] = [
         '#type' => 'weight',
-        '#title' => $this->t('Weight for @title', ['@title' => $shortcut->getTitle()]),
+        '#title' => t('Weight for @title', ['@title' => $shortcut->getTitle()]),
         '#title_display' => 'invisible',
         '#default_value' => $shortcut->getWeight(),
         '#attributes' => ['class' => ['shortcut-weight']],
       ];
 
       $links['edit'] = [
-        'title' => $this->t('Edit'),
+        'title' => t('Edit'),
         'url' => $shortcut->toUrl(),
       ];
       $links['delete'] = [
-        'title' => $this->t('Delete'),
+        'title' => t('Delete'),
         'url' => $shortcut->toUrl('delete-form'),
       ];
       $form['shortcuts']['links'][$id]['operations'] = [
@@ -91,7 +91,7 @@ class SetCustomize extends EntityForm {
     return [
       'submit' => [
         '#type' => 'submit',
-        '#value' => $this->t('Save'),
+        '#value' => t('Save'),
         '#access' => (bool) Element::getVisibleChildren($form['shortcuts']['links']),
         '#submit' => ['::submitForm', '::save'],
       ],

@@ -7,7 +7,6 @@ use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\Tests\content_moderation\Traits\ContentModerationTestTrait;
-use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\Tests\views\Kernel\ViewsKernelTestBase;
 use Drupal\views\Views;
 use Drupal\workflows\Entity\Workflow;
@@ -22,12 +21,11 @@ use Drupal\workflows\Entity\Workflow;
 class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
 
   use ContentModerationTestTrait;
-  use UserCreationTrait;
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'content_moderation_test_views',
     'node',
     'content_moderation',
@@ -41,7 +39,7 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp(FALSE);
 
     $this->installEntitySchema('user');
@@ -133,26 +131,18 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
     $translated_forward_revision->moderation_state = 'translated_draft';
     $translated_forward_revision->save();
 
-    // Test the filter within an AND filter group (the default) and an OR filter
-    // group.
-    $base_table_views = [
-      'test_content_moderation_state_filter_base_table',
-      'test_content_moderation_state_filter_base_table_filter_group_or',
-    ];
-    foreach ($base_table_views as $view_id) {
-      // The three default revisions are listed when no filter is specified.
-      $this->assertNodesWithFilters([$node, $second_node, $third_node], [], $view_id);
+    // The three default revisions are listed when no filter is specified.
+    $this->assertNodesWithFilters([$node, $second_node, $third_node], []);
 
-      // The default revision of node one and three are published.
-      $this->assertNodesWithFilters([$node, $third_node], [
-        'default_revision_state' => 'editorial-published',
-      ], $view_id);
+    // The default revision of node one and three are published.
+    $this->assertNodesWithFilters([$node, $third_node], [
+      'default_revision_state' => 'editorial-published',
+    ]);
 
-      // The default revision of node two is draft.
-      $this->assertNodesWithFilters([$second_node], [
-        'default_revision_state' => 'editorial-draft',
-      ], $view_id);
-    }
+    // The default revision of node two is draft.
+    $this->assertNodesWithFilters([$second_node], [
+      'default_revision_state' => 'editorial-draft',
+    ]);
 
     // Test the same three revisions on a view displaying content revisions.
     // Both nodes have one draft revision.
@@ -173,7 +163,7 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
   }
 
   /**
-   * Tests the moderation filter with a non-translatable entity type.
+   * Test the moderation filter with a non-translatable entity type.
    */
   public function testNonTranslatableEntityType() {
     $workflow = Workflow::load('editorial');
@@ -191,52 +181,6 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
     ]);
     $view->execute();
     $this->assertIdenticalResultset($view, [['id' => $test_entity->id()]], ['id' => 'id']);
-  }
-
-  /**
-   * Tests the moderation state filter on an entity added via a relationship.
-   */
-  public function testModerationStateFilterOnJoinedEntity() {
-    $workflow = Workflow::load('editorial');
-    $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'example');
-    $workflow->save();
-
-    // Create some sample content that will satisfy a view of users with a
-    // relationship to an item of content.
-    $user = $this->createUser([], 'Test user');
-    $node = Node::create([
-      'type' => 'example',
-      'title' => 'Test node',
-      'moderation_state' => 'published',
-      'uid' => $user->id(),
-    ]);
-    $node->save();
-
-    // When filtering by published nodes, the sample content will appear.
-    $view = Views::getView('test_content_moderation_filter_via_relationship');
-    $view->setExposedInput([
-      'moderation_state' => 'editorial-published',
-    ]);
-    $view->execute();
-    $this->assertIdenticalResultset($view, [
-      [
-        'name' => 'Test user',
-        'title' => 'Test node',
-        'moderation_state' => 'published',
-      ],
-    ], [
-      'name' => 'name',
-      'title' => 'title',
-      'moderation_state' => 'moderation_state',
-    ]);
-
-    // Filtering by the draft state will filter out the sample content.
-    $view = Views::getView('test_content_moderation_filter_via_relationship');
-    $view->setExposedInput([
-      'moderation_state' => 'editorial-draft',
-    ]);
-    $view->execute();
-    $this->assertIdenticalResultset($view, [], ['name' => 'name']);
   }
 
   /**
@@ -321,10 +265,8 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
    *
    * @param string[] $states
    *   The states which should appear in the filter.
-   *
-   * @internal
    */
-  protected function assertPluginStates(array $states): void {
+  protected function assertPluginStates($states) {
     $plugin = Views::pluginManager('filter')->createInstance('moderation_state_filter', []);
     $view = Views::getView('test_content_moderation_state_filter_base_table');
     $plugin->init($view, $view->getDisplay());
@@ -340,10 +282,8 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
    *   An array of filters to apply to the view.
    * @param string $view_id
    *   The view to execute for the results.
-   *
-   * @internal
    */
-  protected function assertNodesWithFilters(array $nodes, array $filters, string $view_id = 'test_content_moderation_state_filter_base_table'): void {
+  protected function assertNodesWithFilters(array $nodes, array $filters, $view_id = 'test_content_moderation_state_filter_base_table') {
     $view = Views::getView($view_id);
     $view->setExposedInput($filters);
     $view->execute();
@@ -357,11 +297,8 @@ class ViewsModerationStateFilterTest extends ViewsKernelTestBase {
     $this->assertEquals('vid', $configuration['left_field']);
     $this->assertEquals('content_entity_type_id', $configuration['extra'][0]['field']);
     $this->assertEquals('node', $configuration['extra'][0]['value']);
-
-    $this->assertEquals('content_entity_id', $configuration['extra'][1]['field']);
-    $this->assertEquals('nid', $configuration['extra'][1]['left_field']);
-    $this->assertEquals('langcode', $configuration['extra'][2]['field']);
-    $this->assertEquals('langcode', $configuration['extra'][2]['left_field']);
+    $this->assertEquals('langcode', $configuration['extra'][1]['field']);
+    $this->assertEquals('langcode', $configuration['extra'][1]['left_field']);
 
     $expected_result = [];
     foreach ($nodes as $node) {

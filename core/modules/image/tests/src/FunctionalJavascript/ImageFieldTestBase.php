@@ -21,7 +21,7 @@ abstract class ImageFieldTestBase extends WebDriverTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'node',
     'image',
     'field_ui',
@@ -29,7 +29,7 @@ abstract class ImageFieldTestBase extends WebDriverTestBase {
   ];
 
   /**
-   * A user with permissions to administer content types and image styles.
+   * An user with permissions to administer content types and image styles.
    *
    * @var \Drupal\user\UserInterface
    */

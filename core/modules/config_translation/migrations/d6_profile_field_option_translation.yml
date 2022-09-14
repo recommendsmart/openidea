@@ -49,5 +49,4 @@ destination:
   translations: true
 migration_dependencies:
   required:
-    - language
-    - user_profile_field_instance
+    - user_profile_field

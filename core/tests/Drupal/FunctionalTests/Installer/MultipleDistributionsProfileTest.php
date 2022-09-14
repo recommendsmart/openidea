@@ -55,11 +55,11 @@ class MultipleDistributionsProfileTest extends InstallerTestBase {
    */
   protected function setUpLanguage() {
     // Verify that the distribution name appears.
-    $this->assertSession()->pageTextContains('distribution_one');
+    $this->assertRaw('distribution_one');
     // Verify that the requested theme is used.
-    $this->assertSession()->responseContains('bartik');
+    $this->assertRaw('bartik');
     // Verify that the "Choose profile" step does not appear.
-    $this->assertSession()->pageTextNotContains('profile');
+    $this->assertNoText('profile');
 
     parent::setUpLanguage();
   }
@@ -75,17 +75,18 @@ class MultipleDistributionsProfileTest extends InstallerTestBase {
    * Confirms that the installation succeeded.
    */
   public function testInstalled() {
-    $this->assertSession()->addressEquals('user/1');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertUrl('user/1');
+    $this->assertResponse(200);
     // Confirm that we are logged-in after installation.
-    $this->assertSession()->pageTextContains($this->rootUser->getAccountName());
+    $this->assertText($this->rootUser->getAccountName());
 
     // Confirm that Drupal recognizes this distribution as the current profile.
-    $this->assertEquals('distribution_one', \Drupal::installProfile());
-    $this->assertEquals('distribution_one', $this->config('core.extension')->get('profile'), 'The install profile has been written to core.extension configuration.');
+    $this->assertEqual(\Drupal::installProfile(), 'distribution_one');
+    $this->assertEqual($this->config('core.extension')->get('profile'), 'distribution_one', 'The install profile has been written to core.extension configuration.');
 
     $this->rebuildContainer();
-    $this->assertEquals('distribution_one', \Drupal::installProfile());
+    $this->pass('Container can be rebuilt as distribution is written to configuration.');
+    $this->assertEqual(\Drupal::installProfile(), 'distribution_one');
   }
 
 }

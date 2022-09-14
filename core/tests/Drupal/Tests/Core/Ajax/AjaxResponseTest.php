@@ -6,7 +6,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\EventSubscriber\AjaxResponseSubscriber;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\ResponseEvent;
+use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
@@ -22,7 +22,7 @@ class AjaxResponseTest extends UnitTestCase {
    */
   protected $ajaxResponse;
 
-  protected function setUp(): void {
+  protected function setUp() {
     $this->ajaxResponse = new AjaxResponse();
   }
 
@@ -80,7 +80,7 @@ class AjaxResponseTest extends UnitTestCase {
 
     $ajax_response_attachments_processor = $this->createMock('\Drupal\Core\Render\AttachmentsResponseProcessorInterface');
     $subscriber = new AjaxResponseSubscriber($ajax_response_attachments_processor);
-    $event = new ResponseEvent(
+    $event = new FilterResponseEvent(
       $this->createMock('\Symfony\Component\HttpKernel\HttpKernelInterface'),
       $request,
       HttpKernelInterface::MASTER_REQUEST,
@@ -88,7 +88,7 @@ class AjaxResponseTest extends UnitTestCase {
     );
     $subscriber->onResponse($event);
     $this->assertEquals('text/html; charset=utf-8', $response->headers->get('Content-Type'));
-    $this->assertEquals('<textarea>[]</textarea>', $response->getContent());
+    $this->assertEquals($response->getContent(), '<textarea>[]</textarea>');
   }
 
 }

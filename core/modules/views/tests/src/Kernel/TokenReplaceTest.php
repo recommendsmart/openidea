@@ -13,7 +13,7 @@ use Drupal\views\Views;
  */
 class TokenReplaceTest extends ViewsKernelTestBase {
 
-  protected static $modules = ['system'];
+  public static $modules = ['system'];
 
   /**
    * Views used by this test.
@@ -21,6 +21,11 @@ class TokenReplaceTest extends ViewsKernelTestBase {
    * @var array
    */
   public static $testViews = ['test_tokens', 'test_invalid_tokens'];
+
+  protected function setUp($import_test_views = TRUE) {
+    parent::setUp();
+    $this->container->get('router.builder')->rebuild();
+  }
 
   /**
    * Tests core token replacements generated from a view.
@@ -64,8 +69,8 @@ class TokenReplaceTest extends ViewsKernelTestBase {
     foreach ($expected as $token => $expected_output) {
       $bubbleable_metadata = new BubbleableMetadata();
       $output = $token_handler->replace($token, ['view' => $view], [], $bubbleable_metadata);
-      $this->assertSame($expected_output, $output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
-      $this->assertEquals($metadata_tests[$token], $bubbleable_metadata);
+      $this->assertIdentical($output, $expected_output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
+      $this->assertEqual($bubbleable_metadata, $metadata_tests[$token]);
     }
   }
 
@@ -78,7 +83,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
     $view->setDisplay('page_3');
     $this->executeView($view);
 
-    $this->assertTrue($view->get_total_rows, 'The query was set to calculate the total number of rows.');
+    $this->assertSame(TRUE, $view->get_total_rows, 'The query was set to calculate the total number of rows.');
 
     $expected = [
       '[view:label]' => 'Test tokens',
@@ -121,7 +126,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
 
     foreach ($expected as $token => $expected_output) {
       $output = $token_handler->replace($token, ['view' => $view]);
-      $this->assertSame($expected_output, $output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
+      $this->assertIdentical($output, $expected_output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
     }
   }
 
@@ -140,7 +145,7 @@ class TokenReplaceTest extends ViewsKernelTestBase {
 
     foreach ($expected as $token => $expected_output) {
       $output = $token_handler->replace($token, ['view' => $view]);
-      $this->assertSame($expected_output, $output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
+      $this->assertIdentical($output, $expected_output, new FormattableMarkup('Token %token replaced correctly.', ['%token' => $token]));
     }
   }
 

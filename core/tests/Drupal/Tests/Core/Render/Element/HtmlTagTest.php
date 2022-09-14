@@ -75,7 +75,7 @@ class HtmlTagTest extends RendererTestBase {
     $element['#noscript'] = TRUE;
     $tags['noscript'] = [$element, '<noscript><div class="test" id="id">value</div>' . "\n" . '</noscript>'];
 
-    // Ensure that #tag is sanitized.
+    // Ensure that #tag is sanitised.
     $element = [
       '#tag' => 'p><script>alert()</script><p',
       '#value' => 'value',
@@ -206,13 +206,22 @@ class HtmlTagTest extends RendererTestBase {
     $element = [
       '#tag' => 'link',
     ];
-    $tags['link'] = [$element, '<link />' . "\n"];
+    $tags['link'] = [HtmlTag::preRenderConditionalComments($element), '<link />' . "\n"];
+
+    // Conditional link.
+    $element = [
+      '#tag' => 'link',
+      '#browsers' => [
+        'IE' => TRUE,
+        '!IE' => FALSE,
+      ],
+    ];
+    $tags['conditional-link'] = [HtmlTag::preRenderConditionalComments($element), "\n" . '<!--[if IE]>' . "\n" . '<link />' . "\n" . '<![endif]-->' . "\n"];
 
     return $tags;
   }
 
   /**
-   * @group legacy
    * @covers ::preRenderConditionalComments
    * @dataProvider providerPreRenderConditionalComments
    */

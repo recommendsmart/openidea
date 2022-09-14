@@ -24,7 +24,7 @@ class ReferenceConfigurator extends AbstractConfigurator
     /** @internal */
     protected $invalidBehavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE;
 
-    public function __construct(string $id)
+    public function __construct($id)
     {
         $this->id = $id;
     }
@@ -32,7 +32,7 @@ class ReferenceConfigurator extends AbstractConfigurator
     /**
      * @return $this
      */
-    final public function ignoreOnInvalid(): self
+    final public function ignoreOnInvalid()
     {
         $this->invalidBehavior = ContainerInterface::IGNORE_ON_INVALID_REFERENCE;
 
@@ -42,7 +42,7 @@ class ReferenceConfigurator extends AbstractConfigurator
     /**
      * @return $this
      */
-    final public function nullOnInvalid(): self
+    final public function nullOnInvalid()
     {
         $this->invalidBehavior = ContainerInterface::NULL_ON_INVALID_REFERENCE;
 
@@ -52,16 +52,13 @@ class ReferenceConfigurator extends AbstractConfigurator
     /**
      * @return $this
      */
-    final public function ignoreOnUninitialized(): self
+    final public function ignoreOnUninitialized()
     {
         $this->invalidBehavior = ContainerInterface::IGNORE_ON_UNINITIALIZED_REFERENCE;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function __toString()
     {
         return $this->id;

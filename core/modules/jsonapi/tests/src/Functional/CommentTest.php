@@ -29,7 +29,7 @@ class CommentTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['comment', 'entity_test'];
+  public static $modules = ['comment', 'entity_test'];
 
   /**
    * {@inheritdoc}
@@ -72,11 +72,6 @@ class CommentTest extends ResourceTestBase {
   protected $entity;
 
   /**
-   * @var \Drupal\entity_test\Entity\EntityTest
-   */
-  private $commented_entity;
-
-  /**
    * {@inheritdoc}
    */
   protected function setUpAuthorization($method) {
@@ -111,11 +106,11 @@ class CommentTest extends ResourceTestBase {
     $this->addDefaultCommentField('entity_test', 'bar', 'comment');
 
     // Create a "Camelids" test entity that the comment will be assigned to.
-    $this->commented_entity = EntityTest::create([
+    $commented_entity = EntityTest::create([
       'name' => 'Camelids',
       'type' => 'bar',
     ]);
-    $this->commented_entity->save();
+    $commented_entity->save();
 
     // Create a "Llama" comment.
     $comment = Comment::create([
@@ -123,7 +118,7 @@ class CommentTest extends ResourceTestBase {
         'value' => 'The name "llama" was adopted by European settlers from native Peruvians.',
         'format' => 'plain_text',
       ],
-      'entity_id' => $this->commented_entity->id(),
+      'entity_id' => $commented_entity->id(),
       'entity_type' => 'entity_test',
       'field_name' => 'comment',
     ]);
@@ -178,15 +173,12 @@ class CommentTest extends ResourceTestBase {
           'status' => TRUE,
           'subject' => 'Llama',
           'thread' => '01/',
-          'drupal_internal__cid' => (int) $this->entity->id(),
+          'drupal_internal__cid' => 1,
         ],
         'relationships' => [
           'uid' => [
             'data' => [
               'id' => $author->uuid(),
-              'meta' => [
-                'drupal_internal__target_id' => (int) $author->id(),
-              ],
               'type' => 'user--user',
             ],
             'links' => [
@@ -197,9 +189,6 @@ class CommentTest extends ResourceTestBase {
           'comment_type' => [
             'data' => [
               'id' => CommentType::load('comment')->uuid(),
-              'meta' => [
-                'drupal_internal__target_id' => 'comment',
-              ],
               'type' => 'comment_type--comment_type',
             ],
             'links' => [
@@ -209,10 +198,7 @@ class CommentTest extends ResourceTestBase {
           ],
           'entity_id' => [
             'data' => [
-              'id' => $this->commented_entity->uuid(),
-              'meta' => [
-                'drupal_internal__target_id' => (int) $this->commented_entity->id(),
-              ],
+              'id' => EntityTest::load(1)->uuid(),
               'type' => 'entity_test--bar',
             ],
             'links' => [
@@ -252,9 +238,6 @@ class CommentTest extends ResourceTestBase {
           'entity_id' => [
             'data' => [
               'type' => 'entity_test--bar',
-              'meta' => [
-                'drupal_internal__target_id' => 1,
-              ],
               'id' => EntityTest::load(1)->uuid(),
             ],
           ],
@@ -403,6 +386,13 @@ class CommentTest extends ResourceTestBase {
     // comment access also depends on access to the commented entity type.
     \Drupal::entityTypeManager()->getAccessControlHandler('entity_test')->resetCache();
     return parent::entityAccess($entity, $operation, $account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function testRelated() {
+    $this->markTestSkipped('Remove this in https://www.drupal.org/project/jsonapi/issues/2940339');
   }
 
   /**

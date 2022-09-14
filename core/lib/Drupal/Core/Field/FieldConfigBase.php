@@ -125,14 +125,13 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
    *
    * The default value is expressed as a numerically indexed array of items,
    * each item being an array of key/value pairs matching the set of 'columns'
-   * defined by the "field schema" for the field type, as exposed in the class
-   * implementing \Drupal\Core\Field\FieldItemInterface::schema() method. If the
-   * number of items exceeds the cardinality of the field, extraneous items will
-   * be ignored.
+   * defined by the "field schema" for the field type, as exposed in
+   * hook_field_schema(). If the number of items exceeds the cardinality of the
+   * field, extraneous items will be ignored.
    *
    * This property is overlooked if the $default_value_callback is non-empty.
    *
-   * Example for an integer field:
+   * Example for a integer field:
    * @code
    * array(
    *   array('value' => 1),
@@ -234,7 +233,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
     // Add dependencies from the field type plugin. We can not use
     // self::calculatePluginDependencies() because instantiation of a field item
     // plugin requires a parent entity.
-    /** @var \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager */
+    /** @var $field_type_manager \Drupal\Core\Field\FieldTypePluginManagerInterface */
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
     $definition = $field_type_manager->getDefinition($this->getType());
     $this->addDependency('module', $definition['provider']);
@@ -505,7 +504,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
    */
   public function getConstraint($constraint_name) {
     $constraints = $this->getConstraints();
-    return $constraints[$constraint_name] ?? NULL;
+    return isset($constraints[$constraint_name]) ? $constraints[$constraint_name] : NULL;
   }
 
   /**

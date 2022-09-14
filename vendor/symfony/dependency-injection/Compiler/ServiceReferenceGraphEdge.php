@@ -27,7 +27,13 @@ class ServiceReferenceGraphEdge
     private $weak;
     private $byConstructor;
 
-    public function __construct(ServiceReferenceGraphNode $sourceNode, ServiceReferenceGraphNode $destNode, $value = null, bool $lazy = false, bool $weak = false, bool $byConstructor = false)
+    /**
+     * @param mixed $value
+     * @param bool  $lazy
+     * @param bool  $weak
+     * @param bool  $byConstructor
+     */
+    public function __construct(ServiceReferenceGraphNode $sourceNode, ServiceReferenceGraphNode $destNode, $value = null, $lazy = false, $weak = false, $byConstructor = false)
     {
         $this->sourceNode = $sourceNode;
         $this->destNode = $destNode;
@@ -40,7 +46,7 @@ class ServiceReferenceGraphEdge
     /**
      * Returns the value of the edge.
      *
-     * @return mixed
+     * @return string
      */
     public function getValue()
     {

@@ -30,12 +30,14 @@ namespace Symfony\Component\Serializer\Normalizer;
  */
 class PropertyNormalizer extends AbstractObjectNormalizer
 {
+    private $cache = [];
+
     /**
      * {@inheritdoc}
      */
     public function supportsNormalization($data, $format = null)
     {
-        return parent::supportsNormalization($data, $format) && $this->supports(\get_class($data));
+        return parent::supportsNormalization($data, $format) && (isset($this->cache[$type = \get_class($data)]) ? $this->cache[$type] : $this->cache[$type] = $this->supports($type));
     }
 
     /**
@@ -43,21 +45,17 @@ class PropertyNormalizer extends AbstractObjectNormalizer
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
-        return parent::supportsDenormalization($data, $type, $format) && $this->supports($type);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return __CLASS__ === static::class;
+        return parent::supportsDenormalization($data, $type, $format) && (isset($this->cache[$type]) ? $this->cache[$type] : $this->cache[$type] = $this->supports($type));
     }
 
     /**
      * Checks if the given class has any non-static property.
+     *
+     * @param string $class
+     *
+     * @return bool
      */
-    private function supports(string $class): bool
+    private function supports($class)
     {
         $class = new \ReflectionClass($class);
 
@@ -101,17 +99,10 @@ class PropertyNormalizer extends AbstractObjectNormalizer
     {
         $reflectionObject = new \ReflectionObject($object);
         $attributes = [];
-        $propertyValues = !method_exists($object, '__get') ? (array) $object : null;
 
         do {
             foreach ($reflectionObject->getProperties() as $property) {
-                if ((null !== $propertyValues && (
-                        ($property->isPublic() && !\array_key_exists($property->name, $propertyValues))
-                        || ($property->isProtected() && !\array_key_exists("\0*\0{$property->name}", $propertyValues))
-                        || ($property->isPrivate() && !\array_key_exists("\0{$property->class}\0{$property->name}", $propertyValues))
-                    ))
-                    || !$this->isAllowedAttribute($reflectionObject->getName(), $property->name, $format, $context)
-                ) {
+                if (!$this->isAllowedAttribute($reflectionObject->getName(), $property->name, $format, $context)) {
                     continue;
                 }
 
@@ -119,7 +110,7 @@ class PropertyNormalizer extends AbstractObjectNormalizer
             }
         } while ($reflectionObject = $reflectionObject->getParentClass());
 
-        return array_unique($attributes);
+        return $attributes;
     }
 
     /**
@@ -166,10 +157,13 @@ class PropertyNormalizer extends AbstractObjectNormalizer
 
     /**
      * @param string|object $classOrObject
+     * @param string        $attribute
+     *
+     * @return \ReflectionProperty
      *
      * @throws \ReflectionException
      */
-    private function getReflectionProperty($classOrObject, string $attribute): \ReflectionProperty
+    private function getReflectionProperty($classOrObject, $attribute)
     {
         $reflectionClass = new \ReflectionClass($classOrObject);
         while (true) {

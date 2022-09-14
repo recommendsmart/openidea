@@ -3,7 +3,6 @@
 namespace Drupal\Tests\media\Functional;
 
 use Drupal\media\OEmbed\ProviderException;
-use GuzzleHttp\Psr7\Utils;
 
 /**
  * Tests the oEmbed provider repository.
@@ -29,7 +28,7 @@ class ProviderRepositoryTest extends MediaFunctionalTestBase {
    */
   public function testEmptyProviderList($content) {
     $response = $this->prophesize('\GuzzleHttp\Psr7\Response');
-    $response->getBody()->willReturn(Utils::streamFor($content));
+    $response->getBody()->willReturn($content);
 
     $client = $this->createMock('\GuzzleHttp\Client');
     $client->method('request')->withAnyParameters()->willReturn($response->reveal());

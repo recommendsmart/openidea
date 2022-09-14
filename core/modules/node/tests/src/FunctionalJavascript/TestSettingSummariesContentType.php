@@ -19,12 +19,12 @@ class TestSettingSummariesContentType extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['node'];
+  public static $modules = ['node'];
 
   /**
    * {@inheritdoc}
    */
-  public function setUp(): void {
+  public function setUp() {
     parent::setUp();
 
     $admin_user = $this->drupalCreateUser(['administer content types']);
@@ -33,7 +33,7 @@ class TestSettingSummariesContentType extends WebDriverTestBase {
   }
 
   /**
-   * Tests a vertical tab 'Workflow' summary.
+   * Test a vertical tab 'Workflow' summary.
    */
   public function testWorkflowSummary() {
     $this->drupalGet('admin/structure/types/manage/test');

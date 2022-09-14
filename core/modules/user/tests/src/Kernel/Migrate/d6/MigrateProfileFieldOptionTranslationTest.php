@@ -14,7 +14,7 @@ class MigrateProfileFieldOptionTranslationTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'config_translation',
     'language',
     'locale',
@@ -24,12 +24,11 @@ class MigrateProfileFieldOptionTranslationTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigrations([
       'language',
       'user_profile_field',
-      'user_profile_field_instance',
       'd6_profile_field_option_translation',
     ]);
   }

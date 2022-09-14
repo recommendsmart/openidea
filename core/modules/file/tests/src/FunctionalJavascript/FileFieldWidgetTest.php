@@ -40,20 +40,9 @@ class FileFieldWidgetTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
-    $this->adminUser = $this->drupalCreateUser([
-      'access content',
-      'access administration pages',
-      'administer site configuration',
-      'administer users',
-      'administer permissions',
-      'administer content types',
-      'administer node fields',
-      'administer node display',
-      'administer nodes',
-      'bypass node access',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['access content', 'access administration pages', 'administer site configuration', 'administer users', 'administer permissions', 'administer content types', 'administer node fields', 'administer node display', 'administer nodes', 'bypass node access']);
     $this->drupalLogin($this->adminUser);
     $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
   }
@@ -100,7 +89,7 @@ class FileFieldWidgetTest extends WebDriverTestBase {
         // Ensure we have the expected number of Remove buttons, and that they
         // are numbered sequentially.
         $buttons = $this->xpath('//input[@type="submit" and @value="Remove"]');
-        $this->assertCount($num_expected_remove_buttons, $buttons, new FormattableMarkup('There are %n "Remove" buttons displayed.', ['%n' => $num_expected_remove_buttons]));
+        $this->assertTrue(is_array($buttons) && count($buttons) === $num_expected_remove_buttons, new FormattableMarkup('There are %n "Remove" buttons displayed.', ['%n' => $num_expected_remove_buttons]));
         foreach ($buttons as $i => $button) {
           $key = $i >= $remaining ? $i - $remaining : $i;
           $check_field_name = $field_name2;
@@ -108,7 +97,7 @@ class FileFieldWidgetTest extends WebDriverTestBase {
             $check_field_name = $field_name;
           }
 
-          $this->assertSame($check_field_name . '_' . $key . '_remove_button', $button->getAttribute('name'));
+          $this->assertIdentical($button->getAttribute('name'), $check_field_name . '_' . $key . '_remove_button');
         }
 
         $button_name = $current_field_name . '_' . $delta . '_remove_button';
@@ -122,13 +111,13 @@ class FileFieldWidgetTest extends WebDriverTestBase {
         // correct name.
         $upload_button_name = $current_field_name . '_' . $remaining . '_upload_button';
         $this->assertNotNull($assert_session->waitForButton($upload_button_name));
-        $button = $this->assertSession()->buttonExists($upload_button_name);
-        $this->assertSame('Upload', $button->getValue());
+        $buttons = $this->xpath('//input[@type="submit" and @value="Upload" and @name=:name]', [':name' => $upload_button_name]);
+        $this->assertTrue(is_array($buttons) && count($buttons) == 1, 'The upload button is displayed with the correct name.');
 
-        // Verify that after removing a file, only one "Upload" button for each
-        // possible field is displayed.
+        // Ensure only at most one button per field is displayed.
+        $buttons = $this->xpath('//input[@type="submit" and @value="Upload"]');
         $expected = $current_field_name == $field_name ? 1 : 2;
-        $this->assertSession()->elementsCount('xpath', '//input[@type="submit" and @value="Upload"]', $expected);
+        $this->assertTrue(is_array($buttons) && count($buttons) == $expected, 'After removing a file, only one "Upload" button for each possible field is displayed.');
       }
     }
   }
@@ -210,7 +199,13 @@ class FileFieldWidgetTest extends WebDriverTestBase {
     $multiple_field = $this->getSession()->getPage()->findField('files[test_file_field_1_0][]');
     $multiple_field->setValue(implode("\n", $remote_paths));
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->assertSession()->pageTextContains("Field {$field_name} can only hold {$cardinality} values but there were 3 uploaded. The following files have been omitted as a result: text-2.txt.");
+    $args = [
+      '%field' => $field_name,
+      '@max' => $cardinality,
+      '@count' => 3,
+      '%list' => 'text-2.txt',
+    ];
+    $this->assertRaw(t('Field %field can only hold @max values but there were @count uploaded. The following files have been omitted as a result: %list.', $args));
   }
 
   /**

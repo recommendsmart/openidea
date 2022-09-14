@@ -26,7 +26,7 @@ class EntityDeriverTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'system',
     'field',
     'user',
@@ -38,8 +38,8 @@ class EntityDeriverTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
-    parent::setUp();
+  protected function setUp() {
+    parent::setup();
 
     $this->installEntitySchema('comment');
     NodeType::create(['type' => 'article', 'name' => 'Article'])->save();

@@ -25,7 +25,7 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'config_translation',
     'contact',
@@ -53,7 +53,7 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
    */
   protected $adminUser;
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     $permissions = [
@@ -106,11 +106,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/structure/block/manage/' . $id . '/translate';
     // Test if the link to translate the block is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -129,15 +129,14 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
       'label' => $label,
     ];
     // Create the menu by posting the form.
-    $this->drupalGet('admin/structure/menu/add');
-    $this->submitForm($edit, 'Save');
+    $this->drupalPostForm('admin/structure/menu/add', $edit, t('Save'));
 
     // Get the Menu listing.
     $this->drupalGet('admin/structure/menu');
 
     $translate_link = 'admin/structure/menu/manage/' . $menu_name . '/translate';
     // Test if the link to translate the menu is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Check if the Link is not added if you are missing 'translate
     // configuration' permission.
@@ -151,14 +150,14 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/structure/menu/manage/' . $menu_name . '/translate';
     // Test if the link to translate the menu is NOT on the page.
-    $this->assertSession()->linkByHrefNotExists($translate_link);
+    $this->assertNoLinkByHref($translate_link);
 
     // Log in as Admin again otherwise the rest will fail.
     $this->drupalLogin($this->adminUser);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -179,11 +178,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/structure/taxonomy/manage/' . $vocabulary->id() . '/translate';
     // Test if the link to translate the vocabulary is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -204,11 +203,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/structure/block/block-content/manage/' . $block_content_type->id() . '/translate';
     // Test if the link to translate the custom block type is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -228,11 +227,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/structure/contact/manage/' . $contact_form->id() . '/translate';
     // Test if the link to translate the contact form is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -251,11 +250,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/structure/types/manage/' . $content_type->id() . '/translate';
     // Test if the link to translate the content type is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -275,11 +274,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/config/content/formats/manage/' . $filter_format->id() . '/translate';
     // Test if the link to translate the format is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -299,11 +298,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/config/user-interface/shortcut/manage/' . $shortcut->id() . '/translate';
     // Test if the link to translate the shortcut is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -320,11 +319,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/people/roles/manage/' . $role_id . '/translate';
     // Test if the link to translate the role is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -340,11 +339,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/config/regional/language/edit/ga/translate';
     // Test if the link to translate the language is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -356,11 +355,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/config/media/image-styles/manage/medium/translate';
     // Test if the link to translate the style is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -372,20 +371,19 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
     $edit['id'] = strtolower($edit['label']);
     $edit['fallback_image_style'] = 'thumbnail';
 
-    $this->drupalGet('admin/config/media/responsive-image-style/add');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains("Responsive image style {$edit['label']} saved.");
+    $this->drupalPostForm('admin/config/media/responsive-image-style/add', $edit, t('Save'));
+    $this->assertRaw(t('Responsive image style %label saved.', ['%label' => $edit['label']]));
 
     // Get the responsive image style listing.
     $this->drupalGet('admin/config/media/responsive-image-style');
 
     $translate_link = 'admin/config/media/responsive-image-style/' . $edit['id'] . '/translate';
     // Test if the link to translate the style is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -433,11 +431,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
       $translate_link = $values['list'] . '/' . $values['field'] . '/translate';
       // Test if the link to translate the field is on the page.
-      $this->assertSession()->linkByHrefExists($translate_link);
+      $this->assertLinkByHref($translate_link);
 
       // Test if the link to translate actually goes to the translate page.
       $this->drupalGet($translate_link);
-      $this->assertSession()->responseContains('<th>Language</th>');
+      $this->assertRaw('<th>' . t('Language') . '</th>');
     }
   }
 
@@ -450,11 +448,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = 'admin/config/regional/date-time/formats/manage/long/translate';
     // Test if the link to translate the format is on the page.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -469,11 +467,11 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
 
     $translate_link = $link . '/translate';
     // Test if the link to translate the settings page is present.
-    $this->assertSession()->linkByHrefExists($translate_link);
+    $this->assertLinkByHref($translate_link);
 
     // Test if the link to translate actually goes to the translate page.
     $this->drupalGet($translate_link);
-    $this->assertSession()->responseContains('<th>Language</th>');
+    $this->assertRaw('<th>' . t('Language') . '</th>');
   }
 
   /**
@@ -504,6 +502,8 @@ class ConfigTranslationListUiTest extends BrowserTestBase {
     $this->doSettingsPageTest('admin/config/system/site-information');
     // Test the account settings page.
     $this->doSettingsPageTest('admin/config/people/accounts');
+    // Test the RSS settings page.
+    $this->doSettingsPageTest('admin/config/services/rss-publishing');
   }
 
 }

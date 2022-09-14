@@ -79,7 +79,7 @@ class DependencySerializationTestDummy implements ContainerAwareInterface {
   /**
    * A test service.
    *
-   * @var object
+   * @var \stdClass
    */
   public $service;
 

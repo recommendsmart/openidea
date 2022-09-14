@@ -47,7 +47,7 @@ class EntityOperationsUnitTest extends UnitTestCase {
    *
    * @covers ::__construct
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
     $this->entityRepository = $this->createMock(EntityRepositoryInterface::class);
     $this->languageManager = $this->createMock('\Drupal\Core\Language\LanguageManagerInterface');
@@ -87,7 +87,7 @@ class EntityOperationsUnitTest extends UnitTestCase {
    */
   public function testDefineOptions() {
     $options = $this->plugin->defineOptions();
-    $this->assertIsArray($options);
+    $this->assertInternalType('array', $options);
     $this->assertArrayHasKey('destination', $options);
   }
 

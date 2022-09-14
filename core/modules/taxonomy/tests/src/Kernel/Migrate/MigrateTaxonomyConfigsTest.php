@@ -17,12 +17,12 @@ class MigrateTaxonomyConfigsTest extends MigrateDrupal6TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['taxonomy'];
+  public static $modules = ['taxonomy'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->executeMigration('taxonomy_settings');
   }
@@ -32,8 +32,8 @@ class MigrateTaxonomyConfigsTest extends MigrateDrupal6TestBase {
    */
   public function testTaxonomySettings() {
     $config = $this->config('taxonomy.settings');
-    $this->assertSame(100, $config->get('terms_per_page_admin'));
-    $this->assertFalse($config->get('override_selector'));
+    $this->assertIdentical(100, $config->get('terms_per_page_admin'));
+    $this->assertIdentical(FALSE, $config->get('override_selector'));
     $this->assertConfigSchema(\Drupal::service('config.typed'), 'taxonomy.settings', $config->get());
   }
 

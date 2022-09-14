@@ -37,7 +37,7 @@ class ContentTranslationOperationsTest extends NodeTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'language',
     'content_translation',
     'node',
@@ -48,7 +48,7 @@ class ContentTranslationOperationsTest extends NodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Enable additional languages.
@@ -61,17 +61,14 @@ class ContentTranslationOperationsTest extends NodeTestBase {
     // picked up.
     \Drupal::service('content_translation.manager')->setEnabled('node', 'article', TRUE);
 
+    \Drupal::service('router.builder')->rebuild();
+
     $this->baseUser1 = $this->drupalCreateUser(['access content overview']);
-    $this->baseUser2 = $this->drupalCreateUser([
-      'access content overview',
-      'create content translations',
-      'update content translations',
-      'delete content translations',
-    ]);
+    $this->baseUser2 = $this->drupalCreateUser(['access content overview', 'create content translations', 'update content translations', 'delete content translations']);
   }
 
   /**
-   * Tests that the operation "Translate" is displayed in the content listing.
+   * Test that the operation "Translate" is displayed in the content listing.
    */
   public function testOperationTranslateLink() {
     $node = $this->drupalCreateNode(['type' => 'article', 'langcode' => 'es']);
@@ -79,13 +76,13 @@ class ContentTranslationOperationsTest extends NodeTestBase {
     // permission.
     $this->drupalLogin($this->baseUser1);
     $this->drupalGet('admin/content');
-    $this->assertSession()->linkByHrefNotExists('node/' . $node->id() . '/translations');
+    $this->assertNoLinkByHref('node/' . $node->id() . '/translations');
     $this->drupalLogout();
     // Verify there's a translation operation link for users with enough
     // permissions.
     $this->drupalLogin($this->baseUser2);
     $this->drupalGet('admin/content');
-    $this->assertSession()->linkByHrefExists('node/' . $node->id() . '/translations');
+    $this->assertLinkByHref('node/' . $node->id() . '/translations');
 
     // Ensure that an unintended misconfiguration of permissions does not open
     // access to the translation form, see https://www.drupal.org/node/2558905.
@@ -99,7 +96,7 @@ class ContentTranslationOperationsTest extends NodeTestBase {
     );
     $this->drupalLogin($this->baseUser1);
     $this->drupalGet($node->toUrl('drupal:content-translation-overview'));
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     // Ensure that the translation overview is also not accessible when the user
     // has 'access content', but the node is not published.
@@ -112,7 +109,7 @@ class ContentTranslationOperationsTest extends NodeTestBase {
     );
     $node->setUnpublished()->save();
     $this->drupalGet($node->toUrl('drupal:content-translation-overview'));
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
     $this->drupalLogout();
 
     // Ensure the 'Translate' local task does not show up anymore when disabling
@@ -128,11 +125,10 @@ class ContentTranslationOperationsTest extends NodeTestBase {
     $this->drupalPlaceBlock('local_tasks_block');
     $this->drupalLogin($this->baseUser2);
     $this->drupalGet('node/' . $node->id());
-    $this->assertSession()->linkByHrefExists('node/' . $node->id() . '/translations');
-    $this->drupalGet('admin/config/regional/content-language');
-    $this->submitForm(['settings[node][article][translatable]' => FALSE], 'Save configuration');
+    $this->assertLinkByHref('node/' . $node->id() . '/translations');
+    $this->drupalPostForm('admin/config/regional/content-language', ['settings[node][article][translatable]' => FALSE], t('Save configuration'));
     $this->drupalGet('node/' . $node->id());
-    $this->assertSession()->linkByHrefNotExists('node/' . $node->id() . '/translations');
+    $this->assertNoLinkByHref('node/' . $node->id() . '/translations');
   }
 
   /**

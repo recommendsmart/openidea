@@ -3,7 +3,6 @@
 namespace Drupal\accept_header_routing_test;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
@@ -24,7 +23,7 @@ class AcceptHeaderMiddleware implements HttpKernelInterface {
   /**
    * {@inheritdoc}
    */
-  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE): Response {
+  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE) {
     $mapping = [
       'application/json' => 'json',
       'application/hal+json' => 'hal_json',

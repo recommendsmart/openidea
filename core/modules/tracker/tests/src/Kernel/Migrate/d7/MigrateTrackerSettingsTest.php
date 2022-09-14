@@ -11,12 +11,12 @@ use Drupal\Tests\migrate_drupal\Kernel\d7\MigrateDrupal7TestBase;
  */
 class MigrateTrackerSettingsTest extends MigrateDrupal7TestBase {
 
-  protected static $modules = ['tracker'];
+  public static $modules = ['tracker'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
     $this->installConfig(['tracker']);
     $this->executeMigration('d7_tracker_settings');
@@ -26,7 +26,7 @@ class MigrateTrackerSettingsTest extends MigrateDrupal7TestBase {
    * Tests migration of tracker's variables to configuration.
    */
   public function testMigration() {
-    $this->assertSame(999, \Drupal::config('tracker.settings')->get('cron_index_limit'));
+    $this->assertIdentical(999, \Drupal::config('tracker.settings')->get('cron_index_limit'));
   }
 
 }

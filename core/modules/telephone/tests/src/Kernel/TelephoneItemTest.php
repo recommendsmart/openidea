@@ -21,9 +21,9 @@ class TelephoneItemTest extends FieldKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['telephone'];
+  public static $modules = ['telephone'];
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create a telephone field storage and field for validation.
@@ -54,20 +54,20 @@ class TelephoneItemTest extends FieldKernelTestBase {
     // Verify entity has been created properly.
     $id = $entity->id();
     $entity = EntityTest::load($id);
-    $this->assertInstanceOf(FieldItemListInterface::class, $entity->field_test);
-    $this->assertInstanceOf(FieldItemInterface::class, $entity->field_test[0]);
-    $this->assertEquals($value, $entity->field_test->value);
-    $this->assertEquals($value, $entity->field_test[0]->value);
+    $this->assertTrue($entity->field_test instanceof FieldItemListInterface, 'Field implements interface.');
+    $this->assertTrue($entity->field_test[0] instanceof FieldItemInterface, 'Field item implements interface.');
+    $this->assertEqual($entity->field_test->value, $value);
+    $this->assertEqual($entity->field_test[0]->value, $value);
 
     // Verify changing the field value.
     $new_value = '+41' . rand(1000000, 9999999);
     $entity->field_test->value = $new_value;
-    $this->assertEquals($new_value, $entity->field_test->value);
+    $this->assertEqual($entity->field_test->value, $new_value);
 
     // Read changed entity and assert changed values.
     $entity->save();
     $entity = EntityTest::load($id);
-    $this->assertEquals($new_value, $entity->field_test->value);
+    $this->assertEqual($entity->field_test->value, $new_value);
 
     // Test sample item generation.
     $entity = EntityTest::create();

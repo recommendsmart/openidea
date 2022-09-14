@@ -27,7 +27,7 @@ abstract class AggregatorTestBase extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'block',
     'node',
     'aggregator',
@@ -46,12 +46,7 @@ abstract class AggregatorTestBase extends BrowserTestBase {
       $this->drupalCreateContentType(['type' => 'article', 'name' => 'Article']);
     }
 
-    $this->adminUser = $this->drupalCreateUser([
-      'access administration pages',
-      'administer news feeds',
-      'access news feeds',
-      'create article content',
-    ]);
+    $this->adminUser = $this->drupalCreateUser(['access administration pages', 'administer news feeds', 'access news feeds', 'create article content']);
     $this->drupalLogin($this->adminUser);
     $this->drupalPlaceBlock('local_tasks_block');
   }
@@ -74,18 +69,14 @@ abstract class AggregatorTestBase extends BrowserTestBase {
    */
   public function createFeed($feed_url = NULL, array $edit = []) {
     $edit = $this->getFeedEditArray($feed_url, $edit);
-    $this->drupalGet('aggregator/sources/add');
-    $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains('The feed ' . $edit['title[0][value]'] . ' has been added.');
+    $this->drupalPostForm('aggregator/sources/add', $edit, t('Save'));
+    $this->assertText(t('The feed @name has been added.', ['@name' => $edit['title[0][value]']]), new FormattableMarkup('The feed @name has been added.', ['@name' => $edit['title[0][value]']]));
 
     // Verify that the creation message contains a link to a feed.
-    $this->assertSession()->elementExists('xpath', '//div[@data-drupal-messages]//a[contains(@href, "aggregator/sources/")]');
+    $view_link = $this->xpath('//div[@class="messages"]//a[contains(@href, :href)]', [':href' => 'aggregator/sources/']);
+    $this->assert(isset($view_link), 'The message area contains a link to a feed');
 
-    $fids = \Drupal::entityQuery('aggregator_feed')
-      ->accessCheck(FALSE)
-      ->condition('title', $edit['title[0][value]'])
-      ->condition('url', $edit['url[0][value]'])
-      ->execute();
+    $fids = \Drupal::entityQuery('aggregator_feed')->condition('title', $edit['title[0][value]'])->condition('url', $edit['url[0][value]'])->execute();
     $this->assertNotEmpty($fids, 'The feed found in database.');
     return Feed::load(array_values($fids)[0]);
   }
@@ -97,9 +88,8 @@ abstract class AggregatorTestBase extends BrowserTestBase {
    *   Feed object representing the feed.
    */
   public function deleteFeed(FeedInterface $feed) {
-    $this->drupalGet('aggregator/sources/' . $feed->id() . '/delete');
-    $this->submitForm([], 'Delete');
-    $this->assertSession()->pageTextContains('The feed ' . $feed->label() . ' has been deleted.');
+    $this->drupalPostForm('aggregator/sources/' . $feed->id() . '/delete', [], t('Delete'));
+    $this->assertRaw(t('The feed %title has been deleted.', ['%title' => $feed->label()]), 'Feed deleted successfully.');
   }
 
   /**
@@ -167,13 +157,14 @@ abstract class AggregatorTestBase extends BrowserTestBase {
   public function getDefaultFeedItemCount() {
     // Our tests are based off of rss.xml, so let's find out how many elements
     // should be related.
-    return \Drupal::entityQuery('node')
+    $feed_count = \Drupal::entityQuery('node')
       ->condition('promote', NodeInterface::PROMOTED)
       ->condition('status', NodeInterface::PUBLISHED)
       ->accessCheck(FALSE)
-      ->range(0, 10)
+      ->range(0, $this->config('system.rss')->get('items.limit'))
       ->count()
       ->execute();
+    return min($feed_count, 10);
   }
 
   /**
@@ -190,26 +181,26 @@ abstract class AggregatorTestBase extends BrowserTestBase {
   public function updateFeedItems(FeedInterface $feed, $expected_count = NULL) {
     // First, let's ensure we can get to the rss xml.
     $this->drupalGet($feed->getUrl());
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200, new FormattableMarkup(':url is reachable.', [':url' => $feed->getUrl()]));
 
     // Attempt to access the update link directly without an access token.
     $this->drupalGet('admin/config/services/aggregator/update/' . $feed->id());
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertResponse(403);
 
     // Refresh the feed (simulated link click).
     $this->drupalGet('admin/config/services/aggregator');
     $this->clickLink('Update items');
 
     // Ensure we have the right number of items.
-    $item_ids = \Drupal::entityQuery('aggregator_item')
-      ->accessCheck(FALSE)
-      ->condition('fid', $feed->id())
-      ->execute();
-    $feed->items = array_values($item_ids);
+    $iids = \Drupal::entityQuery('aggregator_item')->condition('fid', $feed->id())->execute();
+    $feed->items = [];
+    foreach ($iids as $iid) {
+      $feed->items[] = $iid;
+    }
 
     if ($expected_count !== NULL) {
       $feed->item_count = count($feed->items);
-      $this->assertEquals($expected_count, $feed->item_count, new FormattableMarkup('Total items in feed equal to the total items in database (@val1 != @val2)', ['@val1' => $expected_count, '@val2' => $feed->item_count]));
+      $this->assertEqual($expected_count, $feed->item_count, new FormattableMarkup('Total items in feed equal to the total items in database (@val1 != @val2)', ['@val1' => $expected_count, '@val2' => $feed->item_count]));
     }
   }
 
@@ -220,9 +211,8 @@ abstract class AggregatorTestBase extends BrowserTestBase {
    *   Feed object representing the feed.
    */
   public function deleteFeedItems(FeedInterface $feed) {
-    $this->drupalGet('admin/config/services/aggregator/delete/' . $feed->id());
-    $this->submitForm([], 'Delete items');
-    $this->assertSession()->pageTextContains('The news items from ' . $feed->label() . ' have been deleted.');
+    $this->drupalPostForm('admin/config/services/aggregator/delete/' . $feed->id(), [], t('Delete items'));
+    $this->assertRaw(t('The news items from %title have been deleted.', ['%title' => $feed->label()]), 'Feed items deleted.');
   }
 
   /**
@@ -234,10 +224,7 @@ abstract class AggregatorTestBase extends BrowserTestBase {
    *   Expected number of feed items.
    */
   public function updateAndDelete(FeedInterface $feed, $expected_count) {
-    $count_query = \Drupal::entityQuery('aggregator_item')
-      ->accessCheck(FALSE)
-      ->condition('fid', $feed->id())
-      ->count();
+    $count_query = \Drupal::entityQuery('aggregator_item')->condition('fid', $feed->id())->count();
     $this->updateFeedItems($feed, $expected_count);
     $count = $count_query->execute();
     $this->assertGreaterThan(0, $count);
@@ -258,12 +245,7 @@ abstract class AggregatorTestBase extends BrowserTestBase {
    *   TRUE if feed is unique.
    */
   public function uniqueFeed($feed_name, $feed_url) {
-    $result = \Drupal::entityQuery('aggregator_feed')
-      ->accessCheck(FALSE)
-      ->condition('title', $feed_name)
-      ->condition('url', $feed_url)
-      ->count()
-      ->execute();
+    $result = \Drupal::entityQuery('aggregator_feed')->condition('title', $feed_name)->condition('url', $feed_url)->count()->execute();
     return (1 == $result);
   }
 
@@ -350,17 +332,17 @@ EOF;
   }
 
   /**
-   * Returns an example RSS091 feed.
+   * Returns a example RSS091 feed.
    *
    * @return string
    *   Path to the feed.
    */
   public function getRSS091Sample() {
-    return $GLOBALS['base_url'] . '/' . $this->getModulePath('aggregator') . '/tests/modules/aggregator_test/aggregator_test_rss091.xml';
+    return $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'aggregator') . '/tests/modules/aggregator_test/aggregator_test_rss091.xml';
   }
 
   /**
-   * Returns an example Atom feed.
+   * Returns a example Atom feed.
    *
    * @return string
    *   Path to the feed.
@@ -368,17 +350,17 @@ EOF;
   public function getAtomSample() {
     // The content of this sample ATOM feed is based directly off of the
     // example provided in RFC 4287.
-    return $GLOBALS['base_url'] . '/' . $this->getModulePath('aggregator') . '/tests/modules/aggregator_test/aggregator_test_atom.xml';
+    return $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'aggregator') . '/tests/modules/aggregator_test/aggregator_test_atom.xml';
   }
 
   /**
-   * Returns an example feed.
+   * Returns a example feed.
    *
    * @return string
    *   Path to the feed.
    */
   public function getHtmlEntitiesSample() {
-    return $GLOBALS['base_url'] . '/' . $this->getModulePath('aggregator') . '/tests/modules/aggregator_test/aggregator_test_title_entities.xml';
+    return $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'aggregator') . '/tests/modules/aggregator_test/aggregator_test_title_entities.xml';
   }
 
   /**
@@ -393,8 +375,7 @@ EOF;
       $edit = [];
       $edit['title[0][value]'] = $this->randomMachineName();
       $edit['body[0][value]'] = $this->randomMachineName();
-      $this->drupalGet('node/add/article');
-      $this->submitForm($edit, 'Save');
+      $this->drupalPostForm('node/add/article', $edit, t('Save'));
     }
   }
 

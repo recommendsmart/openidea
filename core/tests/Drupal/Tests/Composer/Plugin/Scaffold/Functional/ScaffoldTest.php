@@ -53,7 +53,7 @@ class ScaffoldTest extends TestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->fileSystem = new Filesystem();
     $this->fixtures = new Fixtures();
     $this->fixtures->createIsolatedComposerCacheDir();
@@ -70,7 +70,7 @@ class ScaffoldTest extends TestCase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown(): void {
+  protected function tearDown() {
     // Remove any temporary directories et. al. that were created.
     $this->fixtures->tearDown();
   }
@@ -111,7 +111,7 @@ class ScaffoldTest extends TestCase {
   public function scaffoldSut($fixture_name, $is_link = FALSE, $relocated_docroot = TRUE) {
     $sut = $this->createSut($fixture_name, ['SYMLINK' => $is_link ? 'true' : 'false']);
     // Run composer install to get the dependencies we need to test.
-    $this->fixtures->runComposer("install --no-ansi --no-scripts --no-plugins", $sut);
+    $this->fixtures->runComposer("install --no-ansi --no-scripts", $sut);
     // Test drupal:scaffold.
     $scaffoldOutput = $this->fixtures->runScaffold($sut);
 
@@ -124,7 +124,7 @@ class ScaffoldTest extends TestCase {
       $this->assertFileExists($docroot);
     }
     else {
-      $this->assertFileDoesNotExist($sut . '/docroot');
+      $this->assertFileNotExists($sut . '/docroot');
     }
 
     return new ScaffoldTestResult($docroot, $scaffoldOutput);
@@ -182,7 +182,7 @@ class ScaffoldTest extends TestCase {
     $fixture_name = 'empty-fixture';
 
     $result = $this->scaffoldSut($fixture_name, FALSE, FALSE);
-    $this->assertStringContainsString('Nothing scaffolded because no packages are allowed in the top-level composer.json file', $result->scaffoldOutput());
+    $this->assertContains('Nothing scaffolded because no packages are allowed in the top-level composer.json file', $result->scaffoldOutput());
   }
 
   /**
@@ -190,8 +190,9 @@ class ScaffoldTest extends TestCase {
    */
   public function testProjectThatScaffoldsEmptyProject() {
     $fixture_name = 'project-allowing-empty-fixture';
+    $is_link = FALSE;
     $result = $this->scaffoldSut($fixture_name, FALSE, FALSE);
-    $this->assertStringContainsString('The allowed package fixtures/empty-fixture does not provide a file mapping for Composer Scaffold', $result->scaffoldOutput());
+    $this->assertContains('The allowed package fixtures/empty-fixture does not provide a file mapping for Composer Scaffold', $result->scaffoldOutput());
     $this->assertCommonDrupalAssetsWereScaffolded($result->docroot(), FALSE);
     $this->assertAutoloadFileCorrect($result->docroot());
   }
@@ -254,7 +255,7 @@ class ScaffoldTest extends TestCase {
   }
 
   /**
-   * Provides test values for testDrupalDrupalFileWasAppended.
+   * Test values for testDrupalDrupalFileWasAppended.
    */
   public function scaffoldAppendTestValues() {
     return array_merge(
@@ -277,7 +278,7 @@ include __DIR__ . "/settings-custom-additions.php";',
   }
 
   /**
-   * Tests values to run both with $is_link FALSE and $is_link TRUE.
+   * Test values to run both with $is_link FALSE and $is_link TRUE.
    *
    * @param bool $is_link
    *   Whether or not symlinking should be used.
@@ -342,7 +343,7 @@ include __DIR__ . "/settings-custom-additions.php";',
    */
   public function testDrupalDrupalFileWasAppended($fixture_name, $is_link, $scaffold_file_path, $scaffold_file_contents, $scaffoldOutputContains) {
     $result = $this->scaffoldSut($fixture_name, $is_link, FALSE);
-    $this->assertStringContainsString($scaffoldOutputContains, $result->scaffoldOutput());
+    $this->assertContains($scaffoldOutputContains, $result->scaffoldOutput());
 
     $this->assertScaffoldedFile($result->docroot() . '/' . $scaffold_file_path, FALSE, $scaffold_file_contents);
     $this->assertCommonDrupalAssetsWereScaffolded($result->docroot(), $is_link);
@@ -356,10 +357,8 @@ include __DIR__ . "/settings-custom-additions.php";',
    *   The path to the System-under-Test's docroot.
    * @param bool $is_link
    *   Whether or not symlinking is used.
-   *
-   * @internal
    */
-  protected function assertDefaultSettingsFromScaffoldOverride(string $docroot, bool $is_link): void {
+  protected function assertDefaultSettingsFromScaffoldOverride($docroot, $is_link) {
     $this->assertScaffoldedFile($docroot . '/sites/default/default.settings.php', $is_link, 'scaffolded from the scaffold-override-fixture');
   }
 
@@ -368,13 +367,11 @@ include __DIR__ . "/settings-custom-additions.php";',
    *
    * @param string $docroot
    *   The path to the System-under-Test's docroot.
-   *
-   * @internal
    */
-  protected function assertHtaccessExcluded(string $docroot): void {
+  protected function assertHtaccessExcluded($docroot) {
     // Ensure that the .htaccess.txt file was not written, as our
     // top-level composer.json excludes it from the files to scaffold.
-    $this->assertFileDoesNotExist($docroot . '/.htaccess');
+    $this->assertFileNotExists($docroot . '/.htaccess');
   }
 
   /**
@@ -388,10 +385,8 @@ include __DIR__ . "/settings-custom-additions.php";',
    *   The path to the System-under-Test's docroot.
    * @param bool $is_link
    *   Whether or not symlinking is used.
-   *
-   * @internal
    */
-  protected function assertCommonDrupalAssetsWereScaffolded(string $docroot, bool $is_link): void {
+  protected function assertCommonDrupalAssetsWereScaffolded($docroot, $is_link) {
     // Assert scaffold files are written in the correct locations.
     $this->assertScaffoldedFile($docroot . '/.csslintrc', $is_link, 'Test version of .csslintrc from drupal/core.');
     $this->assertScaffoldedFile($docroot . '/.editorconfig', $is_link, 'Test version of .editorconfig from drupal/core.');
@@ -414,10 +409,8 @@ include __DIR__ . "/settings-custom-additions.php";',
    *   Location of the doc root, where autoload.php should be written.
    * @param bool $relocated_docroot
    *   Whether the document root is relocated or now.
-   *
-   * @internal
    */
-  protected function assertAutoloadFileCorrect(string $docroot, bool $relocated_docroot = FALSE): void {
+  protected function assertAutoloadFileCorrect($docroot, $relocated_docroot = FALSE) {
     $autoload_path = $docroot . '/autoload.php';
 
     // Ensure that the autoload.php file was written.
@@ -429,7 +422,7 @@ include __DIR__ . "/settings-custom-additions.php";',
       $expected = "return require __DIR__ . '/../vendor/autoload.php';";
     }
 
-    $this->assertStringContainsString($expected, $contents);
+    $this->assertContains($expected, $contents);
   }
 
 }

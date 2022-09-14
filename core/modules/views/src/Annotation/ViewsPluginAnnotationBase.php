@@ -2,19 +2,18 @@
 
 namespace Drupal\views\Annotation;
 
+use Drupal\Component\Annotation\AnnotationInterface;
 use Drupal\Component\Annotation\Plugin;
 
 /**
  * Defines an abstract base class for all views plugin annotations.
  */
-abstract class ViewsPluginAnnotationBase extends Plugin {
+abstract class ViewsPluginAnnotationBase extends Plugin implements AnnotationInterface {
 
   /**
    * Whether or not to register a theme function automatically.
    *
-   * This property is optional and it does not need to be declared.
-   *
-   * @var bool
+   * @var bool (optional)
    */
   public $register_theme = TRUE;
 

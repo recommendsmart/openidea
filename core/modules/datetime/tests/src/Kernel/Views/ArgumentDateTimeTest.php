@@ -20,7 +20,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($import_test_views = TRUE): void {
+  protected function setUp($import_test_views = TRUE) {
     parent::setUp($import_test_views);
 
     // Add some basic test nodes.
@@ -46,7 +46,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests year argument.
+   * Test year argument.
    *
    * @see \Drupal\datetime\Plugin\views\argument\YearDate
    */
@@ -89,7 +89,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests month argument.
+   * Test month argument.
    *
    * @see \Drupal\datetime\Plugin\views\argument\MonthDate
    */
@@ -115,7 +115,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests day argument.
+   * Test day argument.
    *
    * @see \Drupal\datetime\Plugin\views\argument\DayDate
    */
@@ -141,7 +141,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests year, month, and day arguments combined.
+   * Test year, month, and day arguments combined.
    */
   public function testDatetimeArgumentAll() {
     $view = Views::getView('test_argument_datetime');
@@ -163,7 +163,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests week WW argument.
+   * Test week WW argument.
    */
   public function testDatetimeArgumentWeek() {
     $view = Views::getView('test_argument_datetime');
@@ -187,7 +187,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests full_date CCYYMMDD argument.
+   * Test full_date CCYYMMDD argument.
    */
   public function testDatetimeArgumentFullDate() {
     $view = Views::getView('test_argument_datetime');
@@ -209,7 +209,7 @@ class ArgumentDateTimeTest extends DateTimeHandlerTestBase {
   }
 
   /**
-   * Tests year_month CCYYMM argument.
+   * Test year_month CCYYMM argument.
    */
   public function testDatetimeArgumentYearMonth() {
     $view = Views::getView('test_argument_datetime');

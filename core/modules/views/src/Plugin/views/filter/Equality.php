@@ -5,7 +5,7 @@ namespace Drupal\views\Plugin\views\filter;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Simple filter to handle equal to / not equal to filters.
+ * Simple filter to handle equal to / not equal to filters
  *
  * @ingroup views_filter_handlers
  *
@@ -13,15 +13,11 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class Equality extends FilterPluginBase {
 
-  /**
-   * Exposed filter options.
-   *
-   * @var bool
-   */
+  // exposed filter options
   protected $alwaysMultiple = TRUE;
 
   /**
-   * Provide simple equality operator.
+   * Provide simple equality operator
    */
   public function operatorOptions() {
     return [
@@ -31,7 +27,7 @@ class Equality extends FilterPluginBase {
   }
 
   /**
-   * Provide a simple textfield for equality.
+   * Provide a simple textfield for equality
    */
   protected function valueForm(&$form, FormStateInterface $form_state) {
     $form['value'] = [
@@ -41,7 +37,7 @@ class Equality extends FilterPluginBase {
       '#default_value' => $this->value,
     ];
 
-    if ($form_state->get('exposed')) {
+    if ($exposed = $form_state->get('exposed')) {
       $identifier = $this->options['expose']['identifier'];
       $user_input = $form_state->getUserInput();
       if (!isset($user_input[$identifier])) {

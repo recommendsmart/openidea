@@ -18,7 +18,7 @@ class AreaViewTest extends ViewsKernelTestBase {
    *
    * @var array
    */
-  protected static $modules = ['user'];
+  public static $modules = ['user'];
 
   /**
    * Views used by this test.
@@ -36,20 +36,20 @@ class AreaViewTest extends ViewsKernelTestBase {
     $view = Views::getView('test_area_view');
 
     // Tests \Drupal\views\Plugin\views\area\View::calculateDependencies().
-    $this->assertSame(['config' => ['views.view.test_simple_argument'], 'module' => ['views_test_data']], $view->getDependencies());
+    $this->assertIdentical(['config' => ['views.view.test_simple_argument'], 'module' => ['views_test_data']], $view->getDependencies());
 
     $this->executeView($view);
     $output = $view->render();
     $output = $renderer->renderRoot($output);
-    $this->assertStringContainsString('js-view-dom-id-' . $view->dom_id, $output, 'The test view is correctly embedded.');
+    $this->assertTrue(strpos($output, 'js-view-dom-id-' . $view->dom_id) !== FALSE, 'The test view is correctly embedded.');
     $view->destroy();
 
     $view->setArguments([27]);
     $this->executeView($view);
     $output = $view->render();
     $output = $renderer->renderRoot($output);
-    $this->assertStringNotContainsString('John', $output, 'The test view is correctly embedded with inherited arguments.');
-    $this->assertStringContainsString('George', $output, 'The test view is correctly embedded with inherited arguments.');
+    $this->assertTrue(strpos($output, 'John') === FALSE, 'The test view is correctly embedded with inherited arguments.');
+    $this->assertTrue(strpos($output, 'George') !== FALSE, 'The test view is correctly embedded with inherited arguments.');
     $view->destroy();
   }
 

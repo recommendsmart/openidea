@@ -13,7 +13,6 @@ use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Render\ViewsRenderPipelineMarkup;
 use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
-use Twig\Environment;
 
 /**
  * @defgroup views_field_handlers Views field handler plugins
@@ -53,14 +52,12 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
 
   /**
    * Indicator of the renderText() method for rendering a single item.
-   *
    * (If no render_item() is present).
    */
   const RENDER_TEXT_PHASE_SINGLE_ITEM = 0;
 
   /**
    * Indicator of the renderText() method for rendering the whole element.
-   *
    * (if no render_item() method is available).
    */
   const RENDER_TEXT_PHASE_COMPLETELY = 1;
@@ -189,7 +186,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
 
           if (empty($table_alias)) {
             trigger_error(sprintf(
-              "Handler %s tried to add additional_field %s but %s could not be added!",
+              "Handler % tried to add additional_field %s but % could not be added!",
               $this->definition['id'],
               $identifier,
               $info['table']
@@ -230,7 +227,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
    * {@inheritdoc}
    */
   public function clickSortable() {
-    return $this->definition['click sortable'] ?? TRUE;
+    return isset($this->definition['click sortable']) ? $this->definition['click sortable'] : TRUE;
   }
 
   /**
@@ -729,7 +726,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
         '#default_value' => $this->options['alter']['text'],
         // The tag list will be escaped.
         '#description' => $this->t('The text to display for this field. You may enter data from this view as per the "Replacement patterns" below. You may include <a href="@twig_docs">Twig</a> or the following allowed HTML tags: <code>@tags</code>', [
-          '@twig_docs' => 'https://twig.symfony.com/doc/' . Environment::MAJOR_VERSION . '.x',
+          '@twig_docs' => 'https://twig.symfony.com/doc/' . \Twig_Environment::MAJOR_VERSION . '.x',
           '@tags' => '<' . implode('> <', Xss::getAdminTagList()) . '>',
         ]),
         '#states' => [
@@ -1110,7 +1107,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
   }
 
   /**
-   * Provide extra data to the administration form.
+   * Provide extra data to the administration form
    */
   public function adminSummary() {
     return $this->label();
@@ -1164,6 +1161,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
     }
 
     if ($this->allowAdvancedRender()) {
+      $tokens = NULL;
       if ($this instanceof MultiItemsFieldHandlerInterface) {
         $items = [];
         foreach ($raw_items as $count => $item) {
@@ -1367,6 +1365,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
    *     - word_boundary: Trim only on a word boundary.
    *     - ellipsis: Show an ellipsis (…) at the end of the trimmed string.
    *     - html: Make sure that the html is correct.
+   *
    * @param string $value
    *   The string which should be trimmed.
    *
@@ -1682,6 +1681,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
    *
    * @param $array
    *   An array of values.
+   *
    * @param $parent_keys
    *   An array of parent keys. This will represent the array depth.
    *
@@ -1793,6 +1793,7 @@ abstract class FieldPluginBase extends HandlerBase implements FieldHandlerInterf
    *     - word_boundary: Trim only on a word boundary.
    *     - ellipsis: Show an ellipsis (…) at the end of the trimmed string.
    *     - html: Make sure that the html is correct.
+   *
    * @param string $value
    *   The string which should be trimmed.
    *

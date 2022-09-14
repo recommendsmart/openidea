@@ -1,10 +1,7 @@
-langcode: en
-status: true
-dependencies:
-  module:
-    - editor
-name: 'Private images'
 format: private_images
+name: 'Private images'
+status: true
+langcode: en
 filters:
   editor_file_reference:
     id: editor_file_reference
@@ -21,3 +18,6 @@ filters:
       allowed_html: '<img src alt data-entity-type data-entity-uuid>'
       filter_html_help: true
       filter_html_nofollow: false
+dependencies:
+  module:
+    - editor

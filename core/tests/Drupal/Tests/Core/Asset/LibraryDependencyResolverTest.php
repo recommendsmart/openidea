@@ -52,10 +52,10 @@ class LibraryDependencyResolverTest extends UnitTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp(): void {
+  protected function setUp() {
     $this->libraryDiscovery = $this->getMockBuilder('Drupal\Core\Asset\LibraryDiscovery')
       ->disableOriginalConstructor()
-      ->onlyMethods(['getLibrariesByExtension'])
+      ->setMethods(['getLibrariesByExtension'])
       ->getMock();
     $this->libraryDiscovery->expects($this->any())
       ->method('getLibrariesByExtension')

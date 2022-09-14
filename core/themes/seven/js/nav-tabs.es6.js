@@ -5,8 +5,8 @@
  * This also supports collapsible navigable is the 'is-collapsible' class is
  * added to the main element, and a target element is included.
  */
-(function ($, Drupal) {
-  function init(tab) {
+(function($, Drupal) {
+  function init(i, tab) {
     const $tab = $(tab);
     const $target = $tab.find('[data-drupal-nav-tabs-target]');
     const isCollapsible = $tab.hasClass('is-collapsible');
@@ -38,13 +38,16 @@
   }
 
   /**
-   * Initialize the tabs JS.
+   * Initialise the tabs JS.
    */
   Drupal.behaviors.navTabs = {
     attach(context, settings) {
-      const notSmartPhone = window.matchMedia('(min-width: 300px)');
-      if (notSmartPhone.matches) {
-        once('nav-tabs', '[data-drupal-nav-tabs]', context).forEach(init);
+      const $tabs = $(context).find('[data-drupal-nav-tabs]');
+      if ($tabs.length) {
+        const notSmartPhone = window.matchMedia('(min-width: 300px)');
+        if (notSmartPhone.matches) {
+          $tabs.once('nav-tabs').each(init);
+        }
       }
     },
   };

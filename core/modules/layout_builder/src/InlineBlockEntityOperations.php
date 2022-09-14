@@ -2,6 +2,7 @@
 
 namespace Drupal\layout_builder;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -54,13 +55,25 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    *   The entity type manager service.
    * @param \Drupal\layout_builder\InlineBlockUsageInterface $usage
    *   Inline block usage tracking service.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
    *   (optional) The section storage manager.
+   *
+   * @todo The current constructor signature is deprecated:
+   *   - The $section_storage_manager parameter is optional, but should become
+   *   required.
+   *   - The $database parameter is unused and should be removed.
+   *   Deprecate in https://www.drupal.org/node/3031492.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockUsageInterface $usage, SectionStorageManagerInterface $section_storage_manager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockUsageInterface $usage, Connection $database, SectionStorageManagerInterface $section_storage_manager = NULL) {
     $this->entityTypeManager = $entityTypeManager;
     $this->blockContentStorage = $entityTypeManager->getStorage('block_content');
     $this->usage = $usage;
+    if ($section_storage_manager === NULL) {
+      @trigger_error('The plugin.manager.layout_builder.section_storage service must be passed to \Drupal\layout_builder\InlineBlockEntityOperations::__construct(). It was added in Drupal 8.7.0 and will be required before Drupal 9.0.0.', E_USER_DEPRECATED);
+      $section_storage_manager = \Drupal::service('plugin.manager.layout_builder.section_storage');
+    }
     $this->sectionStorageManager = $section_storage_manager;
   }
 
@@ -71,6 +84,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('inline_block.usage'),
+      $container->get('database'),
       $container->get('plugin.manager.layout_builder.section_storage')
     );
   }
@@ -163,10 +177,18 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
         // duplicated.
         $duplicate_blocks = TRUE;
       }
-      // Since multiple parent entity revisions may reference common block
-      // revisions, when a block is modified, it must always result in the
-      // creation of a new block revision.
-      $new_revision = $entity instanceof RevisionableInterface;
+      $new_revision = FALSE;
+      if ($entity instanceof RevisionableInterface) {
+        // If the parent entity will have a new revision create a new revision
+        // of the block.
+        // @todo Currently revisions are never created for the parent entity.
+        //   This will be fixed in https://www.drupal.org/node/2937199.
+        //   To work around this always make a revision when the parent entity
+        //   is an instance of RevisionableInterface. After the issue is fixed
+        //   only create a new revision if '$entity->isNewRevision()'.
+        $new_revision = TRUE;
+      }
+
       foreach ($this->getInlineBlockComponents($sections) as $component) {
         $this->saveInlineBlockComponent($entity, $component, $new_revision, $duplicate_blocks);
       }
@@ -228,7 +250,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    */
   protected function getBlockIdsForRevisionIds(array $revision_ids) {
     if ($revision_ids) {
-      $query = $this->blockContentStorage->getQuery()->accessCheck(FALSE);
+      $query = $this->blockContentStorage->getQuery();
       $query->condition('revision_id', $revision_ids, 'IN');
       $block_ids = $query->execute();
       return $block_ids;
@@ -244,7 +266,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\layout_builder\SectionComponent $component
    *   The section component with an inline block.
    * @param bool $new_revision
-   *   Whether a new revision of the block should be created when modified.
+   *   Whether a new revision of the block should be created.
    * @param bool $duplicate_blocks
    *   Whether the blocks should be duplicated.
    */

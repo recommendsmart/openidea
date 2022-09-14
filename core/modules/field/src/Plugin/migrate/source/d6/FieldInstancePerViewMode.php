@@ -5,12 +5,7 @@ namespace Drupal\field\Plugin\migrate\source\d6;
 use Drupal\node\Plugin\migrate\source\d6\ViewModeBase;
 
 /**
- * Drupal 6 field instance per view mode source from database.
- *
- * For available configuration keys, refer to the parent classes.
- *
- * @see \Drupal\migrate\Plugin\migrate\source\SqlBase
- * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase
+ * The field instance per view mode source class.
  *
  * @MigrateSource(
  *   id = "d6_field_instance_per_view_mode",
@@ -72,7 +67,7 @@ class FieldInstancePerViewMode extends ViewModeBase {
         'type',
         'module',
       ]);
-    $query->join('content_node_field', 'cnf', '[cnfi].[field_name] = [cnf].[field_name]');
+    $query->join('content_node_field', 'cnf', 'cnfi.field_name = cnf.field_name');
     $query->orderBy('cnfi.weight');
 
     return $query;

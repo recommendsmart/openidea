@@ -97,7 +97,7 @@ class Route extends ProcessPluginBase implements ContainerFactoryPluginInterface
       $options = [];
     }
     else {
-      [$link_path, $options] = $value;
+      list($link_path, $options) = $value;
     }
 
     $extracted = $this->pathValidator->getUrlIfValidWithoutAccessCheck($link_path);

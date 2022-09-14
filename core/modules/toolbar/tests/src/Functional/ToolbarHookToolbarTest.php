@@ -23,14 +23,14 @@ class ToolbarHookToolbarTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['toolbar', 'toolbar_test', 'test_page_test'];
+  public static $modules = ['toolbar', 'toolbar_test', 'test_page_test'];
 
   /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp(): void {
+  protected function setUp() {
     parent::setUp();
 
     // Create an administrative user and log it in.
@@ -43,22 +43,22 @@ class ToolbarHookToolbarTest extends BrowserTestBase {
    */
   public function testHookToolbar() {
     $this->drupalGet('test-page');
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertResponse(200);
 
     // Assert that the toolbar is present in the HTML.
-    $this->assertSession()->responseContains('id="toolbar-administration"');
+    $this->assertRaw('id="toolbar-administration"');
 
     // Assert that the tab registered by toolbar_test is present.
-    $this->assertSession()->responseContains('id="toolbar-tab-testing"');
+    $this->assertRaw('id="toolbar-tab-testing"');
 
     // Assert that the tab item descriptions are present.
-    $this->assertSession()->responseContains('title="Test tab"');
+    $this->assertRaw('title="Test tab"');
 
     // Assert that the tray registered by toolbar_test is present.
-    $this->assertSession()->responseContains('id="toolbar-tray-testing"');
+    $this->assertRaw('id="toolbar-tray-testing"');
 
     // Assert that tray item descriptions are present.
-    $this->assertSession()->responseContains('title="Test link 1 title"');
+    $this->assertRaw('title="Test link 1 title"');
   }
 
 }
